@@ -7,7 +7,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "crawl:all": "tsx src/runAll.ts",
-    "crawl:site": "tsx src/runSite.ts"
+    "crawl:site": "tsx src/runSite.ts",
+    "validate:site": "tsx src/validateSite.ts"
   },
   "dependencies": {
     "@captacao/crawler-core": "*",
