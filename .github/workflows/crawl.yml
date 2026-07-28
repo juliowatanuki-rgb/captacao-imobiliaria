@@ -4,10 +4,10 @@ name: Coleta diaria de anuncios
 # computador pessoal ou servidor proprio. Repositorio publico para nao
 # consumir minutos limitados de repositorio privado.
 on:
-  # Schedule diario desativado temporariamente ate a esteira do Casa Paris
-  # ser validada com duas execucoes completas (ver README). Reativar depois:
-  # schedule:
-  #   - cron: "0 9 * * *"  # 09:00 UTC = 06:00 America/Sao_Paulo
+  # Esteira do Casa Paris validada em 2026-07-28 com duas execucoes completas
+  # (1a: 3612 base inicial; 2a: 0 novos, 0 duplicidade, 182 paginas em ambas).
+  schedule:
+    - cron: "0 9 * * *" # 09:00 UTC = 06:00 America/Sao_Paulo
   workflow_dispatch: {}
 
 permissions:
