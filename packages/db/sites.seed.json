@@ -1,0 +1,202 @@
+[
+  {
+    "id": "casa_paris_imoveis",
+    "nome": "Casa Paris Imoveis",
+    "urlBase": "https://www.casaparisimoveis.com.br",
+    "urlListagem": "https://www.casaparisimoveis.com.br/venda/imovel/praia-grande/todos-os-bairros/todos-os-condominios/todas-as-opcoes",
+    "plataforma": "Imoview",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Esteira validada em 2026-07-28: crawler real (crawlers/src/sites/casa_paris_imoveis.ts) usa o motor generico Imoview. Cerca de 3613 imoveis / ~181 paginas."
+  },
+  {
+    "id": "plaza_imoveis",
+    "nome": "Plaza Imoveis",
+    "urlBase": "https://plazaimoveisempreendimentos.com",
+    "urlListagem": "https://plazaimoveisempreendimentos.com",
+    "plataforma": "GUESS Tecnologia",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+  },
+  {
+    "id": "igor_braga_imoveis",
+    "nome": "Igor Braga Imoveis",
+    "urlBase": "https://igorbraga.com.br",
+    "urlListagem": "https://igorbraga.com.br",
+    "plataforma": "Castel Digital",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+  },
+  {
+    "id": "m2m_imoveis",
+    "nome": "M2M Imoveis (M&M Imoveis)",
+    "urlBase": "https://m2mimoveis.com.br",
+    "urlListagem": "https://m2mimoveis.com.br",
+    "plataforma": "Coruja Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Caicara)"
+  },
+  {
+    "id": "nova_casarao_imoveis",
+    "nome": "Nova Casarao Imoveis",
+    "urlBase": "https://novacasarao.com.br",
+    "urlListagem": "https://novacasarao.com.br",
+    "plataforma": "Union Softwares",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Guilhermina / Aviacao)"
+  },
+  {
+    "id": "imigrantes_imoveis",
+    "nome": "Imigrantes Imoveis",
+    "urlBase": "https://imigrantesimoveis.com.br",
+    "urlListagem": "https://imigrantesimoveis.com.br",
+    "plataforma": "Imoview",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao / Guilhermina)"
+  },
+  {
+    "id": "tempone_imoveis_pg",
+    "nome": "Tempone Imoveis PG",
+    "urlBase": "https://temponeimoveispg.com.br",
+    "urlListagem": "https://temponeimoveispg.com.br",
+    "plataforma": "Coruja Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Ocian)"
+  },
+  {
+    "id": "dema_imoveis",
+    "nome": "Dema Imoveis",
+    "urlBase": "https://demaimoveispg.com.br",
+    "urlListagem": "https://demaimoveispg.com.br",
+    "plataforma": "Union Softwares",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Aviacao / Caicara)"
+  },
+  {
+    "id": "group_house_fort",
+    "nome": "Group House Fort",
+    "urlBase": "https://housefort.com.br",
+    "urlListagem": "https://housefort.com.br",
+    "plataforma": "Desenvolvimento proprio / W Imoveis",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao)"
+  },
+  {
+    "id": "praialar_imoveis",
+    "nome": "Praialar Imoveis",
+    "urlBase": "https://praialarimoveis.com.br",
+    "urlListagem": "https://praialarimoveis.com.br",
+    "plataforma": "Sub 100 Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao / Guilhermina)"
+  },
+  {
+    "id": "morada_na_praia_imoveis",
+    "nome": "Morada na Praia Imoveis",
+    "urlBase": "https://moradanapraia.com.br",
+    "urlListagem": "https://moradanapraia.com.br",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Florida / Aviacao / Tupi)"
+  },
+  {
+    "id": "alpha_imoveis_pg",
+    "nome": "Alpha Imoveis PG",
+    "urlBase": "https://alphaimoveispg.com.br",
+    "urlListagem": "https://alphaimoveispg.com.br",
+    "plataforma": "Coruja Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao)"
+  },
+  {
+    "id": "tavares_e_polati_imoveis",
+    "nome": "Tavares e Polati Imoveis",
+    "urlBase": "https://tavaresepolati.com.br",
+    "urlListagem": "https://tavaresepolati.com.br",
+    "plataforma": "Imoview",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+  },
+  {
+    "id": "feliciano_imoveis_praia_grande",
+    "nome": "Feliciano Imoveis Praia Grande",
+    "urlBase": "https://felicianoassociadosimoveis.com.br",
+    "urlListagem": "https://felicianoassociadosimoveis.com.br",
+    "plataforma": "Castel Digital",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte / Boqueirao)"
+  },
+  {
+    "id": "micheletto_consultoria_imoveis",
+    "nome": "Micheletto Consultoria de Imoveis",
+    "urlBase": "https://michelettoconsimoveis.com.br",
+    "urlListagem": "https://michelettoconsimoveis.com.br",
+    "plataforma": "Tecimob",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (abrangencia municipal)"
+  },
+  {
+    "id": "damasco_imoveis",
+    "nome": "Damasco Imoveis",
+    "urlBase": "https://damascoimoveis.com.br",
+    "urlListagem": "https://damascoimoveis.com.br",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Tupi / Caicara / Forte)"
+  },
+  {
+    "id": "aline_caetano_imoveis",
+    "nome": "Aline Caetano Imoveis (A.C.)",
+    "urlBase": "https://alinecaetano.com.br",
+    "urlListagem": "https://alinecaetano.com.br",
+    "plataforma": "Desenvolvimento proprio",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Tupi / Aviacao / Forte)"
+  },
+  {
+    "id": "realizacao_imoveis",
+    "nome": "Realizacao Imoveis",
+    "urlBase": "https://realizacoesimoveismongagua.com.br",
+    "urlListagem": "https://realizacoesimoveismongagua.com.br",
+    "plataforma": "Vista Software",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Centro / Ocian)"
+  },
+  {
+    "id": "nova_kennedy",
+    "nome": "Nova Kennedy",
+    "urlBase": "https://novakennedy.com.br",
+    "urlListagem": "https://novakennedy.com.br",
+    "plataforma": "Tecimob",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Ocian / Aviacao)"
+  },
+  {
+    "id": "all_prime_imoveis",
+    "nome": "All Prime Imoveis",
+    "urlBase": "https://allprimeimoveis.com.br",
+    "urlListagem": "https://allprimeimoveis.com.br",
+    "plataforma": "Castel Digital",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+  }
+]

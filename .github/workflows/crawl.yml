@@ -1,0 +1,45 @@
+name: Coleta diaria de anuncios
+
+# Secao 17: execucao automatica via GitHub Actions, sem depender de
+# computador pessoal ou servidor proprio. Repositorio publico para nao
+# consumir minutos limitados de repositorio privado.
+on:
+  # Schedule diario desativado temporariamente ate a esteira do Casa Paris
+  # ser validada com duas execucoes completas (ver README). Reativar depois:
+  # schedule:
+  #   - cron: "0 9 * * *"  # 09:00 UTC = 06:00 America/Sao_Paulo
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar navegadores do Playwright
+        run: npx --workspace=@captacao/crawlers playwright install --with-deps chromium
+
+      - name: Aplicar migrations pendentes
+        run: npm run migrate
+
+      # Apenas Casa Paris por enquanto (unico crawler validado). Trocar para
+      # `npm run crawl:all -w @captacao/crawlers` quando os demais 19 sites
+      # tiverem seus crawlers implementados e validados.
+      - name: Rodar crawler do Casa Paris
+        run: npm run crawl:site -w @captacao/crawlers -- casa_paris_imoveis
