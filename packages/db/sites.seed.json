@@ -63,21 +63,21 @@
     "id": "tempone_imoveis_pg",
     "nome": "Tempone Imoveis PG",
     "urlBase": "https://temponeimoveispg.com.br",
-    "urlListagem": "https://temponeimoveispg.com.br",
+    "urlListagem": "https://temponeimoveispg.com.br/a-venda/praia-grande-sp",
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Ocian)"
+    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/tempone_imoveis_pg.ts, motor generico Coruja Sistemas, mesmo motor de m2m_imoveis - confirma o chute do seed). URL dedicada de Praia Grande (mesmo padrao de igor_braga_imoveis): /a-venda/praia-grande-sp. Validado ao vivo em 2026-07-28: 460 imoveis em 24 paginas (20/pagina, ultima com 0 - paginacao para sozinha quando acaba), 100% com externalId e urlOriginal, 100% com preco, cidade sempre Praia Grande (variacoes de grafia do proprio site: 'PRAIA GRANDE - SP' / 'PRAIA GRANDE - SAO PAULO' / 'PRAIA GRANDE - SÃO PAULO'). Ainda NAO executado contra o Neon de producao - aguardando validacao final antes de ativar coleta agendada."
   },
   {
     "id": "dema_imoveis",
     "nome": "Dema Imoveis",
     "urlBase": "https://demaimoveispg.com.br",
-    "urlListagem": "https://demaimoveispg.com.br",
-    "plataforma": "Union Softwares",
+    "urlListagem": "https://demaimoveispg.com.br/a-venda/praia-grande-sp",
+    "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Aviacao / Caicara)"
+    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/dema_imoveis.ts, motor generico Coruja Sistemas). Plataforma real e Coruja Sistemas, NAO Union Softwares como chutado antes (mesmo template visual/rodape 'Site feito por Coruja Sistemas' de tempone_imoveis_pg e m2m_imoveis). URL dedicada de Praia Grande: /a-venda/praia-grande-sp. Validado ao vivo em 2026-07-28: 400 imoveis em 21 paginas (20/pagina), 100% com externalId e urlOriginal, 100% com preco, cidade sempre 'PRAIA GRANDE - SP' em todas as paginas percorridas. Ainda NAO executado contra o Neon de producao - aguardando validacao final antes de ativar coleta agendada."
   },
   {
     "id": "group_house_fort",

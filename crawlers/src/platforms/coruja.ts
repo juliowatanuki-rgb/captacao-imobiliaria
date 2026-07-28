@@ -2,18 +2,30 @@
 // (identificada pelo rodape "Site feito por Coruja Sistemas" e pelas imagens
 // hospedadas em CloudFront, ex: d1cvze3955gobs.cloudfront.net).
 //
-// Estrutura de card validada manualmente em m2mimoveis.com.br em 2026-07-28:
+// Estrutura de card validada manualmente em m2mimoveis.com.br em 2026-07-28 e
+// re-confirmada em temponeimoveispg.com.br em 2026-07-28 (mesmo motor, cards
+// identicos):
 // <section class="property-card-search">
 //   <a class="__link" href="imoveis/{slug}-{CODIGO}">
 //     <div class="property-card-search--title">{Tipo} - REF: {CODIGO}</div>
 //     <div class="property-card-search--location">{Bairro}, {Cidade}</div>
-//     <div class="property-card-search--price-sale"><span class="price">R$ {preco}</span></div>
+//     <div class="property-card-search--price-sale"><div class="price">R$ {preco}</div></div>
 //       (preco pode vir como "SOB CONSULTA" - tratar como nulo)
 //     <div class="compositions">
-//       <div class="composition">{icone} {label} {numero}</div>  (area, quartos, vagas, suites, banheiros)
+//       <div class="composition">
+//         <i class="..."></i>
+//         <div class="name-composition">{label}</div>  (Área | Quartos | Vagas | Suites | Banheiros)
+//         <div class="number">{numero}</div>
+//       </div>
 //     </div>
 //   </a>
 // </section>
+// Atencao: o label vem ANTES do numero (ex: textContent normalizado
+// "Área 70,00", "Quartos 2") - nao no formato "{numero} {label}". Os parsers
+// abaixo procuram o rotulo seguido do numero, nao o contrario (bug corrigido
+// em 2026-07-28: a versao anterior procurava "m²"/numero-antes-do-rotulo e
+// por isso areaUtil/dormitorios/suites/banheiros/vagas sempre voltavam null
+// tanto para m2m_imoveis quanto para tempone_imoveis_pg).
 // A paginacao e feita via query string `?pagina=N` (server-side).
 // Atencao: o proprio site tem erros de digitacao na cidade cadastrada
 // (ex: "PARIA GRANDE", "PRAIA GARNDE") - nao normalizar/corrigir aqui, so
@@ -119,11 +131,11 @@ export function createCorujaCrawler(config: CorujaConfig): SiteCrawlerModule {
             cidade,
             bairro,
             preco: parseMoeda(card.preco),
-            areaUtil: parseComposicaoNumero(card.composicoes, /([\d.,]+)\s*m²/i),
-            dormitorios: parseComposicaoNumero(card.composicoes, /(\d+)\s*Quarto/i),
-            suites: parseComposicaoNumero(card.composicoes, /(\d+)\s*Su[ií]te/i),
-            banheiros: parseComposicaoNumero(card.composicoes, /(\d+)\s*Banheiro/i),
-            vagas: parseComposicaoNumero(card.composicoes, /(\d+)\s*Vaga/i),
+            areaUtil: parseComposicaoNumero(card.composicoes, /Área\s*([\d.,]+)/i),
+            dormitorios: parseComposicaoNumero(card.composicoes, /Quartos?\s*(\d+)/i),
+            suites: parseComposicaoNumero(card.composicoes, /Su[ií]tes?\s*(\d+)/i),
+            banheiros: parseComposicaoNumero(card.composicoes, /Banheiros?\s*(\d+)/i),
+            vagas: parseComposicaoNumero(card.composicoes, /Vagas?\s*(\d+)/i),
           });
         }
       }
