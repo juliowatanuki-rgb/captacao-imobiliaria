@@ -116,8 +116,19 @@ export function createCorujaCrawler(config: CorujaConfig): SiteCrawlerModule {
 
         await page.waitForSelector("section.property-card-search", { timeout: 15_000 }).catch(() => {});
 
-        const cards = await extractCards(page);
-        if (cards.length === 0) break;
+        let cards = await extractCards(page);
+        if (cards.length === 0) {
+          // Uma pagina vazia pode ser o fim real da paginacao OU uma
+          // renderizacao lenta (JS ainda carregando os cards) - visto na
+          // pratica, onde reexecucoes sucessivas encontravam mais paginas
+          // reais do que a anterior por causa desse falso-vazio transitorio.
+          // Antes de concluir que acabou, espera mais um pouco e tenta de
+          // novo uma unica vez.
+          await page.waitForTimeout(2_000);
+          await page.waitForSelector("section.property-card-search", { timeout: 10_000 }).catch(() => {});
+          cards = await extractCards(page);
+          if (cards.length === 0) break;
+        }
 
         for (const card of cards) {
           if (!card.href) continue;
