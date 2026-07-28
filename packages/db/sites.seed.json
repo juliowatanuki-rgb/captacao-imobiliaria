@@ -37,7 +37,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Revalidado ao vivo em 2026-07-28 (revalidacao completa, todas as paginas). ATENCAO: a urlListagem antiga ('/a-venda', sem filtro de cidade) trazia inventario de varias cidades do litoral (so 589 de 660 imoveis eram de Praia Grande - resto era Mongagua/Itanhaem/Sao Vicente/Santos/Peruibe). Trocada para a URL dedicada por cidade '/a-venda/praia-grande-sp' (mesmo padrao de igor_braga_imoveis/tempone_imoveis_pg/dema_imoveis): 380 imoveis, 20 paginas, 100% cidade='PRAIA GRANDE - SP', 0 externalId duplicado, 0 url relativa, so 1 preco null (provavel 'sob consulta'). Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-28. urlListagem antiga ('/a-venda', sem filtro de cidade) trazia inventario de varias cidades do litoral - trocada para a URL dedicada '/a-venda/praia-grande-sp'. Motor coruja.ts tinha um bug de instabilidade de paginacao (rate-limit/anti-bot cortava a coleta cedo, de forma inconsistente entre execucoes - corrigido com pausa entre paginas + retry com reload). 1a varredura: 1378 imoveis (base inicial, bate com o contador do proprio site). 2a varredura de confirmacao: 1378 encontrados, 0 novos, 0 atualizados, 0 ausentes."
   },
   {
     "id": "nova_casarao_imoveis",
@@ -47,7 +47,7 @@
     "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Revalidado ao vivo em 2026-07-28 (revalidacao completa, todas as paginas). Plataforma real e Kenlo, NAO Union Softwares como chutado antes. Dominio sem www retorna erro 552 (usar www. sempre). ATENCAO: a urlListagem antiga ('/imoveis/a-venda', sem filtro) trazia inventario de varias cidades (31 de 3375 imoveis eram de Mongagua/Itanhaem/Sao Vicente/Guaruja/Joanopolis). Trocada para a URL dedicada por cidade '/imoveis/a-venda/praia-grande': 3344 imoveis, 280 paginas, 100% cidade='Praia Grande', 0 externalId duplicado. Vagas/suites nao aparecem no card resumido. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-28. Plataforma real e Kenlo, NAO Union Softwares como chutado antes. Dominio sem www retorna erro 552 (usar www. sempre). urlListagem antiga ('/imoveis/a-venda', sem filtro) trazia varias cidades - trocada para '/imoveis/a-venda/praia-grande'. Vagas/suites nao aparecem no card resumido. 1a varredura: 3342 imoveis (base inicial). 2a varredura de confirmacao: 3344 encontrados (variacao organica minima do site), 1 novo genuino, 0 atualizados, 0 ausentes."
   },
   {
     "id": "imigrantes_imoveis",
