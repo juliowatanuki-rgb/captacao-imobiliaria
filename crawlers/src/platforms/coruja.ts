@@ -108,6 +108,16 @@ export function createCorujaCrawler(config: CorujaConfig): SiteCrawlerModule {
       let paginasVisitadas = 0;
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
+        // Espacamento entre navegacoes: diagnostico ao vivo em m2m_imoveis
+        // mostrou que paginas altas (ex: 69, 70) tem conteudo correto quando
+        // acessadas isoladamente, mas uma coleta sequencial rapida (sem
+        // pausa) parava cedo (17, 22, 31 paginas) de forma inconsistente
+        // entre execucoes - indicio de rate-limit/anti-bot por velocidade de
+        // requisicoes, nao de renderizacao lenta. Uma pequena pausa antes de
+        // cada navegacao (alem do retry-se-vazio abaixo) reduz esse risco.
+        if (pagina > 1) {
+          await page.waitForTimeout(800);
+        }
         const separador = config.urlListagem.includes("?") ? "&" : "?";
         await page.goto(`${config.urlListagem}${separador}pagina=${pagina}`, {
           waitUntil: "domcontentloaded",
@@ -118,15 +128,17 @@ export function createCorujaCrawler(config: CorujaConfig): SiteCrawlerModule {
 
         let cards = await extractCards(page);
         if (cards.length === 0) {
-          // Uma pagina vazia pode ser o fim real da paginacao OU uma
-          // renderizacao lenta (JS ainda carregando os cards) - visto na
-          // pratica, onde reexecucoes sucessivas encontravam mais paginas
-          // reais do que a anterior por causa desse falso-vazio transitorio.
-          // Antes de concluir que acabou, espera mais um pouco e tenta de
-          // novo uma unica vez.
-          await page.waitForTimeout(2_000);
-          await page.waitForSelector("section.property-card-search", { timeout: 10_000 }).catch(() => {});
-          cards = await extractCards(page);
+          // Uma pagina vazia pode ser o fim real da paginacao OU um
+          // rate-limit/anti-bot temporario (ver comentario acima sobre o
+          // diagnostico em m2m_imoveis - paginas com conteudo real voltavam
+          // vazias so numa coleta sequencial rapida). Antes de concluir que
+          // acabou, tenta mais algumas vezes com espera crescente.
+          for (let tentativa = 1; tentativa <= 3 && cards.length === 0; tentativa++) {
+            await page.waitForTimeout(2_000 * tentativa);
+            await page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
+            await page.waitForSelector("section.property-card-search", { timeout: 10_000 }).catch(() => {});
+            cards = await extractCards(page);
+          }
           if (cards.length === 0) break;
         }
 
