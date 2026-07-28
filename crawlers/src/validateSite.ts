@@ -6,6 +6,8 @@ import { createKenloCrawler } from "./platforms/kenlo.js";
 import { createCorujaCrawler } from "./platforms/coruja.js";
 import { createCastelDigitalCrawler } from "./platforms/castel_digital.js";
 import { createGuessTecnologiaCrawler } from "./platforms/guess_tecnologia.js";
+import { createImobziCrawler } from "./platforms/imobzi.js";
+import { createImobealCrawler } from "./platforms/imobeal.js";
 
 const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: number }) => SiteCrawlerModule> = {
   praedium: createPraediumCrawler,
@@ -14,6 +16,8 @@ const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: num
   coruja: createCorujaCrawler,
   castel_digital: createCastelDigitalCrawler,
   guess_tecnologia: (config) => createGuessTecnologiaCrawler(config),
+  imobzi: createImobziCrawler,
+  imobeal: createImobealCrawler,
 };
 
 /**
