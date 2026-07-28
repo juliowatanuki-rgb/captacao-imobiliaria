@@ -11,12 +11,14 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "migrate": "npm run migrate -w @captacao/db",
     "seed:sites": "npm run seed:sites -w @captacao/db",
     "crawl:all": "npm run crawl:all -w @captacao/crawlers"
   },
   "devDependencies": {
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
   },
   "engines": {
     "node": ">=20"
