@@ -17,17 +17,17 @@
     "plataforma": "GUESS Tecnologia",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (GUESS Tecnologia, ASP.NET WebForms com postback). Multi-tenant por cidade no path - a raiz do dominio sem /praia-grande resolve para o tenant de Marilia/SP. So 5 imoveis / 1 pagina para Praia Grande no momento da inspecao; paginacao alem da 1a pagina nao foi confirmada (produto normalmente usa __doPostBack, nao querystring simples). Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (GUESS Tecnologia, ASP.NET WebForms com postback). Multi-tenant por cidade no path - a raiz do dominio sem /praia-grande resolve para o tenant de Marilia/SP. CONFIRMADO (nao suposicao): so 5 imoveis / 1 pagina para Praia Grande - o rodape mostra 'Exibindo pagina 1 de 1' e nenhum __doPostBack da pagina e controle de paginacao. Motor tem trava em runtime que falha alto se isso mudar para N>1 paginas. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "igor_braga_imoveis",
     "nome": "Igor Braga Imoveis",
     "urlBase": "https://www.igorbraga.com.br",
-    "urlListagem": "https://www.igorbraga.com.br/venda/",
+    "urlListagem": "https://www.igorbraga.com.br/venda/sao-paulo/praia-grande/",
     "plataforma": "Castel Digital",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (Castel Digital). Paginacao por path (/venda/pagina/N), ~24/pagina, ~233 paginas - parece ser inventario de rede/nacional (~5571 imoveis), nao so Praia Grande; confirmar se da pra filtrar por cidade antes de crawlear tudo. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (Castel Digital). urlListagem antiga (/venda/) trazia o inventario de rede nacional (~5571 imoveis) - trocada para a URL dedicada por cidade (/venda/sao-paulo/praia-grande/), mesmo motor/paginacao (/pagina/N, ~24/pagina). Validado ao vivo ponta a ponta: 5563 imoveis, 233 paginas, 0 ocorrencias de cidade != Praia Grande. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "m2m_imoveis",
