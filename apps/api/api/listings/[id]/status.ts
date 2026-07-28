@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getPool } from "@captacao/db";
+import { getPool } from "../../../../../packages/db/src/client.js";
 import type { AnalysisStatus, ListingEventType } from "@captacao/shared";
 import { HttpError, requireAuth, withHandler } from "../../../src/lib/http.js";
 

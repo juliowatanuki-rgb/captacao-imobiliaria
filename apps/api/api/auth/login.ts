@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getPool } from "@captacao/db";
+import { getPool } from "../../../../packages/db/src/client.js";
 import { signToken, verifyPassword } from "../../src/lib/auth.js";
 import { HttpError, withHandler } from "../../src/lib/http.js";
 
