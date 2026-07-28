@@ -43,11 +43,11 @@
     "id": "nova_casarao_imoveis",
     "nome": "Nova Casarao Imoveis",
     "urlBase": "https://www.novacasarao.com.br",
-    "urlListagem": "https://www.novacasarao.com.br/imoveis/a-venda",
+    "urlListagem": "https://www.novacasarao.com.br/imoveis/a-venda/praia-grande",
     "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma real e Kenlo, NAO Union Softwares como chutado antes. Dominio sem www retorna erro 552 (usar www. sempre). Paginacao via ?pagina=N, ~12/pagina, ~3378 imoveis / ~282 paginas. Vagas/suites nao aparecem no card resumido. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Revalidado ao vivo em 2026-07-28 (revalidacao completa, todas as paginas). Plataforma real e Kenlo, NAO Union Softwares como chutado antes. Dominio sem www retorna erro 552 (usar www. sempre). ATENCAO: a urlListagem antiga ('/imoveis/a-venda', sem filtro) trazia inventario de varias cidades (31 de 3375 imoveis eram de Mongagua/Itanhaem/Sao Vicente/Guaruja/Joanopolis). Trocada para a URL dedicada por cidade '/imoveis/a-venda/praia-grande': 3344 imoveis, 280 paginas, 100% cidade='Praia Grande', 0 externalId duplicado. Vagas/suites nao aparecem no card resumido. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "imigrantes_imoveis",
