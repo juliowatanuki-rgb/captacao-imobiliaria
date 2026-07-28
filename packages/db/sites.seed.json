@@ -53,11 +53,11 @@
     "id": "imigrantes_imoveis",
     "nome": "Imigrantes Imoveis",
     "urlBase": "https://imigrantesimoveis.com.br",
-    "urlListagem": "https://imigrantesimoveis.com.br",
-    "plataforma": "Imoview",
+    "urlListagem": "https://imigrantesimoveis.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao / Guilhermina)"
+    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/imigrantes_imoveis.ts, motor generico Praedium). Plataforma real e Praedium, nao Imoview como chutado antes. ~1656 imoveis / 26 por pagina / ~64 paginas. Codigo do imovel vem no final da URL (-id-N). Ainda NAO executado contra o Neon de producao - aguardando validacao manual."
   },
   {
     "id": "tempone_imoveis_pg",
@@ -123,11 +123,11 @@
     "id": "tavares_e_polati_imoveis",
     "nome": "Tavares e Polati Imoveis",
     "urlBase": "https://tavaresepolati.com.br",
-    "urlListagem": "https://tavaresepolati.com.br",
-    "plataforma": "Imoview",
+    "urlListagem": "https://tavaresepolati.com.br/imoveis/a-venda",
+    "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/tavares_e_polati_imoveis.ts, motor generico Praedium). Plataforma real e Praedium, nao Imoview como chutado antes. ~412 imoveis / 26 por pagina / ~16 paginas. Codigo do imovel vem no final da URL (-id-N). Ainda NAO executado contra o Neon de producao - aguardando validacao manual."
   },
   {
     "id": "feliciano_imoveis_praia_grande",
