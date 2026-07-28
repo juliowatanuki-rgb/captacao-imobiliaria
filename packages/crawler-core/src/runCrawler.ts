@@ -1,7 +1,7 @@
 import type pg from "pg";
 import type { ScrapedListing } from "@captacao/shared";
 import type { NormalizeUrlOptions } from "./urlNormalize.js";
-import { markAbsentListings, upsertListing } from "./upsertListing.js";
+import { markAbsentListings, upsertListingsBatch } from "./upsertListing.js";
 
 export interface CrawlSiteParams {
   pool: pg.Pool;
@@ -62,28 +62,30 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
     const { listings, paginasVisitadas } = scrapeResult;
     const effectiveUrlOptions = scrapeResult.urlOptions ?? urlOptions;
 
-    let anunciosNovos = 0;
-    let anunciosAtualizados = 0;
-    let anunciosExistentes = 0;
-    const seenListingIds: string[] = [];
+    // Protecao contra falha silenciosa de scraping (ex: anti-bot, timeout de
+    // renderizacao): uma coleta que nao encontra NADA mas o site ja tem
+    // anuncios cadastrados nunca deve ser tratada como sucesso - isso
+    // marcaria todos os anuncios existentes como ausentes indevidamente.
+    // Melhor falhar alto (vira 'erro' no catch abaixo) e nao mexer no banco.
+    if (listings.length === 0 && !isInitialSeed) {
+      throw new Error(
+        `coleta encontrou 0 anuncios mas o site "${siteId}" ja possui anuncios registrados - ` +
+          "abortando sem gravar para nao marcar anuncios existentes como ausentes (possivel falha de scraping)"
+      );
+    }
 
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      for (const scraped of listings) {
-        const result = await upsertListing(client, siteId, scraped, urlBase, isInitialSeed, effectiveUrlOptions);
-        seenListingIds.push(result.listingId);
-        if (result.outcome === "novo") {
-          anunciosNovos += 1;
-        } else {
-          anunciosAtualizados += 1;
-          anunciosExistentes += 1;
-        }
-      }
+
+      const batch = await upsertListingsBatch(client, siteId, listings, urlBase, isInitialSeed, effectiveUrlOptions);
+      const anunciosNovos = batch.anunciosNovos;
+      const anunciosAtualizados = batch.anunciosAtualizados;
+      const anunciosExistentes = batch.anunciosAtualizados + batch.anunciosSemAlteracao;
 
       const { marcadosAusentes } = isInitialSeed
         ? { marcadosAusentes: 0 }
-        : await markAbsentListings(client, siteId, seenListingIds);
+        : await markAbsentListings(client, siteId, batch.seenListingIds);
 
       await client.query("COMMIT");
 
@@ -97,7 +99,9 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
           anuncios_novos = $5,
           anuncios_existentes = $6,
           anuncios_atualizados = $7,
-          anuncios_ausentes = $8
+          anuncios_ausentes = $8,
+          anuncios_sem_alteracao = $9,
+          anuncios_duplicados_coleta = $10
          WHERE id = $1`,
         [
           siteCrawlRunId,
@@ -108,6 +112,8 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
           anunciosExistentes,
           anunciosAtualizados,
           marcadosAusentes,
+          batch.anunciosSemAlteracao,
+          batch.duplicadosNaColeta,
         ]
       );
 
