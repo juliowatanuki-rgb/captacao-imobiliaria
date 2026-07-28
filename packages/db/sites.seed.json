@@ -33,11 +33,11 @@
     "id": "m2m_imoveis",
     "nome": "M2M Imoveis (M&M Imoveis)",
     "urlBase": "https://m2mimoveis.com.br",
-    "urlListagem": "https://m2mimoveis.com.br/a-venda",
+    "urlListagem": "https://m2mimoveis.com.br/a-venda/praia-grande-sp",
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (Coruja Sistemas). Paginacao via ?pagina=N, ~20/pagina, ~1513 imoveis / ~76 paginas. Dados de cidade tem erros de digitacao no proprio site (PARIA GRANDE, PRAIA GARNDE etc) - normalizar com cautela. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Revalidado ao vivo em 2026-07-28 (revalidacao completa, todas as paginas). ATENCAO: a urlListagem antiga ('/a-venda', sem filtro de cidade) trazia inventario de varias cidades do litoral (so 589 de 660 imoveis eram de Praia Grande - resto era Mongagua/Itanhaem/Sao Vicente/Santos/Peruibe). Trocada para a URL dedicada por cidade '/a-venda/praia-grande-sp' (mesmo padrao de igor_braga_imoveis/tempone_imoveis_pg/dema_imoveis): 380 imoveis, 20 paginas, 100% cidade='PRAIA GRANDE - SP', 0 externalId duplicado, 0 url relativa, so 1 preco null (provavel 'sob consulta'). Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "nova_casarao_imoveis",
