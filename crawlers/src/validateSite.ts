@@ -8,6 +8,7 @@ import { createCastelDigitalCrawler } from "./platforms/castel_digital.js";
 import { createGuessTecnologiaCrawler } from "./platforms/guess_tecnologia.js";
 import { createImobziCrawler } from "./platforms/imobzi.js";
 import { createImobealCrawler } from "./platforms/imobeal.js";
+import { createMicrosistecCrawler } from "./platforms/microsistec.js";
 
 const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: number }) => SiteCrawlerModule> = {
   praedium: createPraediumCrawler,
@@ -18,6 +19,7 @@ const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: num
   guess_tecnologia: (config) => createGuessTecnologiaCrawler(config),
   imobzi: createImobziCrawler,
   imobeal: createImobealCrawler,
+  microsistec: createMicrosistecCrawler,
 };
 
 /**
@@ -27,7 +29,7 @@ const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: num
  *
  * Uso: npm run validate:site -- <urlListagem> [maxPaginas] [plataforma]
  * plataforma (opcional, default "praedium"): praedium | imoview | kenlo |
- * coruja | castel_digital | guess_tecnologia
+ * coruja | castel_digital | guess_tecnologia | imobzi | imobeal | microsistec
  */
 async function main() {
   const urlListagem = process.argv[2];

@@ -113,11 +113,11 @@
     "id": "alpha_imoveis_pg",
     "nome": "Alpha Imoveis PG",
     "urlBase": "https://alphaimoveispg.com.br",
-    "urlListagem": "https://alphaimoveispg.com.br",
+    "urlListagem": "https://alphaimoveispg.com.br/a-venda/praia-grande-sp",
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao)"
+    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/alpha_imoveis_pg.ts, motor generico Coruja Sistemas - chute do seed confirmado). urlListagem generica (/a-venda) retorna inventario de toda a rede (1583 imoveis, 1o card ja era um terreno em Cotia); trocada para /a-venda/praia-grande-sp (mesmo padrao de m2m_imoveis/tempone_imoveis_pg/dema_imoveis). Validado ao vivo: 420 imoveis em 22 paginas, 100% cidade=PRAIA GRANDE - SP, 0 externalId duplicado, 0 urlOriginal relativa. Ainda NAO executado contra o Neon de producao."
   },
   {
     "id": "tavares_e_polati_imoveis",
@@ -133,11 +133,11 @@
     "id": "feliciano_imoveis_praia_grande",
     "nome": "Feliciano Imoveis Praia Grande",
     "urlBase": "https://felicianoassociadosimoveis.com.br",
-    "urlListagem": "https://felicianoassociadosimoveis.com.br",
-    "plataforma": "Castel Digital",
+    "urlListagem": "https://felicianoassociadosimoveis.com.br/busca/nenhuma/praia-grande-sp?filters=eyJjaXR5IjoiOTUyNyIsInRvdXJfMzYwX3VybCI6bnVsbCwibWF4X3ByaWNlIjpudWxsLCJvcmRlciI6IjMifQ%3D%3D",
+    "plataforma": "Microsistec",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte / Boqueirao)"
+    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/feliciano_imoveis_praia_grande.ts, motor novo crawlers/src/platforms/microsistec.ts). Plataforma real e Microsistec, NAO Castel Digital como chutado no seed (rodape 'site para imobiliaria desenvolvido por Microsistec', fotos em vault.imob.online). Site responde 403 para o User-Agent padrao do Playwright - motor usa page.setExtraHTTPHeaders para contornar. urlListagem generica (/busca/nenhuma/qualquer-cidade) retornava 624 imoveis com 3 de outras cidades (Pedro de Toledo, Sao Vicente); trocada para URL dedicada com filtro city=9527 (Praia Grande). Validado ao vivo: 621 imoveis em 43 paginas (15/pagina), 100% cidade=Praia Grande, 0 externalId duplicado, 0 urlOriginal relativa. Ainda NAO executado contra o Neon de producao."
   },
   {
     "id": "micheletto_consultoria_imoveis",
