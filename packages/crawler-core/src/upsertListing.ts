@@ -369,10 +369,22 @@ export async function upsertListingsBatch(
 }
 
 /**
- * Marca como ausentes os anuncios ativos de um site que nao apareceram na
- * coleta atual. So passa a status 'removido' depois de mais de uma coleta
- * consecutiva sem encontrar (secao 6). Feito em lote (uma UPDATE e um INSERT
- * de eventos, em vez de um par de queries por anuncio ausente).
+ * Marca como ausentes (ou removidos) os anuncios de um site que nao
+ * apareceram na coleta atual:
+ *  - 1a coleta valida em que faltar: status='ausente', coletas_ausente_consecutivas=1.
+ *  - 2a coleta valida CONSECUTIVA em que continuar faltando: status='removido',
+ *    coletas_ausente_consecutivas=2.
+ * Reconsidera tanto 'ativo' quanto 'ausente' (bug corrigido: antes so
+ * reavaliava quem estava 'ativo', entao um anuncio ja marcado 'ausente'
+ * nunca mais era reavaliado e o contador travava em 1 para sempre, sem
+ * jamais chegar a 'removido'). 'removido' e terminal e nao e reavaliado -
+ * se reaparecer, quem reativa e upsertListingsBatch (reset para ativo/0
+ * independente do status anterior).
+ *
+ * Chamar so depois de confirmar que a coleta atual e valida (crawlSite ja
+ * aborta antes de chegar aqui se a coleta deu erro, 0 resultados ou
+ * quantidade suspeita - ver comentario em crawlSite) - isso e o que garante
+ * que uma coleta ruim nunca incrementa o contador.
  */
 export async function markAbsentListings(
   client: pg.PoolClient,
@@ -381,7 +393,7 @@ export async function markAbsentListings(
 ): Promise<{ marcadosAusentes: number }> {
   const stillActive = await client.query<{ id: string; coletas_ausente_consecutivas: number }>(
     `SELECT id, coletas_ausente_consecutivas FROM listings
-     WHERE site_id = $1 AND status = 'ativo' AND NOT (id = ANY($2::uuid[]))`,
+     WHERE site_id = $1 AND status IN ('ativo', 'ausente') AND NOT (id = ANY($2::uuid[]))`,
     [siteId, seenListingIds]
   );
 

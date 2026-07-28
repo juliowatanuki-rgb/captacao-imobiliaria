@@ -52,25 +52,33 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
   const siteCrawlRunId = siteCrawlRunInsert.rows[0].id;
 
   try {
-    const { rows: countRows } = await pool.query<{ count: string }>(
-      `SELECT count(*)::text FROM listings WHERE site_id = $1`,
+    const { rows: countRows } = await pool.query<{ total: string; rastreados: string }>(
+      `SELECT count(*)::text AS total,
+        count(*) FILTER (WHERE status IN ('ativo', 'ausente'))::text AS rastreados
+       FROM listings WHERE site_id = $1`,
       [siteId]
     );
-    const isInitialSeed = Number(countRows[0].count) === 0;
+    const isInitialSeed = Number(countRows[0].total) === 0;
+    const rastreadosAntesDaColeta = Number(countRows[0].rastreados);
 
     const scrapeResult = await scrape();
     const { listings, paginasVisitadas } = scrapeResult;
     const effectiveUrlOptions = scrapeResult.urlOptions ?? urlOptions;
 
     // Protecao contra falha silenciosa de scraping (ex: anti-bot, timeout de
-    // renderizacao): uma coleta que nao encontra NADA mas o site ja tem
-    // anuncios cadastrados nunca deve ser tratada como sucesso - isso
-    // marcaria todos os anuncios existentes como ausentes indevidamente.
-    // Melhor falhar alto (vira 'erro' no catch abaixo) e nao mexer no banco.
-    if (listings.length === 0 && !isInitialSeed) {
+    // renderizacao, bloqueio): uma coleta que encontra 0 anuncios ou uma
+    // quantidade anormalmente baixa (menos da metade do que ja esta
+    // rastreado como ativo/ausente) nunca deve ser tratada como sucesso -
+    // isso marcaria anuncios existentes como ausentes/removidos por uma
+    // falha temporaria, em vez de uma alta real. Melhor falhar alto (vira
+    // 'erro' no catch abaixo, sem gravar nada e sem incrementar nenhum
+    // contador de ausencia) do que arriscar dado incorreto.
+    const LIMIAR_QUEDA_SUSPEITA = 0.5;
+    if (!isInitialSeed && rastreadosAntesDaColeta > 0 && listings.length < rastreadosAntesDaColeta * LIMIAR_QUEDA_SUSPEITA) {
       throw new Error(
-        `coleta encontrou 0 anuncios mas o site "${siteId}" ja possui anuncios registrados - ` +
-          "abortando sem gravar para nao marcar anuncios existentes como ausentes (possivel falha de scraping)"
+        `coleta encontrou apenas ${listings.length} anuncio(s) para o site "${siteId}", bem abaixo do ` +
+          `esperado (${rastreadosAntesDaColeta} rastreado(s) atualmente) - abortando sem gravar para nao ` +
+          "marcar anuncios existentes como ausentes/removidos por uma falha de scraping (bloqueio, timeout, etc)"
       );
     }
 

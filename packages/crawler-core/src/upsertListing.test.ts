@@ -160,11 +160,11 @@ class FakeListingsClient {
       return { rows: [], rowCount: ids.length };
     }
 
-    // markAbsentListings: quem ainda esta ativo e nao foi visto
-    if (text.includes("status = 'ativo' AND NOT")) {
+    // markAbsentListings: quem ainda esta ativo/ausente e nao foi visto (removido e terminal, nao reavaliado)
+    if (text.includes("status IN ('ativo', 'ausente') AND NOT")) {
       const [siteId, seenIds] = params;
       const matched = this.rows.filter(
-        (r) => r.site_id === siteId && r.status === "ativo" && !seenIds.includes(r.id)
+        (r) => r.site_id === siteId && (r.status === "ativo" || r.status === "ausente") && !seenIds.includes(r.id)
       );
       return {
         rows: matched.map((r) => ({ id: r.id, coletas_ausente_consecutivas: r.coletas_ausente_consecutivas })),
@@ -340,20 +340,60 @@ describe("markAbsentListings (em lote)", () => {
     expect(client.events.filter((e) => e.listing_id === listingId && e.tipo === "marked_absent")).toHaveLength(1);
   });
 
-  it("passa para removido quando ja vinha de uma falta consecutiva (coletas_ausente_consecutivas=1)", async () => {
-    // Idem ao comportamento anterior a otimizacao (nao alterado aqui): esta
-    // funcao so reavalia quem esta com status='ativo', entao este cenario
-    // simula o estado que markAbsentListings encontraria numa 2a falta
-    // consecutiva antes de virar 'ausente' na rodada anterior.
+  it("passa para removido na 2a coleta CONSECUTIVA em que continuar faltando (fluxo real, sem simular estado)", async () => {
+    // Bug corrigido: antes markAbsentListings so reavaliava quem estava
+    // 'ativo', entao um anuncio ja 'ausente' nunca mais era reavaliado e o
+    // contador travava em 1 para sempre. Este teste chama a funcao 2 vezes
+    // seguidas de verdade (sem mexer no estado manualmente) para provar que
+    // a progressao ausente -> removido agora acontece na pratica.
     const listing = scraped({ externalId: "32" });
     await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
-    client.rows[0].coletas_ausente_consecutivas = 1;
+    const listingId = client.rows[0].id;
 
-    const result = await markAbsentListings(client as any, "site_a", []);
-    expect(result.marcadosAusentes).toBe(1);
+    const primeira = await markAbsentListings(client as any, "site_a", []);
+    expect(primeira.marcadosAusentes).toBe(1);
+    expect(client.rows[0].status).toBe("ausente");
+    expect(client.rows[0].coletas_ausente_consecutivas).toBe(1);
+
+    const segunda = await markAbsentListings(client as any, "site_a", []);
+    expect(segunda.marcadosAusentes).toBe(1);
     expect(client.rows[0].status).toBe("removido");
     expect(client.rows[0].coletas_ausente_consecutivas).toBe(2);
-    expect(client.events.some((e) => e.tipo === "marked_removed")).toBe(true);
+
+    expect(client.events.filter((e) => e.listing_id === listingId && e.tipo === "marked_absent")).toHaveLength(1);
+    expect(client.events.filter((e) => e.listing_id === listingId && e.tipo === "marked_removed")).toHaveLength(1);
+  });
+
+  it("nao reavalia quem ja esta 'removido' (terminal) mesmo continuando ausente", async () => {
+    const listing = scraped({ externalId: "33" });
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+    await markAbsentListings(client as any, "site_a", []); // -> ausente, 1
+    await markAbsentListings(client as any, "site_a", []); // -> removido, 2
+    client.events = [];
+
+    const terceira = await markAbsentListings(client as any, "site_a", []);
+    expect(terceira.marcadosAusentes).toBe(0);
+    expect(client.rows[0].status).toBe("removido");
+    expect(client.rows[0].coletas_ausente_consecutivas).toBe(2);
+    expect(client.events).toHaveLength(0);
+  });
+
+  it("reaparecer entre uma falta e outra reresenta o contador para 0 e volta a ativo", async () => {
+    const listing = scraped({ externalId: "34" });
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+    await markAbsentListings(client as any, "site_a", []); // -> ausente, 1
+
+    // reaparece na coleta seguinte
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, false);
+    expect(client.rows[0].status).toBe("ativo");
+    expect(client.rows[0].coletas_ausente_consecutivas).toBe(0);
+    expect(client.rows[0].ausente_desde).toBeNull();
+
+    // se sumir de novo depois de reaparecer, comeca a contagem do zero (1a falta, nao removido)
+    const result = await markAbsentListings(client as any, "site_a", []);
+    expect(result.marcadosAusentes).toBe(1);
+    expect(client.rows[0].status).toBe("ausente");
+    expect(client.rows[0].coletas_ausente_consecutivas).toBe(1);
   });
 
   it("nao marca ausente quem foi visto nesta coleta", async () => {
