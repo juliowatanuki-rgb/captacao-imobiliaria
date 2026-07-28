@@ -13,41 +13,41 @@
     "id": "plaza_imoveis",
     "nome": "Plaza Imoveis",
     "urlBase": "https://plazaimoveisempreendimentos.com",
-    "urlListagem": "https://plazaimoveisempreendimentos.com",
+    "urlListagem": "https://plazaimoveisempreendimentos.com/praia-grande/imoveis/venda",
     "plataforma": "GUESS Tecnologia",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (GUESS Tecnologia, ASP.NET WebForms com postback). Multi-tenant por cidade no path - a raiz do dominio sem /praia-grande resolve para o tenant de Marilia/SP. So 5 imoveis / 1 pagina para Praia Grande no momento da inspecao; paginacao alem da 1a pagina nao foi confirmada (produto normalmente usa __doPostBack, nao querystring simples). Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "igor_braga_imoveis",
     "nome": "Igor Braga Imoveis",
-    "urlBase": "https://igorbraga.com.br",
-    "urlListagem": "https://igorbraga.com.br",
+    "urlBase": "https://www.igorbraga.com.br",
+    "urlListagem": "https://www.igorbraga.com.br/venda/",
     "plataforma": "Castel Digital",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (Castel Digital). Paginacao por path (/venda/pagina/N), ~24/pagina, ~233 paginas - parece ser inventario de rede/nacional (~5571 imoveis), nao so Praia Grande; confirmar se da pra filtrar por cidade antes de crawlear tudo. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "m2m_imoveis",
     "nome": "M2M Imoveis (M&M Imoveis)",
     "urlBase": "https://m2mimoveis.com.br",
-    "urlListagem": "https://m2mimoveis.com.br",
+    "urlListagem": "https://m2mimoveis.com.br/a-venda",
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Caicara)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (Coruja Sistemas). Paginacao via ?pagina=N, ~20/pagina, ~1513 imoveis / ~76 paginas. Dados de cidade tem erros de digitacao no proprio site (PARIA GRANDE, PRAIA GARNDE etc) - normalizar com cautela. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "nova_casarao_imoveis",
     "nome": "Nova Casarao Imoveis",
-    "urlBase": "https://novacasarao.com.br",
-    "urlListagem": "https://novacasarao.com.br",
-    "plataforma": "Union Softwares",
+    "urlBase": "https://www.novacasarao.com.br",
+    "urlListagem": "https://www.novacasarao.com.br/imoveis/a-venda",
+    "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Guilhermina / Aviacao)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma real e Kenlo, NAO Union Softwares como chutado antes. Dominio sem www retorna erro 552 (usar www. sempre). Paginacao via ?pagina=N, ~12/pagina, ~3378 imoveis / ~282 paginas. Vagas/suites nao aparecem no card resumido. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "imigrantes_imoveis",

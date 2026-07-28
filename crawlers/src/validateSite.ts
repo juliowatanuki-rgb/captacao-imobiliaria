@@ -1,18 +1,41 @@
 import { chromium } from "playwright";
+import type { SiteCrawlerModule } from "./siteRegistry.js";
 import { createPraediumCrawler } from "./platforms/praedium.js";
+import { createImoviewCrawler } from "./platforms/imoview.js";
+import { createKenloCrawler } from "./platforms/kenlo.js";
+import { createCorujaCrawler } from "./platforms/coruja.js";
+import { createCastelDigitalCrawler } from "./platforms/castel_digital.js";
+import { createGuessTecnologiaCrawler } from "./platforms/guess_tecnologia.js";
+
+const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: number }) => SiteCrawlerModule> = {
+  praedium: createPraediumCrawler,
+  imoview: createImoviewCrawler,
+  kenlo: createKenloCrawler,
+  coruja: createCorujaCrawler,
+  castel_digital: createCastelDigitalCrawler,
+  guess_tecnologia: (config) => createGuessTecnologiaCrawler(config),
+};
 
 /**
- * Validacao ao vivo de um site Praedium SEM gravar nada no Neon (secao 18,
- * passo "validar antes de cadastrar"). Roda so algumas paginas para
- * confirmar paginacao, codigo do imovel, URLs e campos coletados.
+ * Validacao ao vivo de um site SEM gravar nada no Neon (secao 18, passo
+ * "validar antes de cadastrar"). Roda so algumas paginas para confirmar
+ * paginacao, codigo do imovel, URLs e campos coletados.
  *
- * Uso: npm run validate:site -- <urlListagem> [maxPaginas]
+ * Uso: npm run validate:site -- <urlListagem> [maxPaginas] [plataforma]
+ * plataforma (opcional, default "praedium"): praedium | imoview | kenlo |
+ * coruja | castel_digital | guess_tecnologia
  */
 async function main() {
   const urlListagem = process.argv[2];
   const maxPaginas = Number(process.argv[3] ?? 3);
+  const plataforma = process.argv[4] ?? "praedium";
   if (!urlListagem) {
-    console.error("Uso: npm run validate:site -- <urlListagem> [maxPaginas]");
+    console.error("Uso: npm run validate:site -- <urlListagem> [maxPaginas] [plataforma]");
+    process.exit(1);
+  }
+  const criar = CRIADORES[plataforma];
+  if (!criar) {
+    console.error(`plataforma desconhecida: "${plataforma}". Opcoes: ${Object.keys(CRIADORES).join(", ")}`);
     process.exit(1);
   }
 
@@ -22,7 +45,7 @@ async function main() {
   const page = await context.newPage();
 
   try {
-    const crawler = createPraediumCrawler({ urlListagem, maxPaginas });
+    const crawler = criar({ urlListagem, maxPaginas });
     const { listings, paginasVisitadas } = await crawler.scrape({ page, urlBase, urlListagem });
 
     console.log(`paginasVisitadas=${paginasVisitadas}`);
