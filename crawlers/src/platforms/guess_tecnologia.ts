@@ -18,15 +18,29 @@
 //   Ref.: {codigo}
 // </div>
 //
-// LIMITACAO IMPORTANTE: o site e multi-tenant por cidade no path (a raiz do
-// dominio sem "/praia-grande" resolve para outro tenant - ex: Marilia/SP) e a
-// paginacao alem da 1a pagina normalmente usa __doPostBack/UpdatePanel do
-// ASP.NET, nao uma URL navegavel direto. No momento da inspecao a listagem de
-// Praia Grande tinha so 5 imoveis / 1 pagina, entao este motor NAO implementa
-// paginacao via postback ainda - so le a pagina inicial informada. Se o
-// numero de imoveis crescer a ponto de precisar de mais paginas, sera preciso
-// simular o postback (clicar no link "proxima pagina" via Playwright) antes
-// de usar este motor em producao.
+// ATENCAO: o site e multi-tenant por cidade no path (a raiz do dominio sem
+// "/praia-grande" resolve para outro tenant - ex: a raiz "/imoveis/venda" sem
+// prefixo de cidade retorna erro de runtime ASP.NET, nao a listagem de outra
+// cidade). Use sempre a URL completa com o slug da cidade.
+//
+// PAGINACAO: CONFIRMADO em 2026-07-28 (nao e suposicao) que a listagem de
+// Praia Grande tem so 1 pagina / 5 imoveis no total, via inspecao ao vivo com
+// Playwright em plazaimoveisempreendimentos.com/praia-grande/imoveis/venda:
+//   - o proprio rodape da listagem exibe o texto "Exibindo página 1 de 1."
+//   - o contador de resultados mostra "5 imóveis"
+//   - os unicos links com __doPostBack na pagina sao de busca/filtro/comparacao
+//     (ctl00$CtrlPesquisa$BtnPesquisarImoveis, ContentPlaceHolder1$LnkCompareImoveis,
+//     ContentPlaceHolder1$DdlOrdenacao, checkboxes de refinamento de negocio/valor,
+//     ContentPlaceHolder1$DdlCidadesRefinamento) - nenhum deles e um controle de
+//     "proxima pagina" ou numero de pagina.
+// Por isso este motor le so a 1a pagina de propósito, nao por limitacao nao
+// implementada. Se no futuro "Exibindo página 1 de N" mostrar N > 1 (ex: se o
+// inventario de Praia Grande crescer, ou se este motor for reaproveitado para
+// outra cidade/tenant GUESS Tecnologia com mais imoveis), sera preciso
+// implementar paginacao via __doPostBack real (provavelmente um controle tipo
+// ContentPlaceHolder1$...Pager disparado ao clicar no numero da pagina/link
+// "Próxima", com espera do UpdatePanel recarregar) - o padrao acima nao foi
+// visto na pratica porque so havia 1 pagina para testar.
 
 import type { Page } from "playwright";
 import type { ScrapedListing } from "@captacao/shared";
@@ -92,6 +106,21 @@ export function createGuessTecnologiaCrawler(config: GuessTecnologiaConfig): Sit
 
       await page.goto(config.urlListagem, { waitUntil: "domcontentloaded" });
       await page.waitForSelector("div.item-imovel", { timeout: 15_000 }).catch(() => {});
+
+      // Guarda-corpo: este motor so foi validado (2026-07-28) para o caso "página 1
+      // de 1" (ver comentario no topo do arquivo). Se o rodape indicar mais de 1
+      // pagina, falha alto em vez de coletar silenciosamente so a 1a pagina -
+      // sinal de que a paginacao via __doPostBack precisa ser implementada.
+      const totalPaginas = await page.evaluate(() => {
+        const match = document.body.innerText.match(/Exibindo\s+p[aá]gina\s+\d+\s+de\s+(\d+)/i);
+        return match ? Number.parseInt(match[1], 10) : null;
+      });
+      if (totalPaginas !== null && totalPaginas > 1) {
+        throw new Error(
+          `guess_tecnologia: listagem indica ${totalPaginas} paginas, mas este motor so suporta 1 pagina ` +
+            `(paginacao via __doPostBack ainda nao implementada - ver comentario no topo do arquivo)`
+        );
+      }
 
       const cards = await extractCards(page);
       for (const card of cards) {
