@@ -82,22 +82,22 @@
   {
     "id": "group_house_fort",
     "nome": "Group House Fort",
-    "urlBase": "https://housefort.com.br",
-    "urlListagem": "https://housefort.com.br",
-    "plataforma": "Desenvolvimento proprio / W Imoveis",
+    "urlBase": "https://www.housefort.com.br",
+    "urlListagem": "https://www.housefort.com.br/buscar?availability=buy&order=neighborhood",
+    "plataforma": "Imobzi",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma real e Imobzi (Angular SPA/SSR), NAO 'Desenvolvimento proprio / W Imoveis' como chutado. Busca de rede/franquia nacional (~1414 imoveis, sem URL dedicada por cidade) - motor filtra pelo href de cada card (slug -praia-grande-). Validado ao vivo: 1366 imoveis de Praia Grande em 80 paginas, 100% com externalId/urlOriginal. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "praialar_imoveis",
     "nome": "Praialar Imoveis",
     "urlBase": "https://praialarimoveis.com.br",
-    "urlListagem": "https://praialarimoveis.com.br",
-    "plataforma": "Sub 100 Sistemas",
+    "urlListagem": "https://praialarimoveis.com.br/imoveis?modo=venda",
+    "plataforma": "Imobeal",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Boqueirao / Guilhermina)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma real e um front-end Next.js proprio sobre backend/CDN 'Imobeal', NAO 'Sub 100 Sistemas' como chutado. Paginacao via clique no botao Proxima (querystring ?page=N e ignorada pelo app). Mono-cidade - todos os imoveis validados sao de Praia Grande. Validado ao vivo: 997 imoveis em 84 paginas, bate com o contador do proprio site. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "morada_na_praia_imoveis",
