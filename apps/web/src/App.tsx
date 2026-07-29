@@ -47,40 +47,46 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <nav className="app-tabs">
-          <button
-            type="button"
-            className={aba === "home" ? "tab-active" : ""}
-            onClick={() => setAba("home")}
-          >
-            Home
-          </button>
-          <button
-            type="button"
-            className={aba === "anuncios" ? "tab-active" : ""}
-            onClick={() => setAba("anuncios")}
-          >
-            Anuncios novos
-          </button>
-          {auth.user.role === "admin" && (
+        <div className="app-header-left">
+          <div className="app-logo">
+            <span className="app-logo-mark">ESJW</span>
+            <span className="app-logo-nome">Captacao Imobiliaria</span>
+          </div>
+          <nav className="app-tabs">
             <button
               type="button"
-              className={aba === "logs" ? "tab-active" : ""}
-              onClick={() => setAba("logs")}
+              className={aba === "home" ? "tab-active" : ""}
+              onClick={() => setAba("home")}
             >
-              Logs de coleta
+              Home
             </button>
-          )}
-          {auth.user.role === "admin" && (
             <button
               type="button"
-              className={aba === "usuarios" ? "tab-active" : ""}
-              onClick={() => setAba("usuarios")}
+              className={aba === "anuncios" ? "tab-active" : ""}
+              onClick={() => setAba("anuncios")}
             >
-              Usuarios
+              Anuncios novos
             </button>
-          )}
-        </nav>
+            {auth.user.role === "admin" && (
+              <button
+                type="button"
+                className={aba === "logs" ? "tab-active" : ""}
+                onClick={() => setAba("logs")}
+              >
+                Logs de coleta
+              </button>
+            )}
+            {auth.user.role === "admin" && (
+              <button
+                type="button"
+                className={aba === "usuarios" ? "tab-active" : ""}
+                onClick={() => setAba("usuarios")}
+              >
+                Usuarios
+              </button>
+            )}
+          </nav>
+        </div>
         <div className="user-info">
           <span>{auth.user.nome}</span>
           <button type="button" onClick={handleLogout}>

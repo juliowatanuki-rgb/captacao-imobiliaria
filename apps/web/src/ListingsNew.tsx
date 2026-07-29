@@ -77,9 +77,13 @@ export default function ListingsNew({ token }: { token: string }) {
     const conteudo = "﻿" + linhas.join("\r\n");
     const blob = new Blob([conteudo], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, "0");
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const ano = hoje.getFullYear();
     const a = document.createElement("a");
     a.href = url;
-    a.download = "anuncios-novos.csv";
+    a.download = `anuncios-novos-${dia}-${mes}-${ano}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
