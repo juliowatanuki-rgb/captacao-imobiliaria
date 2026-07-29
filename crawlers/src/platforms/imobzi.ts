@@ -177,8 +177,15 @@ export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
         for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA; tentativa++) {
           await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
           await page.waitForSelector("imobzi-property-card, imobzi-grid-card", { timeout: 15_000 }).catch(() => {});
+          // O primeiro paint pode ser o HTML de SSR ainda nao hidratado pelo
+          // Angular (nos sites com o template <imobzi-grid-card> o SSR chega
+          // a servir temporariamente o custom-element antigo
+          // <imobzi-property-card> sem href/bairro preenchidos, ate a
+          // hidratacao no cliente trocar pelo conteudo final) - uma pequena
+          // espera aqui evita capturar esse estado transitorio incompleto.
+          await page.waitForTimeout(1_000);
           cards = await extractCards(page);
-          if (cards.length > 0) break;
+          if (cards.length > 0 && cards.every((c) => c.href)) break;
           if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
             await page.waitForTimeout(1_000 * tentativa);
           }

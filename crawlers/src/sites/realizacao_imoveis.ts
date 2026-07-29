@@ -111,7 +111,11 @@ async function extractCards(page: Page): Promise<RawCard[]> {
       }
       const alt = card.querySelector("img")?.getAttribute("alt") ?? null;
       const tituloH2 = card.querySelector("h2")?.textContent?.replace(/\s+/g, " ").trim() ?? null;
-      const bairro = card.querySelector("div.col-sm-8 p, div.col-xs-12 p")?.textContent?.trim() ?? null;
+      // "h2 + p" (o paragrafo logo apos o titulo) e o bairro - selecionar por
+      // classe (ex.: "div.col-sm-8 p") e pouco confiavel aqui: o <header> do
+      // card tambem carrega a classe "col-xs-12" e o preco acaba entrando no
+      // match antes do bairro.
+      const bairro = card.querySelector("h2 + p")?.textContent?.trim() ?? null;
       const precoTexto = card.querySelector("header p")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
       const itens = Array.from(card.querySelectorAll("ul > li.small-item")).map((li) => ({
         rotulo: li.querySelector("span")?.textContent?.trim() ?? null,
