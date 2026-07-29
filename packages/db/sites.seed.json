@@ -17,7 +17,7 @@
     "plataforma": "GUESS Tecnologia",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (GUESS Tecnologia, ASP.NET WebForms com postback). Multi-tenant por cidade no path - a raiz do dominio sem /praia-grande resolve para o tenant de Marilia/SP. CONFIRMADO (nao suposicao): so 5 imoveis / 1 pagina para Praia Grande - o rodape mostra 'Exibindo pagina 1 de 1' e nenhum __doPostBack da pagina e controle de paginacao. Motor tem trava em runtime que falha alto se isso mudar para N>1 paginas. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-28 (1a+2a coleta confirmadas contra o Neon, ver commit 6ea6fda). Plataforma confirmada (GUESS Tecnologia, ASP.NET WebForms com postback). Multi-tenant por cidade no path - a raiz do dominio sem /praia-grande resolve para o tenant de Marilia/SP. CONFIRMADO (nao suposicao): so 5 imoveis / 1 pagina para Praia Grande - o rodape mostra 'Exibindo pagina 1 de 1' e nenhum __doPostBack da pagina e controle de paginacao. Motor tem trava em runtime que falha alto se isso mudar para N>1 paginas."
   },
   {
     "id": "igor_braga_imoveis",
@@ -27,7 +27,7 @@
     "plataforma": "Castel Digital",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma confirmada (Castel Digital). urlListagem antiga (/venda/) trazia o inventario de rede nacional (~5571 imoveis) - trocada para a URL dedicada por cidade (/venda/sao-paulo/praia-grande/), mesmo motor/paginacao (/pagina/N, ~24/pagina). Validado ao vivo ponta a ponta: 5563 imoveis, 233 paginas, 0 ocorrencias de cidade != Praia Grande. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-28 (1a+2a coleta confirmadas contra o Neon, ver commit 6ea6fda). Plataforma confirmada (Castel Digital). urlListagem antiga (/venda/) trazia o inventario de rede nacional (~5571 imoveis) - trocada para a URL dedicada por cidade (/venda/sao-paulo/praia-grande/), mesmo motor/paginacao (/pagina/N, ~24/pagina). Validado ao vivo ponta a ponta: 5563 imoveis, 233 paginas, 0 ocorrencias de cidade != Praia Grande."
   },
   {
     "id": "m2m_imoveis",
@@ -57,7 +57,7 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/imigrantes_imoveis.ts, motor generico Praedium). Plataforma real e Praedium, nao Imoview como chutado antes. ~1656 imoveis / 26 por pagina / ~64 paginas. Codigo do imovel vem no final da URL (-id-N). Ainda NAO executado contra o Neon de producao - aguardando validacao manual."
+    "observacoes": "Esteira validada em 2026-07-28 (1a+2a coleta confirmadas contra o Neon, ver commit 6ea6fda). Crawler em crawlers/src/sites/imigrantes_imoveis.ts, motor generico Praedium. Plataforma real e Praedium, nao Imoview como chutado antes. ~1656 imoveis / 26 por pagina / ~64 paginas. Codigo do imovel vem no final da URL (-id-N)."
   },
   {
     "id": "tempone_imoveis_pg",
@@ -67,7 +67,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/tempone_imoveis_pg.ts, motor generico Coruja Sistemas, mesmo motor de m2m_imoveis - confirma o chute do seed). URL dedicada de Praia Grande (mesmo padrao de igor_braga_imoveis): /a-venda/praia-grande-sp. Validado ao vivo em 2026-07-28: 460 imoveis em 24 paginas (20/pagina, ultima com 0 - paginacao para sozinha quando acaba), 100% com externalId e urlOriginal, 100% com preco, cidade sempre Praia Grande (variacoes de grafia do proprio site: 'PRAIA GRANDE - SP' / 'PRAIA GRANDE - SAO PAULO' / 'PRAIA GRANDE - SÃO PAULO'). Ainda NAO executado contra o Neon de producao - aguardando validacao final antes de ativar coleta agendada."
+    "observacoes": "Esteira validada em 2026-07-29. Crawler em crawlers/src/sites/tempone_imoveis_pg.ts, motor generico Coruja Sistemas. URL dedicada de Praia Grande: /a-venda/praia-grande-sp. A validacao inicial de 2026-07-28 (460 imoveis) foi feita ANTES do fix de paginacao do Coruja Sistemas (commits ec5161c/053f19a) e subestimava o total por parada prematura. 1a coleta real (2026-07-29, ja com o motor corrigido): 1541 novos. 2a coleta de confirmacao: 1541 encontrados, 0 novos, 0 atualizados, 0 ausentes, 0 duplicados, 100% com externalId/urlOriginal/preco, cidade sempre Praia Grande (variacoes de grafia do proprio site)."
   },
   {
     "id": "dema_imoveis",
@@ -127,7 +127,7 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/tavares_e_polati_imoveis.ts, motor generico Praedium). Plataforma real e Praedium, nao Imoview como chutado antes. ~412 imoveis / 26 por pagina / ~16 paginas. Codigo do imovel vem no final da URL (-id-N). Ainda NAO executado contra o Neon de producao - aguardando validacao manual."
+    "observacoes": "Esteira validada em 2026-07-28 (1a+2a coleta confirmadas contra o Neon, ver commit 6ea6fda). Crawler em crawlers/src/sites/tavares_e_polati_imoveis.ts, motor generico Praedium. Plataforma real e Praedium, nao Imoview como chutado antes. ~412 imoveis / 26 por pagina / ~16 paginas. Codigo do imovel vem no final da URL (-id-N)."
   },
   {
     "id": "feliciano_imoveis_praia_grande",
