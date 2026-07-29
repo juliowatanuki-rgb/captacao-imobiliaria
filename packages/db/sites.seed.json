@@ -137,7 +137,7 @@
     "plataforma": "Microsistec",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/feliciano_imoveis_praia_grande.ts, motor novo crawlers/src/platforms/microsistec.ts). Plataforma real e Microsistec, NAO Castel Digital como chutado no seed (rodape 'site para imobiliaria desenvolvido por Microsistec', fotos em vault.imob.online). Site responde 403 para o User-Agent padrao do Playwright - motor usa page.setExtraHTTPHeaders para contornar. urlListagem generica (/busca/nenhuma/qualquer-cidade) retornava 624 imoveis com 3 de outras cidades (Pedro de Toledo, Sao Vicente); trocada para URL dedicada com filtro city=9527 (Praia Grande). Validado ao vivo: 621 imoveis em 43 paginas (15/pagina), 100% cidade=Praia Grande, 0 externalId duplicado, 0 urlOriginal relativa. Ainda NAO executado contra o Neon de producao."
+    "observacoes": "Esteira validada em 2026-07-29. Motor novo crawlers/src/platforms/microsistec.ts. Plataforma real e Microsistec, NAO Castel Digital como chutado no seed. Site responde 403 para o User-Agent padrao do Playwright - motor usa page.setExtraHTTPHeaders para contornar. urlListagem generica retornava imoveis de outras cidades; trocada para URL dedicada com filtro city=9527 (Praia Grande). 1a varredura: 621 imoveis (base inicial, bate com 2 validacoes ao vivo seguidas). 2a varredura de confirmacao: 621 encontrados, 0 novos, 0 atualizados, 0 ausentes."
   },
   {
     "id": "micheletto_consultoria_imoveis",
