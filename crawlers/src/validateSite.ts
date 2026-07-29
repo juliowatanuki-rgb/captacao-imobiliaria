@@ -11,6 +11,7 @@ import { createImobealCrawler } from "./platforms/imobeal.js";
 import { createMicrosistecCrawler } from "./platforms/microsistec.js";
 import { createNidoCrawler } from "./platforms/nido.js";
 import { createArboImoveisCrawler } from "./platforms/arbo_imoveis.js";
+import { createUsoSoftwaresCrawler } from "./platforms/uso_softwares.js";
 
 const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: number }) => SiteCrawlerModule> = {
   praedium: createPraediumCrawler,
@@ -24,6 +25,7 @@ const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: num
   microsistec: createMicrosistecCrawler,
   nido: createNidoCrawler,
   arbo_imoveis: createArboImoveisCrawler,
+  uso_softwares: createUsoSoftwaresCrawler,
 };
 
 /**

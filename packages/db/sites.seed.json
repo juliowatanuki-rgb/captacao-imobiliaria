@@ -143,11 +143,11 @@
     "id": "micheletto_consultoria_imoveis",
     "nome": "Micheletto Consultoria de Imoveis",
     "urlBase": "https://michelettoconsimoveis.com.br",
-    "urlListagem": "https://michelettoconsimoveis.com.br",
-    "plataforma": "Tecimob",
+    "urlListagem": "https://michelettoconsimoveis.com.br/imoveis/sp/praia-grande/",
+    "plataforma": "USO (Union Softwares)",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (abrangencia municipal)"
+    "observacoes": "Esteira validada em 2026-07-29. Plataforma real e 'USO'/'Agiliza' (produto da Union Softwares, CDN cdnuso.com / cdn.uso.com.br, cadastro via agilizaunion.com.br/app), NAO Tecimob como chutado antes. A URL '/imoveis' (chute original) e busca nacional sem filtro de cidade (10197 imoveis, majoritariamente SP capital/interior) - o filtro de cidade e um dropdown Semantic UI (nao <select> nativo) que ao buscar reescreve a URL para '/imoveis/{uf}/{cidade-slug}/'. Trocada para a URL dedicada '/imoveis/sp/praia-grande/'. Motor novo implementado em platforms/uso_softwares.ts (paginacao via URL /pagina-N/, sem area util nos cards resumidos). 1a e 2a varredura de confirmacao: 4 imoveis em ambas (1 pagina, pagina-2 retorna 0), 100% cidade=Praia Grande (grafias 'PRAIA GRANDE'/'Praia Grande' do proprio site), 0 externalId ausente/duplicado."
   },
   {
     "id": "damasco_imoveis",
@@ -173,11 +173,11 @@
     "id": "realizacao_imoveis",
     "nome": "Realizacao Imoveis",
     "urlBase": "https://realizacoesimoveismongagua.com.br",
-    "urlListagem": "https://realizacoesimoveismongagua.com.br",
-    "plataforma": "Vista Software",
+    "urlListagem": "https://realizacoesimoveismongagua.com.br/p-imoveis-venda-praia_grande-ordenacao-7.html",
+    "plataforma": "Microsistec",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Centro / Ocian)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Nome/dominio sugerem Mongagua, mas o site cobre Praia Grande de verdade (rede regional) - dropdown de cidade tem Praia Grande com inventario real. Plataforma real e Microsistec (NAO Vista Software como chutado), mas com template de card diferente do ja usado por feliciano_imoveis_praia_grande - implementado como scraper autocontido proprio (nao reaproveita platforms/microsistec.ts) para nao duplicar/conflitar; oportunidade futura de unificar os 2 templates no motor. URL de listagem filtrada por Venda+Praia Grande. Validado ao vivo 2x seguidas: 155 imoveis, 11 paginas, identico nas duas execucoes, 0 cidade != Praia Grande. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "nova_kennedy",
