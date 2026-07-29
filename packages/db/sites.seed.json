@@ -218,5 +218,95 @@
     "ativo": true,
     "isAgregador": false,
     "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e USO/Agiliza (Union Softwares, confirmado pelo CDN cdn.uso.com.br), NAO 'Coruja Sistemas' como chutado na planilha original. Template visual 'novo' do produto, diferente do ja cadastrado (cards '.link_resultado' com classes 'titulo_novo'/'valor_novo') - motor proprio em crawlers/src/sites/spinola_consultoria_imobiliaria.ts em vez de reaproveitar createUsoSoftwaresCrawler. Inventario muito pequeno no momento: so 2 imoveis em Praia Grande. Vale manter cadastrado mesmo com pouco volume - pode crescer. 1a coleta confirmada contra o Neon em 2026-07-29: 2 encontrados, 2 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "realize_inteligencia_imobiliaria",
+    "nome": "Realize Inteligencia Imobiliaria",
+    "urlBase": "https://realizeimoveispg.com.br",
+    "urlListagem": "https://realizeimoveispg.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Imoview' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 52 encontrados, 52 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "marco_hottz_imoveis",
+    "nome": "Marco Hottz Imoveis",
+    "urlBase": "https://marcohottzimoveis.com.br",
+    "urlListagem": "https://marcohottzimoveis.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Union Softwares' como chutado na planilha original. Inventario declarado pelo site: 794 imoveis. 1a coleta confirmada contra o Neon em 2026-07-29: 380 encontrados, 380 novos, 0 erro (menos que os 794 declarados - paginacao Praedium tem instabilidade conhecida de rate-limit/anti-bot, ver observacao de all_prime_imoveis). Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "alo_imoveis_baixada",
+    "nome": "Alo Imoveis Baixada",
+    "urlBase": "https://aloimoveisbaixada.com.br",
+    "urlListagem": "https://aloimoveisbaixada.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Kenlo' como chutado na planilha original. Inventario declarado pelo site: 850 imoveis. 1a tentativa de coleta voltou 0 encontrados (bloqueio anti-bot momentaneo, mesma instabilidade conhecida do motor Praedium); repetida na sequencia com sucesso: 220 encontrados, 220 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "aetherna_empreendimentos",
+    "nome": "Aetherna Empreendimentos",
+    "urlBase": "https://aetherna.emp.br",
+    "urlListagem": "https://aetherna.emp.br/a-venda/praia-grande-sp",
+    "plataforma": "Coruja Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts), NAO 'Union Softwares' como chutado na planilha original. Site exibe 'MARIO J. DA S. NETO CONSULTOR' como razao social por tras da marca Aetherna - mesmo site, sem duplicidade. 1a coleta confirmada contra o Neon em 2026-07-29: 1363 encontrados, 1363 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "quintal_de_areia_imoveis",
+    "nome": "Quintal de Areia Imoveis",
+    "urlBase": "https://www.quintaldeareiaimoveis.com.br",
+    "urlListagem": "https://www.quintaldeareiaimoveis.com.br/a-venda/praia-grande-sp",
+    "plataforma": "Coruja Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts), NAO 'Vista Software' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1249 encontrados, 1249 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "marise_gomes_moreira_imoveis",
+    "nome": "Marise Gomes Moreira Imoveis",
+    "urlBase": "https://www.mgmsolucoesimobiliaria.com.br",
+    "urlListagem": "https://www.mgmsolucoesimobiliaria.com.br/a-venda/praia-grande-sp",
+    "plataforma": "Coruja Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts, mesmo hash de app.js que aetherna_empreendimentos e debora_santos_imoveis - provavelmente mesma rede/parceria de anuncios), NAO 'Tecimob' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1737 encontrados, 1737 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "debora_santos_imoveis",
+    "nome": "Debora Santos Imoveis",
+    "urlBase": "https://www.deborasantosimoveis.com.br",
+    "urlListagem": "https://www.deborasantosimoveis.com.br/a-venda/praia-grande-sp",
+    "plataforma": "Coruja Sistemas",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts) - confirma o chute da planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1366 encontrados, 1366 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "msa_investimento_imobiliario",
+    "nome": "MSA Investimento Imobiliario (Kadri Imoveis)",
+    "urlBase": "https://www.msainvestimentoimobiliario.com.br",
+    "urlListagem": "https://www.msainvestimentoimobiliario.com.br/imoveis/a-venda/praia-grande",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts). O site opera sob a marca 'Kadri Imoveis' (dominio kadriimoveis.com.br redireciona para este mesmo dominio/conteudo) - titulo da pagina mostra 'Kadri Imoveis - Imobiliaria em Praia Grande'. 1a coleta confirmada contra o Neon em 2026-07-29: 1081 encontrados, 1081 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "bueno_santos_imoveis",
+    "nome": "Bueno Santos Imoveis",
+    "urlBase": "https://www.buenosantosimoveis.com.br",
+    "urlListagem": "https://www.buenosantosimoveis.com.br/imoveis/venda/sp/praia-grande",
+    "plataforma": "Nido",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Nido (meta author 'Nido Tecnologia', mesmo CDN objectstorage.sa-saopaulo-1.oraclecloud.com), NAO 'Coruja Sistemas' como chutado na planilha original. Template 'box-5' (variante do template 'box-7' usado em safira_imoveis_praia_grande) - motor compartilhado em platforms/nido_variant.ts. 1a coleta confirmada contra o Neon em 2026-07-29: 198 encontrados, 198 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
   }
 ]
