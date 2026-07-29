@@ -51,6 +51,38 @@ export interface ManagedUser {
   criado_em: string;
 }
 
+export interface UltimaSincronizacao {
+  id: string;
+  inicio_em: string;
+  fim_em: string | null;
+  status: string;
+}
+
+export interface DashboardSite {
+  site_id: string;
+  site_nome: string;
+  status: string | null;
+  fim_em: string | null;
+  mensagem_erro: string | null;
+}
+
+export interface CaptacaoPorDia {
+  dia: string;
+  total: number;
+}
+
+export interface RankingSite {
+  site_nome: string;
+  total: number;
+}
+
+export interface DashboardData {
+  ultimaSincronizacao: UltimaSincronizacao | null;
+  sites: DashboardSite[];
+  captacaoPorDia: CaptacaoPorDia[];
+  ranking: RankingSite[];
+}
+
 export interface NewListing {
   id: string;
   titulo: string | null;
@@ -97,6 +129,14 @@ export function fetchNewListings(token: string) {
 
 export function fetchCrawlRuns(token: string) {
   return request<{ crawlRuns: CrawlRunSummary[] }>("/api/crawl-runs", token);
+}
+
+export function fetchDashboard(token: string, from?: string, to?: string) {
+  const params = new URLSearchParams();
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
+  const query = params.toString();
+  return request<DashboardData>(`/api/dashboard${query ? `?${query}` : ""}`, token);
 }
 
 export function fetchCrawlRunDetail(token: string, id: string) {

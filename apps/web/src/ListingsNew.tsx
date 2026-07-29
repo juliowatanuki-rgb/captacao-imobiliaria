@@ -52,15 +52,37 @@ export default function ListingsNew({ token }: { token: string }) {
     });
   }
 
+  function exportarParaExcel() {
+    const linhas = [
+      "id;link",
+      ...listings.map((l, i) => `${i + 1};${l.url_final ?? l.url_original}`),
+    ];
+    const conteudo = "﻿" + linhas.join("\r\n");
+    const blob = new Blob([conteudo], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "anuncios-novos.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (loading) return <p className="status-msg">Carregando anuncios novos...</p>;
   if (error) return <p className="status-msg error">{error}</p>;
   if (listings.length === 0) return <p className="status-msg">Nenhum anuncio novo para analisar no momento.</p>;
 
   return (
-    <div className="listings">
-      {listings.map((listing) => (
+    <div className="listings-page">
+      <div className="listings-toolbar">
+        <button type="button" onClick={exportarParaExcel}>
+          Exportar para Excel
+        </button>
+      </div>
+      <div className="listings">
+      {listings.map((listing, index) => (
         <article key={listing.id} className="listing-card">
           <header>
+            <span className="listing-id">#{index + 1}</span>
             <span className="site-nome">{listing.site_nome}</span>
             <span className="data">{new Date(listing.primeira_captura_em).toLocaleString("pt-BR")}</span>
           </header>
@@ -117,6 +139,7 @@ export default function ListingsNew({ token }: { token: string }) {
           </div>
         </article>
       ))}
+      </div>
     </div>
   );
 }

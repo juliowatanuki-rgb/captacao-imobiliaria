@@ -1,11 +1,12 @@
 import { useState } from "react";
 import Login from "./Login.js";
+import Dashboard from "./Dashboard.js";
 import ListingsNew from "./ListingsNew.js";
 import CrawlRuns from "./CrawlRuns.js";
 import Users from "./Users.js";
 import type { AuthUser } from "./api.js";
 
-type Aba = "anuncios" | "logs" | "usuarios";
+type Aba = "home" | "anuncios" | "logs" | "usuarios";
 
 const STORAGE_KEY = "captacao_auth";
 
@@ -26,7 +27,7 @@ function loadStoredAuth(): StoredAuth | null {
 
 export default function App() {
   const [auth, setAuth] = useState<StoredAuth | null>(loadStoredAuth);
-  const [aba, setAba] = useState<Aba>("anuncios");
+  const [aba, setAba] = useState<Aba>("home");
 
   function handleLogin(token: string, user: AuthUser) {
     const stored = { token, user };
@@ -49,18 +50,27 @@ export default function App() {
         <nav className="app-tabs">
           <button
             type="button"
+            className={aba === "home" ? "tab-active" : ""}
+            onClick={() => setAba("home")}
+          >
+            Home
+          </button>
+          <button
+            type="button"
             className={aba === "anuncios" ? "tab-active" : ""}
             onClick={() => setAba("anuncios")}
           >
             Anuncios novos
           </button>
-          <button
-            type="button"
-            className={aba === "logs" ? "tab-active" : ""}
-            onClick={() => setAba("logs")}
-          >
-            Logs de coleta
-          </button>
+          {auth.user.role === "admin" && (
+            <button
+              type="button"
+              className={aba === "logs" ? "tab-active" : ""}
+              onClick={() => setAba("logs")}
+            >
+              Logs de coleta
+            </button>
+          )}
           {auth.user.role === "admin" && (
             <button
               type="button"
@@ -79,8 +89,9 @@ export default function App() {
         </div>
       </header>
       <main>
+        {aba === "home" && <Dashboard token={auth.token} />}
         {aba === "anuncios" && <ListingsNew token={auth.token} />}
-        {aba === "logs" && <CrawlRuns token={auth.token} />}
+        {aba === "logs" && auth.user.role === "admin" && <CrawlRuns token={auth.token} />}
         {aba === "usuarios" && auth.user.role === "admin" && <Users token={auth.token} />}
       </main>
     </div>

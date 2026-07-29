@@ -18,7 +18,7 @@ export default withHandler(async (req: VercelRequest, res: VercelResponse) => {
      FROM listings l
      JOIN monitored_sites s ON s.id = l.site_id
      WHERE l.analysis_status = 'pendente' AND l.status = 'ativo'
-     ORDER BY l.primeira_captura_em ASC`
+     ORDER BY l.primeira_captura_em DESC`
   );
 
   res.status(200).json({ listings: rows });
