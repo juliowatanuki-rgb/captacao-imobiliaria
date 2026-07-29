@@ -107,7 +107,7 @@
     "plataforma": "Nido",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e 'Nido' (login app.nidoadm.com.br no header, marca nido.com.br no rodape, CDN objectstorage.sa-saopaulo-1.oraclecloud.com), NAO 'Kenlo' como chutado - motor novo criado em crawlers/src/platforms/nido.ts. A URL /imoveis/venda/sp/praia-grande ja e a listagem dedicada da cidade (paginacao por path /N). Validado ao vivo 3x seguidas (2 validacoes completas + 1 script de estatisticas full): sempre 1737 imoveis, 37 paginas com conteudo (48/pagina, ultima com 9), 100% cidade=Praia Grande, 0 externalId duplicado, 24 bairros distintos, sem preco/area faltando. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-29. Plataforma real e 'Nido' (login app.nidoadm.com.br no header, marca nido.com.br no rodape, CDN objectstorage.sa-saopaulo-1.oraclecloud.com), NAO 'Kenlo' como chutado - motor novo criado em crawlers/src/platforms/nido.ts. A URL /imoveis/venda/sp/praia-grande ja e a listagem dedicada da cidade (paginacao por path /N). Validado ao vivo varias vezes (dry-run + 2 coletas reais seguidas contra o Neon): sempre 1737 imoveis, 37 paginas com conteudo (48/pagina, ultima com 9), 100% cidade=Praia Grande, 0 externalId duplicado, 24 bairros distintos, sem preco/area faltando. 1a coleta real: 1737 novos (base inicial). 2a coleta de confirmacao: 1737 encontrados, 0 novos, 0 atualizados, 0 ausentes."
   },
   {
     "id": "alpha_imoveis_pg",
@@ -167,7 +167,7 @@
     "plataforma": "Imobzi",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Esteira validada em 2026-07-29: crawler real (crawlers/src/sites/aline_caetano_imoveis.ts) usa o motor generico Imobzi (platforms/imobzi.ts), agora atualizado para reconhecer tambem o template mais novo <imobzi-grid-card> deste site (o chute original 'Desenvolvimento proprio' estava errado). 1855 imoveis / 104 paginas (18 por pagina), site ja filtra por &city=Praia%20Grande, motor reforca com filtro de href como 2a camada."
+    "observacoes": "Esteira validada em 2026-07-29: crawler real (crawlers/src/sites/aline_caetano_imoveis.ts) usa o motor generico Imobzi (platforms/imobzi.ts), agora atualizado para reconhecer tambem o template mais novo <imobzi-grid-card> deste site (o chute original 'Desenvolvimento proprio' estava errado). ~1852 imoveis / 104 paginas (18 por pagina), site ja filtra por &city=Praia%20Grande, motor reforca com filtro de href como 2a camada. O site repete alguns imoveis entre paginas (364 duplicados na 1a coleta, absorvidos pelo unique(site_id, identity_key) sem gerar erro - contador anuncios_duplicados_coleta cobre esse caso). 1a coleta real contra o Neon: 1852 encontrados, 1488 novos (base inicial), 0 atualizados, 0 ausentes. 2a coleta de confirmacao: 1852 encontrados, 0 novos, 1 atualizado (variacao organica de preco), 0 ausentes."
   },
   {
     "id": "realizacao_imoveis",
@@ -177,7 +177,7 @@
     "plataforma": "Microsistec",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Nome/dominio sugerem Mongagua, mas o site cobre Praia Grande de verdade (rede regional) - dropdown de cidade tem Praia Grande com inventario real. Plataforma real e Microsistec (NAO Vista Software como chutado), mas com template de card diferente do ja usado por feliciano_imoveis_praia_grande - implementado como scraper autocontido proprio (nao reaproveita platforms/microsistec.ts) para nao duplicar/conflitar; oportunidade futura de unificar os 2 templates no motor. URL de listagem filtrada por Venda+Praia Grande. Validado ao vivo 2x seguidas: 155 imoveis, 11 paginas, identico nas duas execucoes, 0 cidade != Praia Grande. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-29. Nome/dominio sugerem Mongagua, mas o site cobre Praia Grande de verdade (rede regional) - dropdown de cidade tem Praia Grande com inventario real. Plataforma real e Microsistec (NAO Vista Software como chutado), mas com template de card diferente do ja usado por feliciano_imoveis_praia_grande - implementado como scraper autocontido proprio (nao reaproveita platforms/microsistec.ts) para nao duplicar/conflitar; oportunidade futura de unificar os 2 templates no motor. URL de listagem filtrada por Venda+Praia Grande. Validado ao vivo varias vezes (dry-run + 2 coletas reais seguidas contra o Neon): sempre 155 imoveis, 11 paginas, 0 cidade != Praia Grande. 1a coleta real: 155 novos (base inicial). 2a coleta de confirmacao: 155 encontrados, 0 novos, 0 atualizados, 0 ausentes."
   },
   {
     "id": "nova_kennedy",
