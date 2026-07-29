@@ -31,8 +31,12 @@
 // primeiro card da lista mudar antes de extrair a proxima pagina.
 // externalId: os primeiros 8 caracteres do slug em /imoveis/{id8}-{...}
 // (nanoid - pode conter "-" e "_", entao NAO dividir por hifen).
-// Cidade: todos os cards observados vem como "Praia Grande - {Bairro}" -
-// este site parece ser mono-cidade (sem necessidade de filtro de cidade).
+// Cidade: NAO e mono-cidade (suposicao inicial errada, corrigida em
+// 2026-07-29 apos 1a coleta real trazer 68/997 imoveis de outras cidades do
+// litoral - Mongagua, Itanhaem, Sao Vicente, Santos, Bertioga, etc., o site
+// cobre "Praia Grande e todo o litoral de SP"). Filtro definitivo usa o
+// texto de localizacao do card ("{Cidade} - {Bairro}"), descartando
+// qualquer imovel cuja cidade nao comece com "Praia Grande".
 
 import type { Page } from "playwright";
 import type { ScrapedListing } from "@captacao/shared";
@@ -100,6 +104,10 @@ function extractLocalizacao(localizacao: string | null): { cidade: string | null
   return { cidade: partes[0] || null, bairro: partes[1] || null };
 }
 
+function isPraiaGrande(cidade: string | null): boolean {
+  return /^praia grande/i.test(cidade ?? "");
+}
+
 export interface ImobealConfig {
   urlListagem: string;
   maxPaginas?: number;
@@ -123,6 +131,7 @@ export function createImobealCrawler(config: ImobealConfig): SiteCrawlerModule {
         for (const card of cards) {
           if (!card.href) continue;
           const { cidade, bairro } = extractLocalizacao(card.localizacao);
+          if (!isPraiaGrande(cidade)) continue; // fora do escopo (litoral de SP alem de Praia Grande)
 
           listings.push({
             externalId: extractExternalId(card.href),

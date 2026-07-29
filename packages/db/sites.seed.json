@@ -97,7 +97,7 @@
     "plataforma": "Imobeal",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma real e um front-end Next.js proprio sobre backend/CDN 'Imobeal', NAO 'Sub 100 Sistemas' como chutado. Paginacao via clique no botao Proxima (querystring ?page=N e ignorada pelo app). Mono-cidade - todos os imoveis validados sao de Praia Grande. Validado ao vivo: 997 imoveis em 84 paginas, bate com o contador do proprio site. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-29. Plataforma real e um front-end Next.js proprio sobre backend/CDN 'Imobeal', NAO 'Sub 100 Sistemas' como chutado. Paginacao via clique no botao Proxima (querystring ?page=N e ignorada pelo app). NAO e mono-cidade como se supunha em 2026-07-28 - o site cobre 'Praia Grande e todo o litoral de SP' (997 imoveis no total do site, mas 68 de outras cidades como Mongagua/Itanhaem/Sao Vicente); motor corrigido para filtrar pelo texto de localizacao do card. 1a+2a coleta confirmadas contra o Neon (ja com o filtro): 929 = 929, 0 duplicados, 1/929 sem preco (provavel 'sob consulta'), 100% Praia Grande."
   },
   {
     "id": "morada_na_praia_imoveis",

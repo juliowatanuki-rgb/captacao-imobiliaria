@@ -5,9 +5,10 @@
 // original tinha "Sub 100 Sistemas" como chute, nao confirmado - nao bateu
 // com nenhuma plataforma ja conhecida.
 //
-// Diferente de group_house_fort/Imobzi, este site e mono-cidade: todos os
-// 997 imoveis observados vieram como "Praia Grande - {Bairro}" (nenhuma
-// outra cidade encontrada), entao nao ha necessidade de filtro de cidade.
+// Assim como group_house_fort, o site cobre "Praia Grande e todo o litoral
+// de SP" - a 1a coleta real trouxe 68/997 imoveis de outras cidades
+// (Mongagua, Itanhaem, etc.), entao o motor (platforms/imobeal.ts) filtra
+// pelo texto de localizacao do card, mantendo so "Praia Grande - {Bairro}".
 //
 // A paginacao NAO funciona por query string (`?page=N` na URL e ignorado
 // pelo app) - o motor (platforms/imobeal.ts) clica no botao "Proxima" e
