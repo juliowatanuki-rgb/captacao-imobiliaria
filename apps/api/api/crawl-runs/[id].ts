@@ -29,7 +29,9 @@ export default withHandler(async (req: VercelRequest, res: VercelResponse) => {
   const { rows: siteRuns } = await pool.query(
     `SELECT scr.id, scr.site_id, s.nome AS site_nome, scr.inicio_em, scr.fim_em, scr.status,
       scr.paginas_visitadas, scr.anuncios_encontrados, scr.anuncios_novos,
-      scr.anuncios_existentes, scr.anuncios_atualizados, scr.anuncios_ausentes,
+      scr.anuncios_existentes, scr.anuncios_atualizados, scr.anuncios_sem_alteracao,
+      scr.anuncios_ausentes, scr.anuncios_duplicados_coleta,
+      EXTRACT(EPOCH FROM (scr.fim_em - scr.inicio_em))::float AS duracao_segundos,
       scr.mensagem_erro, scr.detalhe_tecnico
      FROM site_crawl_runs scr
      JOIN monitored_sites s ON s.id = scr.site_id

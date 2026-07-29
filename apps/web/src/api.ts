@@ -7,6 +7,40 @@ export interface AuthUser {
   role: "admin" | "corretora";
 }
 
+export interface CrawlRunSummary {
+  id: string;
+  inicio_em: string;
+  fim_em: string | null;
+  status: string;
+  sites_previstos: number;
+  sites_sucesso: number;
+  sites_alerta: number;
+  sites_erro: number;
+  total_anuncios_encontrados: number;
+  total_anuncios_novos: number;
+  total_anuncios_atualizados: number;
+}
+
+export interface SiteCrawlRun {
+  id: string;
+  site_id: string;
+  site_nome: string;
+  inicio_em: string;
+  fim_em: string | null;
+  status: string;
+  paginas_visitadas: number;
+  anuncios_encontrados: number;
+  anuncios_novos: number;
+  anuncios_existentes: number;
+  anuncios_atualizados: number;
+  anuncios_sem_alteracao: number;
+  anuncios_ausentes: number;
+  anuncios_duplicados_coleta: number;
+  duracao_segundos: number | null;
+  mensagem_erro: string | null;
+  detalhe_tecnico: string | null;
+}
+
 export interface NewListing {
   id: string;
   titulo: string | null;
@@ -49,6 +83,17 @@ export function login(email: string, password: string) {
 
 export function fetchNewListings(token: string) {
   return request<{ listings: NewListing[] }>("/api/listings/new", token);
+}
+
+export function fetchCrawlRuns(token: string) {
+  return request<{ crawlRuns: CrawlRunSummary[] }>("/api/crawl-runs", token);
+}
+
+export function fetchCrawlRunDetail(token: string, id: string) {
+  return request<{ crawlRun: CrawlRunSummary; siteRuns: SiteCrawlRun[] }>(
+    `/api/crawl-runs/${id}`,
+    token
+  );
 }
 
 export function setListingStatus(

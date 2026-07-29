@@ -59,6 +59,127 @@ body {
   gap: 0.75rem;
 }
 
+.app-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.app-tabs button {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.app-tabs button.tab-active {
+  color: #1a73e8;
+  border-bottom: 2px solid #1a73e8;
+  border-radius: 0;
+}
+
+.crawl-runs {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.crawl-runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.crawl-run-item {
+  text-align: left;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.crawl-run-item.selected {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.crawl-run-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.crawl-run-item-resumo {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.crawl-run-detalhe {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.site-runs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.site-runs-table th,
+.site-runs-table td {
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.status-sucesso {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+
+.status-badge.status-erro {
+  background: #fdecea;
+  color: #b00020;
+}
+
+.status-badge.status-alerta,
+.status-badge.status-sucesso_parcial {
+  background: #fff4e5;
+  color: #a05a00;
+}
+
+.erros-detalhe {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.erros-detalhe h3 {
+  margin-top: 0;
+  font-size: 0.95rem;
+}
+
 main {
   padding: 1.5rem;
 }

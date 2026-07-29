@@ -1,7 +1,10 @@
 import { useState } from "react";
 import Login from "./Login.js";
 import ListingsNew from "./ListingsNew.js";
+import CrawlRuns from "./CrawlRuns.js";
 import type { AuthUser } from "./api.js";
+
+type Aba = "anuncios" | "logs";
 
 const STORAGE_KEY = "captacao_auth";
 
@@ -22,6 +25,7 @@ function loadStoredAuth(): StoredAuth | null {
 
 export default function App() {
   const [auth, setAuth] = useState<StoredAuth | null>(loadStoredAuth);
+  const [aba, setAba] = useState<Aba>("anuncios");
 
   function handleLogin(token: string, user: AuthUser) {
     const stored = { token, user };
@@ -41,7 +45,22 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Anuncios novos</h1>
+        <nav className="app-tabs">
+          <button
+            type="button"
+            className={aba === "anuncios" ? "tab-active" : ""}
+            onClick={() => setAba("anuncios")}
+          >
+            Anuncios novos
+          </button>
+          <button
+            type="button"
+            className={aba === "logs" ? "tab-active" : ""}
+            onClick={() => setAba("logs")}
+          >
+            Logs de coleta
+          </button>
+        </nav>
         <div className="user-info">
           <span>{auth.user.nome}</span>
           <button type="button" onClick={handleLogout}>
@@ -50,7 +69,7 @@ export default function App() {
         </div>
       </header>
       <main>
-        <ListingsNew token={auth.token} />
+        {aba === "anuncios" ? <ListingsNew token={auth.token} /> : <CrawlRuns token={auth.token} />}
       </main>
     </div>
   );
