@@ -4,8 +4,6 @@ name: Coleta diaria de anuncios
 # computador pessoal ou servidor proprio. Repositorio publico para nao
 # consumir minutos limitados de repositorio privado.
 on:
-  # Esteira do Casa Paris validada em 2026-07-28 com duas execucoes completas
-  # (1a: 3612 base inicial; 2a: 0 novos, 0 duplicidade, 182 paginas em ambas).
   schedule:
     - cron: "0 9 * * *" # 09:00 UTC = 06:00 America/Sao_Paulo
   workflow_dispatch: {}
@@ -16,7 +14,7 @@ permissions:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
@@ -38,8 +36,43 @@ jobs:
       - name: Aplicar migrations pendentes
         run: npm run migrate
 
-      # Apenas Casa Paris por enquanto (unico crawler validado). Trocar para
-      # `npm run crawl:all -w @captacao/crawlers` quando os demais 19 sites
-      # tiverem seus crawlers implementados e validados.
-      - name: Rodar crawler do Casa Paris
+      # Sites homologados (1a + 2a coleta ja confirmadas contra o Neon: 0
+      # duplicidade, 0 novos indevidos). Rodados um de cada vez (sequencial,
+      # nao em paralelo) - resource contention entre browsers concorrentes ja
+      # causou falso-vazio de scraping em execucoes anteriores desta sessao.
+      # Erro em um site nao impede os demais (crawlSite isola por site -
+      # secao 18) - por isso cada `crawl:site` roda em um step separado, com
+      # `if: always()` para os seguintes rodarem mesmo se um anterior falhar.
+      #
+      # NAO adicionar aqui sites que ainda nao passaram pela 2a coleta de
+      # confirmacao no Neon (hoje: tempone_imoveis_pg, dema_imoveis,
+      # group_house_fort, praialar_imoveis, alpha_imoveis_pg,
+      # feliciano_imoveis_praia_grande e os demais ainda so em dry-run) - use
+      # o workflow manual isolado de cada site pra validar antes de mover
+      # para ca.
+      - name: Rodar crawler - Casa Paris Imoveis
         run: npm run crawl:site -w @captacao/crawlers -- casa_paris_imoveis
+
+      - name: Rodar crawler - Imigrantes Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- imigrantes_imoveis
+
+      - name: Rodar crawler - Tavares e Polati Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- tavares_e_polati_imoveis
+
+      - name: Rodar crawler - Igor Braga Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- igor_braga_imoveis
+
+      - name: Rodar crawler - Plaza Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- plaza_imoveis
+
+      - name: Rodar crawler - M2M Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- m2m_imoveis
+
+      - name: Rodar crawler - Nova Casarao Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- nova_casarao_imoveis
