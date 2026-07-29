@@ -183,11 +183,11 @@
     "id": "nova_kennedy",
     "nome": "Nova Kennedy",
     "urlBase": "https://novakennedy.com.br",
-    "urlListagem": "https://novakennedy.com.br",
-    "plataforma": "Tecimob",
+    "urlListagem": "https://novakennedy.com.br/p-imoveis-venda-praia_grande.html",
+    "plataforma": "Microsistec",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Ocian / Aviacao)"
+    "observacoes": "Esteira validada em 2026-07-29. Plataforma real e Microsistec (NAO Tecimob como chutado), confirmada via meta DC.Creator/DC.Publisher='microsistec.com.br' e CDN vault.imob.online (mesma plataforma de feliciano_imoveis_praia_grande e realizacao_imoveis), porem com um TERCEIRO template de card (<article class=box-result-properties>) - implementado como scraper autocontido (crawlers/src/sites/nova_kennedy.ts), sem reaproveitar platforms/microsistec.ts nem o template do Realizacao. A urlListagem generica por tipo ('/p-apartamento-venda.html') incluia Mongagua e Santos alem de Praia Grande - trocada pela URL unificada '/p-imoveis-venda-praia_grande.html' que cobre todos os tipos de imovel (Apartamento/Casa/Kitnet/etc) ja filtrados por Praia Grande. Validado ao vivo (dry-run completo + 2 coletas reais contra o Neon): sempre 1009 imoveis, 68 paginas (15/pagina, ultima com 4), 0 semExternalId/semUrl/duplicado, 0 cidade != Praia Grande. 1a coleta real: 1009 novos (base inicial). 2a coleta de confirmacao: 1009 encontrados, 0 novos, 0 atualizados, 0 ausentes."
   },
   {
     "id": "all_prime_imoveis",
