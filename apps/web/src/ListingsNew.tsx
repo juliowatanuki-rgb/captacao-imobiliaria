@@ -52,10 +52,27 @@ export default function ListingsNew({ token }: { token: string }) {
     });
   }
 
+  function escapeCsv(valor: string): string {
+    if (/[;"\r\n]/.test(valor)) {
+      return `"${valor.replace(/"/g, '""')}"`;
+    }
+    return valor;
+  }
+
   function exportarParaExcel() {
     const linhas = [
-      "id;link",
-      ...listings.map((l, i) => `${i + 1};${l.url_final ?? l.url_original}`),
+      "id;imobiliaria;link;condominio;endereco",
+      ...listings.map((l, i) =>
+        [
+          String(i + 1),
+          l.site_nome,
+          l.url_final ?? l.url_original,
+          l.condominio_identificado_manual ?? l.condominio_nome ?? "",
+          l.endereco_identificado_manual ?? l.endereco ?? "",
+        ]
+          .map(escapeCsv)
+          .join(";")
+      ),
     ];
     const conteudo = "﻿" + linhas.join("\r\n");
     const blob = new Blob([conteudo], { type: "text/csv;charset=utf-8;" });

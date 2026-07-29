@@ -93,6 +93,8 @@ export interface NewListing {
   tipo_imovel: string | null;
   condominio_nome: string | null;
   endereco: string | null;
+  condominio_identificado_manual: string | null;
+  endereco_identificado_manual: string | null;
   primeira_captura_em: string;
   analysis_status: string;
   site_id: string;
