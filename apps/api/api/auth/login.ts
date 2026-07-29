@@ -9,6 +9,7 @@ interface UserRow {
   password_hash: string;
   nome: string;
   role: "admin" | "corretora";
+  ativo: boolean;
 }
 
 export default withHandler(async (req: VercelRequest, res: VercelResponse) => {
@@ -23,7 +24,7 @@ export default withHandler(async (req: VercelRequest, res: VercelResponse) => {
 
   const pool = getPool();
   const { rows } = await pool.query<UserRow>(
-    `SELECT id, email, password_hash, nome, role FROM users WHERE email = $1`,
+    `SELECT id, email, password_hash, nome, role, ativo FROM users WHERE email = $1`,
     [email.toLowerCase().trim()]
   );
 
@@ -35,6 +36,10 @@ export default withHandler(async (req: VercelRequest, res: VercelResponse) => {
   const valid = await verifyPassword(password, user.password_hash);
   if (!valid) {
     throw new HttpError(401, "credenciais invalidas");
+  }
+
+  if (!user.ativo) {
+    throw new HttpError(403, "usuario desativado - fale com o administrador");
   }
 
   const token = signToken({

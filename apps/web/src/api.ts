@@ -41,6 +41,16 @@ export interface SiteCrawlRun {
   detalhe_tecnico: string | null;
 }
 
+export interface ManagedUser {
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string | null;
+  role: "admin" | "corretora";
+  ativo: boolean;
+  criado_em: string;
+}
+
 export interface NewListing {
   id: string;
   titulo: string | null;
@@ -104,6 +114,31 @@ export function setListingStatus(
   return request<{ ok: true }>(`/api/listings/${listingId}/status`, token, {
     method: "PATCH",
     body: JSON.stringify({ status }),
+  });
+}
+
+export function fetchUsers(token: string) {
+  return request<{ users: ManagedUser[] }>("/api/users", token);
+}
+
+export function createUser(
+  token: string,
+  data: { nome: string; email: string; telefone: string; role: "admin" | "corretora"; senha: string }
+) {
+  return request<{ user: ManagedUser }>("/api/users", token, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateUser(
+  token: string,
+  id: string,
+  data: Partial<{ nome: string; email: string; telefone: string; role: "admin" | "corretora"; ativo: boolean; senha: string }>
+) {
+  return request<{ user: ManagedUser }>(`/api/users/${id}`, token, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }
 

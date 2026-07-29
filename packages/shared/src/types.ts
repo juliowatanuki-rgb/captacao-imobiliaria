@@ -8,7 +8,9 @@ export interface User {
   email: string;
   passwordHash: string;
   nome: string;
+  telefone: string | null;
   role: UserRole;
+  ativo: boolean;
   criadoEm: string;
 }
 

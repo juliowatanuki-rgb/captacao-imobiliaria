@@ -2,9 +2,10 @@ import { useState } from "react";
 import Login from "./Login.js";
 import ListingsNew from "./ListingsNew.js";
 import CrawlRuns from "./CrawlRuns.js";
+import Users from "./Users.js";
 import type { AuthUser } from "./api.js";
 
-type Aba = "anuncios" | "logs";
+type Aba = "anuncios" | "logs" | "usuarios";
 
 const STORAGE_KEY = "captacao_auth";
 
@@ -60,6 +61,15 @@ export default function App() {
           >
             Logs de coleta
           </button>
+          {auth.user.role === "admin" && (
+            <button
+              type="button"
+              className={aba === "usuarios" ? "tab-active" : ""}
+              onClick={() => setAba("usuarios")}
+            >
+              Usuarios
+            </button>
+          )}
         </nav>
         <div className="user-info">
           <span>{auth.user.nome}</span>
@@ -69,7 +79,9 @@ export default function App() {
         </div>
       </header>
       <main>
-        {aba === "anuncios" ? <ListingsNew token={auth.token} /> : <CrawlRuns token={auth.token} />}
+        {aba === "anuncios" && <ListingsNew token={auth.token} />}
+        {aba === "logs" && <CrawlRuns token={auth.token} />}
+        {aba === "usuarios" && auth.user.role === "admin" && <Users token={auth.token} />}
       </main>
     </div>
   );
