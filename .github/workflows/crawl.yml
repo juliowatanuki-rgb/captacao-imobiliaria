@@ -45,9 +45,9 @@ jobs:
       # `if: always()` para os seguintes rodarem mesmo se um anterior falhar.
       #
       # NAO adicionar aqui sites que ainda nao passaram pela 2a coleta de
-      # confirmacao no Neon (hoje: dema_imoveis, group_house_fort,
-      # praialar_imoveis, all_prime_imoveis) - use o workflow manual isolado
-      # de cada site pra validar antes de mover para ca.
+      # confirmacao no Neon (hoje: praialar_imoveis, all_prime_imoveis) -
+      # use o workflow manual isolado de cada site pra validar antes de
+      # mover para ca.
       - name: Rodar crawler - Casa Paris Imoveis
         run: npm run crawl:site -w @captacao/crawlers -- casa_paris_imoveis
 
@@ -110,3 +110,11 @@ jobs:
       - name: Rodar crawler - Tempone Imoveis PG
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- tempone_imoveis_pg
+
+      - name: Rodar crawler - Dema Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- dema_imoveis
+
+      - name: Rodar crawler - Group House Fort
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- group_house_fort

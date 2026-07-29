@@ -77,7 +77,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/dema_imoveis.ts, motor generico Coruja Sistemas). Plataforma real e Coruja Sistemas, NAO Union Softwares como chutado antes (mesmo template visual/rodape 'Site feito por Coruja Sistemas' de tempone_imoveis_pg e m2m_imoveis). URL dedicada de Praia Grande: /a-venda/praia-grande-sp. Validado ao vivo em 2026-07-28: 400 imoveis em 21 paginas (20/pagina), 100% com externalId e urlOriginal, 100% com preco, cidade sempre 'PRAIA GRANDE - SP' em todas as paginas percorridas. Ainda NAO executado contra o Neon de producao - aguardando validacao final antes de ativar coleta agendada."
+    "observacoes": "Esteira validada em 2026-07-29. Crawler em crawlers/src/sites/dema_imoveis.ts, motor generico Coruja Sistemas. Plataforma real e Coruja Sistemas, NAO Union Softwares como chutado antes. URL dedicada de Praia Grande: /a-venda/praia-grande-sp. A validacao inicial de 2026-07-28 (400 imoveis) foi feita ANTES do fix de paginacao do Coruja Sistemas (mesma causa do subdimensionamento do Tempone) - revalidado com o motor corrigido: 1867 = 1867 em 2 coletas seguidas, 0 duplicados, 100% com externalId/urlOriginal/preco, cidade sempre Praia Grande."
   },
   {
     "id": "group_house_fort",
@@ -87,7 +87,7 @@
     "plataforma": "Imobzi",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-28. Plataforma real e Imobzi (Angular SPA/SSR), NAO 'Desenvolvimento proprio / W Imoveis' como chutado. Busca de rede/franquia nacional (~1414 imoveis, sem URL dedicada por cidade) - motor filtra pelo href de cada card (slug -praia-grande-). Validado ao vivo: 1366 imoveis de Praia Grande em 80 paginas, 100% com externalId/urlOriginal. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Esteira validada em 2026-07-29. Plataforma real e Imobzi (Angular SPA/SSR), NAO 'Desenvolvimento proprio / W Imoveis' como chutado. Busca de rede/franquia nacional (~1414 imoveis, sem URL dedicada por cidade) - motor filtra pelo href de cada card (slug -praia-grande-). 1a+2a coleta confirmadas contra o Neon: 1366 = 1366 imoveis em 80 paginas (125 duplicados de identity_key dentro da mesma coleta - mesmo imovel aparecendo em paginas diferentes por causa da paginacao por bairro - corretamente dedupados pelo motor, resultando em 1241 anuncios unicos), 0 duplicados na base, 100% com externalId/urlOriginal, 11/1241 (0.9%) sem preco (card com layout alternativo, nao e falha sistemica), cidade sempre Praia Grande."
   },
   {
     "id": "praialar_imoveis",
