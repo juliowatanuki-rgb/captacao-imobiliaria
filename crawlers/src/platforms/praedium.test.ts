@@ -24,6 +24,7 @@ function mockPage(pagesOfCards: RawCardFixture[][]): Page {
   return {
     goto: vi.fn().mockResolvedValue(undefined),
     waitForSelector: vi.fn().mockResolvedValue(undefined),
+    waitForTimeout: vi.fn().mockResolvedValue(undefined),
     evaluate,
   } as unknown as Page;
 }
@@ -53,7 +54,10 @@ describe("createPraediumCrawler - paginacao", () => {
 
     expect(result.paginasVisitadas).toBe(3);
     expect(result.listings).toHaveLength(2);
-    expect(page.goto).toHaveBeenCalledTimes(3);
+    // A ultima pagina (vazia) e retentada ate MAX_TENTATIVAS_PAGINA_VAZIA vezes
+    // (retry-com-reload contra falso-fim de paginacao) antes de encerrar: 1 +
+    // 1 + 3 tentativas = 5 chamadas de goto no total.
+    expect(page.goto).toHaveBeenCalledTimes(5);
   });
 
   it("respeita o maxPaginas quando o site nunca retorna pagina vazia", async () => {

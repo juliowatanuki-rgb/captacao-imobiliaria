@@ -103,11 +103,11 @@
     "id": "morada_na_praia_imoveis",
     "nome": "Morada na Praia Imoveis",
     "urlBase": "https://moradanapraia.com.br",
-    "urlListagem": "https://moradanapraia.com.br",
-    "plataforma": "Kenlo",
+    "urlListagem": "https://www.moradanapraia.com.br/imoveis/venda/sp/praia-grande",
+    "plataforma": "Nido",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Florida / Aviacao / Tupi)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e 'Nido' (login app.nidoadm.com.br no header, marca nido.com.br no rodape, CDN objectstorage.sa-saopaulo-1.oraclecloud.com), NAO 'Kenlo' como chutado - motor novo criado em crawlers/src/platforms/nido.ts. A URL /imoveis/venda/sp/praia-grande ja e a listagem dedicada da cidade (paginacao por path /N). Validado ao vivo 3x seguidas (2 validacoes completas + 1 script de estatisticas full): sempre 1737 imoveis, 37 paginas com conteudo (48/pagina, ultima com 9), 100% cidade=Praia Grande, 0 externalId duplicado, 24 bairros distintos, sem preco/area faltando. Crawler ainda NAO executado contra o Neon."
   },
   {
     "id": "alpha_imoveis_pg",
@@ -117,7 +117,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Crawler implementado em 2026-07-28 (crawlers/src/sites/alpha_imoveis_pg.ts, motor generico Coruja Sistemas - chute do seed confirmado). urlListagem generica (/a-venda) retorna inventario de toda a rede (1583 imoveis, 1o card ja era um terreno em Cotia); trocada para /a-venda/praia-grande-sp (mesmo padrao de m2m_imoveis/tempone_imoveis_pg/dema_imoveis). Validado ao vivo: 420 imoveis em 22 paginas, 100% cidade=PRAIA GRANDE - SP, 0 externalId duplicado, 0 urlOriginal relativa. Ainda NAO executado contra o Neon de producao."
+    "observacoes": "Esteira validada em 2026-07-29. Motor generico Coruja Sistemas (chute do seed confirmado). urlListagem generica (/a-venda) retorna inventario de toda a rede; trocada para /a-venda/praia-grande-sp (mesmo padrao de m2m_imoveis/tempone_imoveis_pg/dema_imoveis). 1a varredura: 1400 imoveis (base inicial, bate com 2 validacoes ao vivo seguidas apos o fix de paginacao do coruja.ts). 2a varredura de confirmacao: 1400 encontrados, 0 novos, 0 atualizados, 0 ausentes."
   },
   {
     "id": "tavares_e_polati_imoveis",
@@ -152,22 +152,22 @@
   {
     "id": "damasco_imoveis",
     "nome": "Damasco Imoveis",
-    "urlBase": "https://damascoimoveis.com.br",
-    "urlListagem": "https://damascoimoveis.com.br",
-    "plataforma": "Kenlo",
+    "urlBase": "https://www.damascoimoveis.com.br",
+    "urlListagem": "https://www.damascoimoveis.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Arbo Imoveis",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Tupi / Caicara / Forte)"
+    "observacoes": "Esteira validada em 2026-07-29. Plataforma real e Arbo Imoveis (CDN static.arboimoveis.com.br), NAO Kenlo como chutado antes. A home/URL raiz mostra imoveis de varias cidades do ABC/SP (a imobiliaria atua em multiplas regioes) - trocada para a URL dedicada '/imoveis/a-venda/praia-grande-sp'. Paginacao e por scroll infinito (sem query string), motor implementado em platforms/arbo_imoveis.ts rola a pagina ate estabilizar. 1a e 2a varredura de confirmacao: 15 imoveis em ambas (bate com o contador '15 Imoveis' do proprio site), 0 externalId ausente/duplicado. 14 de 15 com cidade=Praia Grande; 1 excecao (AP28874_DAMA, bairro Boqueirao) com cidade=Santos, incluida pelo proprio site por proximidade geografica (ordenacao 'mais_proximos'), nao por erro de filtro - o campo cidade do ScrapedListing reflete isso corretamente."
   },
   {
     "id": "aline_caetano_imoveis",
     "nome": "Aline Caetano Imoveis (A.C.)",
     "urlBase": "https://alinecaetano.com.br",
-    "urlListagem": "https://alinecaetano.com.br",
-    "plataforma": "Desenvolvimento proprio",
+    "urlListagem": "https://www.alinecaetano.com.br/buscar?availability=buy&city=Praia%20Grande&order=most_relevant&direction=desc",
+    "plataforma": "Imobzi",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Tupi / Aviacao / Forte)"
+    "observacoes": "Esteira validada em 2026-07-29: crawler real (crawlers/src/sites/aline_caetano_imoveis.ts) usa o motor generico Imobzi (platforms/imobzi.ts), agora atualizado para reconhecer tambem o template mais novo <imobzi-grid-card> deste site (o chute original 'Desenvolvimento proprio' estava errado). 1855 imoveis / 104 paginas (18 por pagina), site ja filtra por &city=Praia%20Grande, motor reforca com filtro de href como 2a camada."
   },
   {
     "id": "realizacao_imoveis",
@@ -193,10 +193,10 @@
     "id": "all_prime_imoveis",
     "nome": "All Prime Imoveis",
     "urlBase": "https://allprimeimoveis.com.br",
-    "urlListagem": "https://allprimeimoveis.com.br",
-    "plataforma": "Castel Digital",
+    "urlListagem": "https://allprimeimoveis.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "urlListagem a confirmar apos inspecao do site (bairro: Canto do Forte)"
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (rodape 'powered by praedium.com.br'), NAO 'Castel Digital' como chutado - reaproveita o motor existente em crawlers/src/platforms/praedium.ts (nenhum motor novo necessario). A URL /imoveis/a-venda/praia-grande-sp ja e a listagem dedicada da cidade. 1a validacao completa: 880 imoveis, 45 paginas (20/pagina), 100% cidade=Praia Grande, 0 semExternalId/semUrl. Uma 2a validacao completa imediatamente em seguida (e uma 3a apos fix de robustez) retornaram HTTP 405 'Human Verification' (bloqueio anti-bot do proprio site, nao bug do crawler) - motor ainda assim recebeu pausa entre paginas + retry-com-reload em caso de pagina vazia (mesma licao do coruja.ts) como reforco. RECOMENDA-SE revalidar com 'npm run validate:site' apos um periodo de cooldown (o bloqueio parece ser por IP/sessao, provavelmente temporario) antes de considerar a estabilidade 100% confirmada; nao tentar contornar a verificacao anti-bot. Crawler ainda NAO executado contra o Neon."
   }
 ]

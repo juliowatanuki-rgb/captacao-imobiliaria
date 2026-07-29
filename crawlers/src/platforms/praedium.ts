@@ -29,6 +29,13 @@
 // direto por URL, com <ul class="pagination"> contendo rel="next" no ultimo item).
 // O codigo do imovel vem embutido no final do slug da URL (`-id-{codigo}`),
 // nao existe atributo separado nem parametro de query para ele.
+//
+// Instabilidade de paginacao observada em 2026-07-29 validando allprimeimoveis.com.br:
+// uma coleta sequencial sem pausas as vezes sofre rate-limit/anti-bot e uma
+// pagina no meio da lista vem vazia mesmo havendo mais itens depois (0 cards na
+// pagina 1 numa segunda execucao imediatamente apos a primeira, quando a
+// primeira trouxe 880 imoveis). Corrigido com pausa entre paginas + retry com
+// reload se a pagina vier vazia (mesma licao aplicada em coruja.ts e nido.ts).
 
 import type { Page } from "playwright";
 import type { ScrapedListing } from "@captacao/shared";
@@ -36,6 +43,8 @@ import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 150;
 const CODIGO_REGEX = /-id-(\d+)\/?$/;
+const PAUSA_ENTRE_PAGINAS_MS = 800;
+const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
 
 interface RawCard {
   href: string;
@@ -120,14 +129,20 @@ export function createPraediumCrawler(config: PraediumConfig): SiteCrawlerModule
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
         const separador = config.urlListagem.includes("?") ? "&" : "?";
-        await page.goto(`${config.urlListagem}${separador}pagina=${pagina}`, {
-          waitUntil: "domcontentloaded",
-        });
+        const url = `${config.urlListagem}${separador}pagina=${pagina}`;
+
+        let cards: RawCard[] = [];
+        for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA; tentativa++) {
+          await page.goto(url, { waitUntil: "domcontentloaded" });
+          await page.waitForSelector("div.thumbnail_one", { timeout: 15_000 }).catch(() => {});
+          cards = await extractCards(page);
+          if (cards.length > 0) break;
+          if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
+            await page.waitForTimeout(1_000 * tentativa);
+          }
+        }
+
         paginasVisitadas += 1;
-
-        await page.waitForSelector("div.thumbnail_one", { timeout: 15_000 }).catch(() => {});
-
-        const cards = await extractCards(page);
         if (cards.length === 0) break;
 
         for (const card of cards) {
@@ -148,6 +163,8 @@ export function createPraediumCrawler(config: PraediumConfig): SiteCrawlerModule
             banheiros: parseDadoNumero(card.dados, /(\d+)\s*Banheiro/i),
           });
         }
+
+        await page.waitForTimeout(PAUSA_ENTRE_PAGINAS_MS);
       }
 
       return { listings, paginasVisitadas };

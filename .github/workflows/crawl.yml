@@ -46,10 +46,9 @@ jobs:
       #
       # NAO adicionar aqui sites que ainda nao passaram pela 2a coleta de
       # confirmacao no Neon (hoje: tempone_imoveis_pg, dema_imoveis,
-      # group_house_fort, praialar_imoveis, alpha_imoveis_pg,
-      # feliciano_imoveis_praia_grande e os demais ainda so em dry-run) - use
-      # o workflow manual isolado de cada site pra validar antes de mover
-      # para ca.
+      # group_house_fort, praialar_imoveis, feliciano_imoveis_praia_grande e
+      # os demais ainda so em dry-run) - use o workflow manual isolado de
+      # cada site pra validar antes de mover para ca.
       - name: Rodar crawler - Casa Paris Imoveis
         run: npm run crawl:site -w @captacao/crawlers -- casa_paris_imoveis
 
@@ -76,3 +75,7 @@ jobs:
       - name: Rodar crawler - Nova Casarao Imoveis
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- nova_casarao_imoveis
+
+      - name: Rodar crawler - Alpha Imoveis PG
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- alpha_imoveis_pg

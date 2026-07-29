@@ -1,7 +1,8 @@
 // Motor generico para imobiliarias que usam a plataforma Imobzi
-// (identificada pelo Angular custom-element <imobzi-property-card>, pelas
-// imagens hospedadas em imobzi.storage.googleapis.com / firebasestorage.app
-// (bucket "imobzi-app-production") e pela API auxiliar api2.imobzi.app).
+// (identificada pelo Angular custom-element <imobzi-property-card> /
+// <imobzi-grid-card>, pelas imagens hospedadas em
+// imobzi.storage.googleapis.com / firebasestorage.app (bucket
+// "imobzi-app-production") e pela API auxiliar api2.imobzi.app).
 //
 // Estrutura de card validada manualmente em housefort.com.br em 2026-07-28
 // (SPA Angular com SSR - o HTML ja vem com os cards renderizados, sem
@@ -24,6 +25,23 @@
 // </imobzi-property-card>
 // A paginacao e feita via query string `&page=N` (SSR, navegavel direto por URL).
 //
+// Validado tambem ao vivo em 2026-07-29 contra alinecaetano.com.br, que roda
+// uma versao mais nova do template Imobzi com o custom-element
+// <imobzi-grid-card> (em vez de <imobzi-property-card>). Diferencas dessa
+// versao, ja tratadas abaixo:
+// - .property-title (title attr e texto) agora e um titulo de marketing
+//   livre (ex.: "Oportunidade - Apto 2 dorms c/ sacada por 335 mil"), NAO
+//   mais "{Tipo} em {Bairro} - {Cidade}, {UF}" - nao da mais pra extrair
+//   bairro dai.
+// - .neighborhood-title passou a vir como "{Bairro} - Cód. {codigo}" (com
+//   bairro incluido), em vez de so "Cod: {codigo}" (so numerico). O codigo
+//   tambem passou a ser alfanumerico (ex.: "ACTA9108", "JGA70"), nao mais so
+//   digitos.
+// extractCodigo/extractBairro abaixo tentam primeiro o formato novo
+// (.neighborhood-title "{Bairro} - Cód. {codigo}") e caem para o formato
+// antigo (title attr "{Tipo} em {Bairro} - ...", codigo so numerico) quando
+// o primeiro nao casar - cobre os dois sites sem duplicar o motor.
+//
 // IMPORTANTE (secao 18): a busca `/buscar` deste site parece ser compartilhada
 // por uma rede/franquia - ela retorna imoveis de VARIAS cidades do Brasil
 // (nao so da cidade da imobiliaria), sem uma URL dedicada so para Praia
@@ -32,13 +50,18 @@
 // Por isso o filtro definitivo de cidade usa o href do imovel (que sempre
 // contem o slug "-praia-grande-" quando o imovel e de Praia Grande) e nao o
 // texto do titulo - imoveis sem esse slug no href sao descartados aqui
-// mesmo (nao sao devolvidos pelo crawler).
+// mesmo (nao sao devolvidos pelo crawler). Alguns sites (ex.: Aline Caetano)
+// tem um parametro `&city=Praia%20Grande` na propria busca que ja filtra do
+// lado do servidor - mesmo assim o filtro por href e mantido aqui como
+// segunda camada de seguranca.
 
 import type { Page } from "playwright";
 import type { ScrapedListing } from "@captacao/shared";
 import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 150;
+const PAUSA_ENTRE_PAGINAS_MS = 800;
+const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
 
 interface RawCard {
   href: string;
@@ -54,10 +77,10 @@ interface RawCard {
 // (erro "__name is not defined"), ver aviso em platforms/imoview.ts.
 async function extractCards(page: Page): Promise<RawCard[]> {
   return page.evaluate(() => {
-    const cards = Array.from(document.querySelectorAll<HTMLElement>("imobzi-property-card"));
+    const cards = Array.from(document.querySelectorAll<HTMLElement>("imobzi-property-card, imobzi-grid-card"));
     return cards.map((card) => {
       const href = card.querySelector<HTMLAnchorElement>('a[href^="/imovel/"]')?.href ?? "";
-      const codigoTexto = card.querySelector(".neighborhood-title")?.textContent?.trim() ?? null;
+      const codigoTexto = card.querySelector(".neighborhood-title")?.textContent?.replace(/\s+/g, " ").trim() ?? null;
       const tituloEl = card.querySelector(".property-title");
       const tituloAttr = tituloEl?.getAttribute("title") ?? tituloEl?.textContent?.trim() ?? null;
       const precoEl = Array.from(card.querySelectorAll("h3.color-title")).find((el) =>
@@ -98,17 +121,33 @@ function parseIconeNumero(icones: RawCard["icones"], tituloIcone: string): numbe
   return Number.isFinite(valor) ? valor : null;
 }
 
+// Formato do .neighborhood-title, que cobre os dois templates observados:
+// - novo (grid-card): "{Bairro} - Cód. {codigo}" (codigo alfanumerico, ex.: ACTA9108)
+// - antigo (property-card): "Cod: {codigo}" (so digitos, sem bairro)
+const NEIGHBORHOOD_TITLE_REGEX = /^(?:(.+?)\s*-\s*)?C[oó]d\.?:?\s*([A-Za-z0-9]+)\s*$/i;
+
+function parseNeighborhoodTitle(codigoTexto: string | null): { bairro: string | null; codigo: string | null } {
+  if (!codigoTexto) return { bairro: null, codigo: null };
+  const match = codigoTexto.match(NEIGHBORHOOD_TITLE_REGEX);
+  if (!match) return { bairro: null, codigo: null };
+  return { bairro: match[1]?.trim() || null, codigo: match[2] || null };
+}
+
 function extractCodigo(codigoTexto: string | null, href: string): string | null {
-  if (codigoTexto) {
-    const match = codigoTexto.match(/(\d+)/);
-    if (match) return match[1];
-  }
-  const matchHref = href.match(/-code-(\d+)/i);
+  const { codigo } = parseNeighborhoodTitle(codigoTexto);
+  if (codigo) return codigo;
+  const matchHref = href.match(/-code-([A-Za-z0-9]+)/i);
   return matchHref ? matchHref[1] : null;
 }
 
-// Formato tipico do titulo: "{Tipo} em {Bairro} - {Cidade}, {UF}" (com variacoes sujas).
-function extractBairro(tituloAttr: string | null): string | null {
+// Bairro: tenta primeiro o .neighborhood-title (template novo, "{Bairro} - Cód. X"),
+// e cai para o title attr do .property-title (template antigo, "{Tipo} em
+// {Bairro} - {Cidade}, {UF}") quando o primeiro nao tiver bairro (ex.:
+// template antigo so tem "Cod: X" ali, ou o titulo de marketing do template
+// novo nao segue o padrao "em Bairro").
+function extractBairro(codigoTexto: string | null, tituloAttr: string | null): string | null {
+  const { bairro } = parseNeighborhoodTitle(codigoTexto);
+  if (bairro) return bairro;
   if (!tituloAttr) return null;
   const match = tituloAttr.match(/\bem\s+(.+?)\s*[-–]\s*.+$/i);
   return match ? match[1].trim() : null;
@@ -133,12 +172,19 @@ export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
         const separador = config.urlListagem.includes("?") ? "&" : "?";
         const url = pagina === 1 ? config.urlListagem : `${config.urlListagem}${separador}page=${pagina}`;
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
+
+        let cards: RawCard[] = [];
+        for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA; tentativa++) {
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
+          await page.waitForSelector("imobzi-property-card, imobzi-grid-card", { timeout: 15_000 }).catch(() => {});
+          cards = await extractCards(page);
+          if (cards.length > 0) break;
+          if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
+            await page.waitForTimeout(1_000 * tentativa);
+          }
+        }
+
         paginasVisitadas += 1;
-
-        await page.waitForSelector("imobzi-property-card", { timeout: 15_000 }).catch(() => {});
-
-        const cards = await extractCards(page);
         if (cards.length === 0) break;
 
         for (const card of cards) {
@@ -151,7 +197,7 @@ export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
             titulo: card.tituloAttr,
             tipoImovel: card.tituloAttr,
             cidade: "Praia Grande",
-            bairro: extractBairro(card.tituloAttr),
+            bairro: extractBairro(card.codigoTexto, card.tituloAttr),
             preco: parseMoeda(card.precoTexto),
             areaUtil: parseIconeNumero(card.icones, "useful_area"),
             dormitorios: parseIconeNumero(card.icones, "Dormitorios"),
@@ -160,6 +206,8 @@ export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
             vagas: parseIconeNumero(card.icones, "Vagas"),
           });
         }
+
+        await page.waitForTimeout(PAUSA_ENTRE_PAGINAS_MS);
       }
 
       return { listings, paginasVisitadas };
