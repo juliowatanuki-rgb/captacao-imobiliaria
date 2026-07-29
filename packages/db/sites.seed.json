@@ -198,5 +198,25 @@
     "ativo": true,
     "isAgregador": false,
     "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (rodape 'powered by praedium.com.br'), NAO 'Castel Digital' como chutado - reaproveita o motor existente em crawlers/src/platforms/praedium.ts (nenhum motor novo necessario). A URL /imoveis/a-venda/praia-grande-sp ja e a listagem dedicada da cidade. 1a validacao completa: 880 imoveis, 45 paginas (20/pagina), 100% cidade=Praia Grande, 0 semExternalId/semUrl. Uma 2a validacao completa imediatamente em seguida (e uma 3a apos fix de robustez) retornaram HTTP 405 'Human Verification' (bloqueio anti-bot do proprio site, nao bug do crawler) - motor ainda assim recebeu pausa entre paginas + retry-com-reload em caso de pagina vazia (mesma licao do coruja.ts) como reforco. RECOMENDA-SE revalidar com 'npm run validate:site' apos um periodo de cooldown (o bloqueio parece ser por IP/sessao, provavelmente temporario) antes de considerar a estabilidade 100% confirmada; nao tentar contornar a verificacao anti-bot. Crawler ainda NAO executado contra o Neon."
+  },
+  {
+    "id": "safira_imoveis_praia_grande",
+    "nome": "Safira Imoveis Praia Grande",
+    "urlBase": "https://www.safiraimoveispraiagrande.com.br",
+    "urlListagem": "https://www.safiraimoveispraiagrande.com.br/imoveis/venda/SP/praia-grande",
+    "plataforma": "Nido",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Nido (confirmado - mesmo CDN objectstorage.sa-saopaulo-1.oraclecloud.com de moradanapraia.com.br), NAO 'Kenlo' como chutado na planilha original. Template visual diferente do ja cadastrado (cards '.property-box-7', nao '.card1') - motor proprio em crawlers/src/sites/safira_imoveis_praia_grande.ts em vez de reaproveitar createNidoCrawler. URL /imoveis/venda/SP/praia-grande ja filtra por Praia Grande. 1a coleta confirmada contra o Neon em 2026-07-29: 511 encontrados, 511 novos, 0 erro. Falta a 2a coleta de confirmacao (dias diferentes, 0 duplicidade esperada) antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "spinola_consultoria_imobiliaria",
+    "nome": "Spinola Consultoria Imobiliaria",
+    "urlBase": "https://spinolaimob.com.br",
+    "urlListagem": "https://spinolaimob.com.br/imoveis/sp/praia-grande",
+    "plataforma": "USO / Union Softwares",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e USO/Agiliza (Union Softwares, confirmado pelo CDN cdn.uso.com.br), NAO 'Coruja Sistemas' como chutado na planilha original. Template visual 'novo' do produto, diferente do ja cadastrado (cards '.link_resultado' com classes 'titulo_novo'/'valor_novo') - motor proprio em crawlers/src/sites/spinola_consultoria_imobiliaria.ts em vez de reaproveitar createUsoSoftwaresCrawler. Inventario muito pequeno no momento: so 2 imoveis em Praia Grande. Vale manter cadastrado mesmo com pouco volume - pode crescer. 1a coleta confirmada contra o Neon em 2026-07-29: 2 encontrados, 2 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
   }
 ]
