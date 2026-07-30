@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 import {
   SessaoExpiradaError,
   fetchNewListings,
@@ -173,100 +174,111 @@ export default function ListingsNew({
     }
   }
 
-  function escapeCsv(valor: string): string {
-    if (/[;"\r\n]/.test(valor)) {
-      return `"${valor.replace(/"/g, '""')}"`;
-    }
-    return valor;
+  function idCurto(l: NewListing): string {
+    if (l.external_id && l.external_id.trim() !== "") return l.external_id.trim();
+    return l.id.slice(0, 8);
   }
 
-  function formatarNumeroBR(valor: string | null): string {
+  function paraNumero(valor: string | number | null): number | "" {
     if (valor === null || valor === "") return "";
     const numero = Number(valor);
-    if (Number.isNaN(numero)) return valor;
-    return numero.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return Number.isNaN(numero) ? "" : numero;
   }
 
-  function formatarDataBR(valor: string): string {
+  function paraData(valor: string): Date | string {
     const data = new Date(valor);
-    if (Number.isNaN(data.getTime())) return valor;
-    const dia = String(data.getDate()).padStart(2, "0");
-    const mes = String(data.getMonth() + 1).padStart(2, "0");
-    const ano = data.getFullYear();
-    return `${dia}/${mes}/${ano}`;
+    return Number.isNaN(data.getTime()) ? valor : data;
   }
+
+  const COLUNA_LINK = 12;
+  const COLUNA_PRECO = 5;
+  const COLUNA_METRAGEM = 6;
+  const COLUNA_DATA = 13;
 
   function exportarParaExcel() {
-    const linhas = [
-      [
-        "id",
-        "imobiliaria",
-        "titulo",
-        "tipo de imovel",
-        "bairro",
-        "preco",
-        "metragem (m2)",
-        "dormitorios",
-        "suites",
-        "vagas",
-        "condominio",
-        "endereco",
-        "link",
-        "primeira captura em",
-        "status da analise",
-        "condominio sugerido pela IA",
-        "endereco sugerido pela IA",
-        "bairro sugerido pela IA",
-        "cidade sugerida pela IA",
-        "status da investigacao IA",
-        "confianca da IA (%)",
-        "criterio de confirmacao da IA",
-        "evidencias da IA",
-        "divergencias da IA",
-      ].join(";"),
-      ...listings.map((l) =>
-        [
-          l.id,
-          l.site_nome,
-          l.titulo ?? "",
-          l.tipo_imovel ?? "",
-          l.bairro ?? "",
-          formatarNumeroBR(l.preco),
-          formatarNumeroBR(l.area_util),
-          l.dormitorios ?? "",
-          l.suites ?? "",
-          l.vagas ?? "",
-          l.condominio_identificado_manual ?? l.condominio_nome ?? "",
-          l.endereco_identificado_manual ?? l.endereco ?? "",
-          l.url_final ?? l.url_original,
-          formatarDataBR(l.primeira_captura_em),
-          l.analysis_status,
-          l.ia_condominio ?? "",
-          l.ia_endereco ?? "",
-          l.ia_bairro ?? "",
-          l.ia_cidade ?? "",
-          l.ia_status ?? "",
-          l.ia_confianca ?? "",
-          l.ia_criterio_confirmacao ?? "",
-          (l.ia_evidencias ?? []).join(" | "),
-          (l.ia_divergencias ?? []).join(" | "),
-        ]
-          .map((v) => escapeCsv(String(v)))
-          .join(";")
-      ),
+    const cabecalho = [
+      "id",
+      "imobiliaria",
+      "titulo",
+      "tipo de imovel",
+      "bairro",
+      "preco",
+      "metragem (m2)",
+      "dormitorios",
+      "suites",
+      "vagas",
+      "condominio",
+      "endereco",
+      "link",
+      "primeira captura em",
+      "status da analise",
+      "condominio sugerido pela IA",
+      "endereco sugerido pela IA",
+      "bairro sugerido pela IA",
+      "cidade sugerida pela IA",
+      "status da investigacao IA",
+      "confianca da IA (%)",
+      "criterio de confirmacao da IA",
+      "evidencias da IA",
+      "divergencias da IA",
     ];
-    const conteudo = "﻿" + linhas.join("\r\n");
-    const blob = new Blob([conteudo], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
+    const linhas = listings.map((l) => {
+      const link = l.url_final ?? l.url_original;
+      return [
+        idCurto(l),
+        l.site_nome,
+        l.titulo ?? "",
+        l.tipo_imovel ?? "",
+        l.bairro ?? "",
+        paraNumero(l.preco),
+        paraNumero(l.area_util),
+        paraNumero(l.dormitorios),
+        paraNumero(l.suites),
+        paraNumero(l.vagas),
+        l.condominio_identificado_manual ?? l.condominio_nome ?? "",
+        l.endereco_identificado_manual ?? l.endereco ?? "",
+        link,
+        paraData(l.primeira_captura_em),
+        l.analysis_status,
+        l.ia_condominio ?? "",
+        l.ia_endereco ?? "",
+        l.ia_bairro ?? "",
+        l.ia_cidade ?? "",
+        l.ia_status ?? "",
+        paraNumero(l.ia_confianca),
+        l.ia_criterio_confirmacao ?? "",
+        (l.ia_evidencias ?? []).join(" | "),
+        (l.ia_divergencias ?? []).join(" | "),
+      ];
+    });
+
+    const planilha = XLSX.utils.aoa_to_sheet([cabecalho, ...linhas]);
+
+    listings.forEach((l, i) => {
+      const linha = i + 1;
+      const precoCell = planilha[XLSX.utils.encode_cell({ r: linha, c: COLUNA_PRECO })];
+      if (precoCell && precoCell.t === "n") precoCell.z = "#,##0.00";
+      const metragemCell = planilha[XLSX.utils.encode_cell({ r: linha, c: COLUNA_METRAGEM })];
+      if (metragemCell && metragemCell.t === "n") metragemCell.z = "#,##0.00";
+      const dataCell = planilha[XLSX.utils.encode_cell({ r: linha, c: COLUNA_DATA })];
+      if (dataCell && dataCell.t === "d") dataCell.z = "dd/mm/yyyy";
+      const linkCell = planilha[XLSX.utils.encode_cell({ r: linha, c: COLUNA_LINK })];
+      const link = l.url_final ?? l.url_original;
+      if (linkCell && link) linkCell.l = { Target: link, Tooltip: "Abrir anuncio" };
+    });
+
+    planilha["!cols"] = cabecalho.map((_, c) =>
+      c === COLUNA_LINK || c === 2 ? { wch: 45 } : { wch: 18 }
+    );
+
+    const livro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(livro, planilha, "Anuncios novos");
+
     const hoje = new Date();
     const dia = String(hoje.getDate()).padStart(2, "0");
     const mes = String(hoje.getMonth() + 1).padStart(2, "0");
     const ano = hoje.getFullYear();
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `anuncios-novos-${dia}-${mes}-${ano}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    XLSX.writeFile(livro, `anuncios-novos-${dia}-${mes}-${ano}.xlsx`);
   }
 
   if (loading) return <p className="status-msg">Carregando anuncios novos...</p>;

@@ -11,7 +11,7 @@ export default withHandler(async (req: VercelRequest, res: VercelResponse) => {
   const pool = getPool();
   const { rows } = await pool.query(
     `SELECT
-      l.id, l.titulo, l.bairro, l.preco, l.url_original, l.url_final,
+      l.id, l.external_id, l.titulo, l.bairro, l.preco, l.url_original, l.url_final,
       l.tipo_imovel, l.condominio_nome, l.endereco,
       l.area_util, l.dormitorios, l.suites, l.vagas,
       l.condominio_identificado_manual, l.endereco_identificado_manual,

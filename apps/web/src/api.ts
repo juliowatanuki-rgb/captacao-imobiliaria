@@ -85,6 +85,7 @@ export interface DashboardData {
 
 export interface NewListing {
   id: string;
+  external_id: string | null;
   titulo: string | null;
   bairro: string | null;
   preco: string | null;
