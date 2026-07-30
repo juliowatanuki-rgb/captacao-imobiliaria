@@ -157,3 +157,23 @@ jobs:
       - name: Rodar crawler - Bueno Santos Imoveis
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- bueno_santos_imoveis
+
+      - name: Rodar crawler - Safira Imoveis Praia Grande
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- safira_imoveis_praia_grande
+
+      - name: Rodar crawler - Spinola Consultoria Imobiliaria
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- spinola_consultoria_imobiliaria
+
+      - name: Rodar crawler - Ape na PG Imobiliaria
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- ape_na_pg_imobiliaria
+
+      - name: Rodar crawler - Debora Bueno Consultoria
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- debora_bueno_consultoria
+
+      - name: Rodar crawler - Grupo MR Solucoes Imobiliarias
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- grupo_mr_solucoes_imobiliarias

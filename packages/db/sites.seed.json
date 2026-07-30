@@ -197,7 +197,7 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (rodape 'powered by praedium.com.br'), NAO 'Castel Digital' como chutado - reaproveita o motor existente em crawlers/src/platforms/praedium.ts (nenhum motor novo necessario). A URL /imoveis/a-venda/praia-grande-sp ja e a listagem dedicada da cidade. 1a validacao completa: 880 imoveis, 45 paginas (20/pagina), 100% cidade=Praia Grande, 0 semExternalId/semUrl. Uma 2a validacao completa imediatamente em seguida (e uma 3a apos fix de robustez) retornaram HTTP 405 'Human Verification' (bloqueio anti-bot do proprio site, nao bug do crawler) - motor ainda assim recebeu pausa entre paginas + retry-com-reload em caso de pagina vazia (mesma licao do coruja.ts) como reforco. RECOMENDA-SE revalidar com 'npm run validate:site' apos um periodo de cooldown (o bloqueio parece ser por IP/sessao, provavelmente temporario) antes de considerar a estabilidade 100% confirmada; nao tentar contornar a verificacao anti-bot. Crawler ainda NAO executado contra o Neon."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (rodape 'powered by praedium.com.br'), NAO 'Castel Digital' como chutado - reaproveita o motor existente em crawlers/src/platforms/praedium.ts (nenhum motor novo necessario). A URL /imoveis/a-venda/praia-grande-sp ja e a listagem dedicada da cidade. Bloqueio anti-bot 'Human Verification' intermitente CONFIRMADO como risco real, nao teorico: coleta real contra o Neon em 2026-07-29 15:11 deu certo (43 paginas, 840 encontrados, 80 novos - base inicial), mas a tentativa seguinte (15:56) so completou 38/43 paginas e marcou 100 anuncios reais como 'ausentes' por engano (o guard-rail so aborta com 0 resultados, nao detecta bloqueio parcial no meio da paginacao). Em 2026-07-30: uma coleta corrigiu os 100 falsos-ausentes (43 paginas, 840 encontrados, 100 atualizados, 1 novo, 1 ausente), mas a proxima tentativa IMEDIATA voltou a bloquear com 0 encontrados (abortada pelo guard-rail de seguranca, sem gravar). CONCLUSAO: nao promover para o crawl.yml diario enquanto esse guard-rail nao cobrir bloqueio PARCIAL (nao so 0 resultados) - risco de corromper o banco marcando imoveis reais como ausentes numa execucao automatica sem supervisao. Mantido so no workflow manual, rodado com espacamento entre tentativas."
   },
   {
     "id": "safira_imoveis_praia_grande",
@@ -207,7 +207,7 @@
     "plataforma": "Nido",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Nido (confirmado - mesmo CDN objectstorage.sa-saopaulo-1.oraclecloud.com de moradanapraia.com.br), NAO 'Kenlo' como chutado na planilha original. Template visual diferente do ja cadastrado (cards '.property-box-7', nao '.card1') - motor proprio em crawlers/src/sites/safira_imoveis_praia_grande.ts em vez de reaproveitar createNidoCrawler. URL /imoveis/venda/SP/praia-grande ja filtra por Praia Grande. 1a coleta confirmada contra o Neon em 2026-07-29: 511 encontrados, 511 novos, 0 erro. Falta a 2a coleta de confirmacao (dias diferentes, 0 duplicidade esperada) antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e Nido (confirmado - mesmo CDN objectstorage.sa-saopaulo-1.oraclecloud.com de moradanapraia.com.br), NAO 'Kenlo' como chutado na planilha original. Template visual diferente do ja cadastrado (cards '.property-box-7', nao '.card1') - motor proprio em crawlers/src/sites/safira_imoveis_praia_grande.ts em vez de reaproveitar createNidoCrawler. URL /imoveis/venda/SP/praia-grande ja filtra por Praia Grande. 1a coleta (2026-07-29): 511 encontrados, 511 novos, 0 erro. 2a coleta de confirmacao (2026-07-30): 511 encontrados, 0 novos, 0 ausentes - estavel."
   },
   {
     "id": "spinola_consultoria_imobiliaria",
@@ -217,7 +217,7 @@
     "plataforma": "USO / Union Softwares",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e USO/Agiliza (Union Softwares, confirmado pelo CDN cdn.uso.com.br), NAO 'Coruja Sistemas' como chutado na planilha original. Template visual 'novo' do produto, diferente do ja cadastrado (cards '.link_resultado' com classes 'titulo_novo'/'valor_novo') - motor proprio em crawlers/src/sites/spinola_consultoria_imobiliaria.ts em vez de reaproveitar createUsoSoftwaresCrawler. Inventario muito pequeno no momento: so 2 imoveis em Praia Grande. Vale manter cadastrado mesmo com pouco volume - pode crescer. 1a coleta confirmada contra o Neon em 2026-07-29: 2 encontrados, 2 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e USO/Agiliza (Union Softwares, confirmado pelo CDN cdn.uso.com.br), NAO 'Coruja Sistemas' como chutado na planilha original. Template visual 'novo' do produto, diferente do ja cadastrado (cards '.link_resultado' com classes 'titulo_novo'/'valor_novo') - motor proprio em crawlers/src/sites/spinola_consultoria_imobiliaria.ts em vez de reaproveitar createUsoSoftwaresCrawler. Inventario muito pequeno no momento: so 2 imoveis em Praia Grande. Vale manter cadastrado mesmo com pouco volume - pode crescer. 1a coleta (2026-07-29): 2 encontrados, 2 novos, 0 erro. 2a coleta de confirmacao (2026-07-30): 2 encontrados, 0 novos, 0 ausentes - estavel."
   },
   {
     "id": "realize_inteligencia_imobiliaria",
@@ -317,7 +317,7 @@
     "plataforma": "Tecimob",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Tecimob (rodape 'SITE PARA IMOBILIARIA'). Catalogo (/comprar/imoveis) cobre a regiao toda (Praia Grande, Sao Vicente, Peruibe, Mongagua, Santos), sem filtro de cidade por URL/click - motor descarta cards fora de Praia Grande. Paginacao via clique em 'li.next a' (SPA MUI, querystring ignorada). Crawler em crawlers/src/sites/ape_na_pg_imobiliaria.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 708 encontrados (de ~726 no catalogo total - maioria e Praia Grande), 688 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e Tecimob (rodape 'SITE PARA IMOBILIARIA'). Catalogo (/comprar/imoveis) cobre a regiao toda (Praia Grande, Sao Vicente, Peruibe, Mongagua, Santos), sem filtro de cidade por URL/click - motor descarta cards fora de Praia Grande. Paginacao via clique em 'li.next a' (SPA MUI, querystring ignorada; as vezes um overlay intercepta o clique, mas o retry automatico do Playwright resolve). Crawler em crawlers/src/sites/ape_na_pg_imobiliaria.ts. 1a coleta (2026-07-30): 708 encontrados (de ~726 no catalogo total - maioria e Praia Grande), 688 novos. 2a coleta de confirmacao (2026-07-30): 708 encontrados, 0 novos, 0 ausentes - estavel."
   },
   {
     "id": "debora_bueno_consultoria",
@@ -327,7 +327,7 @@
     "plataforma": "Apresenta.me",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Apresenta.me (meta author, CDN img.apre.me). Listagem geral (441 imoveis) cobre outras cidades do litoral (Bertioga, Mongagua, Peruibe, Riviera de Sao Lourenco, Sao Paulo) - motor filtra pelo campo '.Endereco .cidade' de cada card. Carregamento via botao 'Mostrar mais Imoveis' (client-side, sem paginacao por URL). Crawler em crawlers/src/sites/debora_bueno_consultoria.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 437 encontrados (de 441 no total - maioria e Praia Grande), 437 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e Apresenta.me (meta author, CDN img.apre.me). Listagem geral (441 imoveis) cobre outras cidades do litoral (Bertioga, Mongagua, Peruibe, Riviera de Sao Lourenco, Sao Paulo) - motor filtra pelo campo '.Endereco .cidade' de cada card. Carregamento via botao 'Mostrar mais Imoveis' (client-side, sem paginacao por URL). Crawler em crawlers/src/sites/debora_bueno_consultoria.ts. 1a coleta (2026-07-30): 437 encontrados (de 441 no total - maioria e Praia Grande), 437 novos. 2a coleta de confirmacao (2026-07-30): 437 encontrados, 0 novos, 0 ausentes - estavel."
   },
   {
     "id": "grupo_mr_solucoes_imobiliarias",
@@ -337,6 +337,6 @@
     "plataforma": "Objetiva Software",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Objetiva Software (Next.js). Sede em Votuporanga/SP - inventario de Praia Grande e pequeno, mesmo padrao ja aceito para spinola_consultoria_imobiliaria. Site expoe API JSON propria (GET /api/imoveis?cidade=5238), sem necessidade de scraping de HTML - motor chama a API direto via fetch() no contexto da pagina. Crawler em crawlers/src/sites/grupo_mr_solucoes_imobiliarias.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 4 encontrados, 4 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e Objetiva Software (Next.js). Sede em Votuporanga/SP - inventario de Praia Grande e pequeno, mesmo padrao ja aceito para spinola_consultoria_imobiliaria. Site expoe API JSON propria (GET /api/imoveis?cidade=5238), sem necessidade de scraping de HTML - motor chama a API direto via fetch() no contexto da pagina. Crawler em crawlers/src/sites/grupo_mr_solucoes_imobiliarias.ts. 1a coleta (2026-07-30): 4 encontrados, 4 novos. 2a coleta de confirmacao (2026-07-30): 4 encontrados, 0 novos, 0 ausentes - estavel."
   }
 ]
