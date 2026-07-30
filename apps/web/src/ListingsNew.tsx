@@ -180,18 +180,78 @@ export default function ListingsNew({
     return valor;
   }
 
+  function formatarNumeroBR(valor: string | null): string {
+    if (valor === null || valor === "") return "";
+    const numero = Number(valor);
+    if (Number.isNaN(numero)) return valor;
+    return numero.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatarDataBR(valor: string): string {
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return valor;
+    const dia = String(data.getDate()).padStart(2, "0");
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
+
   function exportarParaExcel() {
     const linhas = [
-      "id;imobiliaria;link;condominio;endereco",
-      ...listings.map((l, i) =>
+      [
+        "id",
+        "imobiliaria",
+        "titulo",
+        "tipo de imovel",
+        "bairro",
+        "preco",
+        "metragem (m2)",
+        "dormitorios",
+        "suites",
+        "vagas",
+        "condominio",
+        "endereco",
+        "link",
+        "primeira captura em",
+        "status da analise",
+        "condominio sugerido pela IA",
+        "endereco sugerido pela IA",
+        "bairro sugerido pela IA",
+        "cidade sugerida pela IA",
+        "status da investigacao IA",
+        "confianca da IA (%)",
+        "criterio de confirmacao da IA",
+        "evidencias da IA",
+        "divergencias da IA",
+      ].join(";"),
+      ...listings.map((l) =>
         [
-          String(i + 1),
+          l.id,
           l.site_nome,
-          l.url_final ?? l.url_original,
+          l.titulo ?? "",
+          l.tipo_imovel ?? "",
+          l.bairro ?? "",
+          formatarNumeroBR(l.preco),
+          formatarNumeroBR(l.area_util),
+          l.dormitorios ?? "",
+          l.suites ?? "",
+          l.vagas ?? "",
           l.condominio_identificado_manual ?? l.condominio_nome ?? "",
           l.endereco_identificado_manual ?? l.endereco ?? "",
+          l.url_final ?? l.url_original,
+          formatarDataBR(l.primeira_captura_em),
+          l.analysis_status,
+          l.ia_condominio ?? "",
+          l.ia_endereco ?? "",
+          l.ia_bairro ?? "",
+          l.ia_cidade ?? "",
+          l.ia_status ?? "",
+          l.ia_confianca ?? "",
+          l.ia_criterio_confirmacao ?? "",
+          (l.ia_evidencias ?? []).join(" | "),
+          (l.ia_divergencias ?? []).join(" | "),
         ]
-          .map(escapeCsv)
+          .map((v) => escapeCsv(String(v)))
           .join(";")
       ),
     ];
