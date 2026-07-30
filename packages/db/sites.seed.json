@@ -338,5 +338,25 @@
     "ativo": true,
     "isAgregador": false,
     "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e Objetiva Software (Next.js). Sede em Votuporanga/SP - inventario de Praia Grande e pequeno, mesmo padrao ja aceito para spinola_consultoria_imobiliaria. Site expoe API JSON propria (GET /api/imoveis?cidade=5238), sem necessidade de scraping de HTML - motor chama a API direto via fetch() no contexto da pagina. Crawler em crawlers/src/sites/grupo_mr_solucoes_imobiliarias.ts. 1a coleta (2026-07-30): 4 encontrados, 4 novos. 2a coleta de confirmacao (2026-07-30): 4 encontrados, 0 novos, 0 ausentes - estavel."
+  },
+  {
+    "id": "malibu_imoveis",
+    "nome": "Malibu Imoveis",
+    "urlBase": "https://malibuimoveis.com.br",
+    "urlListagem": "https://malibuimoveis.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts) - reaproveita o motor generico existente, nenhum motor novo necessario. Site mono-cidade (so Praia Grande, 474 imoveis). Sem bloqueio anti-bot observado (diferente de arthur_paraguay_investimentos e all_prime_imoveis, mesma plataforma). Crawler em crawlers/src/sites/malibu_imoveis.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 474 encontrados, 474 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "arthur_paraguay_investimentos",
+    "nome": "Arthur Paraguay Investimentos Imobiliarios",
+    "urlBase": "https://arthurparaguay.com.br",
+    "urlListagem": "https://arthurparaguay.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts) - reaproveita o motor generico existente, nenhum motor novo necessario. Site cobre tambem Mongagua alem de Praia Grande - usa a URL dedicada /imoveis/a-venda/praia-grande-sp (~1456 imoveis). BLOQUEADO: 2 tentativas de coleta real deram 0 encontrados - pagina retorna titulo 'Human Verification' (mesmo tipo de bloqueio anti-bot do all_prime_imoveis, aqui parece ser 100% consistente em vez de intermitente). Crawler em crawlers/src/sites/arthur_paraguay_investimentos.ts, mantido cadastrado mas sem coleta ainda - nao vale insistir no bypass por ora (mesma decisao tomada para all_prime_imoveis)."
   }
 ]
