@@ -126,6 +126,27 @@ Repetir o passo 6 para cada uma das 20 imobiliarias, uma por vez ou em grupos
 (secao 19, passo 15 da especificacao original). Um erro em um crawler nunca
 derruba os demais - cada execucao fica registrada em `site_crawl_runs`.
 
+### Investigacao de localizacao via Gemini (prova de conceito)
+
+`investigator/` e uma POC isolada que reproduz o cruzamento manual de uma
+corretora: gera consultas a partir dos dados do anuncio (metragem, condominio,
+IPTU, bairro, trechos da descricao, etc.), pesquisa fontes publicas via
+DuckDuckGo HTML (sem chave, sem billing - ver `investigator/src/webSearch.ts`
+para as ressalvas de robustez/ToS) e manda tudo (texto + ate 8 fotos + os
+resultados da pesquisa) para a Gemini API, que devolve um JSON estruturado com
+evidencias, divergencias e criterio de confirmacao. Requer o secret
+`GEMINI_API_KEY` (alem de `DATABASE_URL`) em Settings > Secrets and variables
+> Actions. Disparo **manual apenas** pelo workflow
+`.github/workflows/investigate-manual.yml`, limitado a no maximo 5 anuncios
+por execucao. Fotos sao baixadas so em memoria durante a execucao (nunca
+gravadas em disco ou no Neon) e a chave nunca e logada nem enviada por
+querystring. Confianca alta so e aceita com pelo menos 2 evidencias
+independentes (reforcado em codigo, nao so no prompt - ver
+`aplicarRegraDeConfianca` em `investigator/src/gemini.ts`). Resultado gravado
+em `listing_investigations`. `npm run validar:anuncio-conhecido -w
+@captacao/investigator -- <url>` roda so a extracao+pesquisa (sem chamar a
+Gemini nem gravar nada) contra um anuncio conhecido, para validar o processo.
+
 ## Regras principais (para nao esquecer ao mexer no codigo)
 
 - Identidade do anuncio dentro de cada site, nessa ordem: codigo oficial >

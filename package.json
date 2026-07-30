@@ -6,7 +6,8 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "crawlers"
+    "crawlers",
+    "investigator"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
@@ -14,7 +15,8 @@
     "test": "npm run test --workspaces --if-present",
     "migrate": "npm run migrate -w @captacao/db",
     "seed:sites": "npm run seed:sites -w @captacao/db",
-    "crawl:all": "npm run crawl:all -w @captacao/crawlers"
+    "crawl:all": "npm run crawl:all -w @captacao/crawlers",
+    "investigate:queue": "npm run investigate:queue -w @captacao/investigator"
   },
   "devDependencies": {
     "typescript": "^5.6.3",

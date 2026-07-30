@@ -1,0 +1,47 @@
+name: Investigacao manual de localizacao (POC Gemini)
+
+# Prova de conceito (secao pedida pelo usuario em 2026-07-30): investiga a
+# localizacao (condominio/endereco/bairro/cidade) de um numero pequeno de
+# anuncios novos usando a Gemini API (texto + fotos). Disparo manual apenas -
+# NAO roda automaticamente e processa no maximo 5 anuncios por execucao
+# (teto tambem reforcado em codigo, ver investigator/src/runQueue.ts).
+on:
+  workflow_dispatch:
+    inputs:
+      quantidade:
+        description: "Quantidade de anuncios a investigar (maximo 5 nesta POC)"
+        required: true
+        default: "5"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  investigate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar navegadores do Playwright
+        run: npx --workspace=@captacao/investigator playwright install --with-deps chromium
+
+      - name: Aplicar migrations pendentes
+        run: npm run migrate
+
+      - name: Rodar fila de investigacao
+        run: npm run investigate:queue -w @captacao/investigator -- ${{ inputs.quantidade }}
