@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchNewListings, login, setListingStatus } from "./api.js";
+import { SessaoExpiradaError, fetchNewListings, login, setListingStatus } from "./api.js";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -37,7 +37,7 @@ describe("api client", () => {
     expect(init.headers.Authorization).toBe("Bearer meu-token");
   });
 
-  it("lanca um erro com a mensagem da API quando a resposta nao e ok", async () => {
+  it("lanca SessaoExpiradaError quando a resposta e 401", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
@@ -45,8 +45,19 @@ describe("api client", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(setListingStatus("token", "id-1", "analisado")).rejects.toThrow(
-      "token invalido ou expirado"
+    await expect(setListingStatus("token", "id-1", "analisado")).rejects.toBeInstanceOf(
+      SessaoExpiradaError
     );
+  });
+
+  it("lanca um erro com a mensagem da API para outros status nao-ok", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: "erro interno" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(setListingStatus("token", "id-1", "analisado")).rejects.toThrow("erro interno");
   });
 });

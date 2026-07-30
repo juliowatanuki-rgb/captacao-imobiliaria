@@ -3,8 +3,10 @@ import { login, type AuthUser } from "./api.js";
 
 export default function Login({
   onLogin,
+  sessaoExpirada,
 }: {
   onLogin: (token: string, user: AuthUser) => void;
+  sessaoExpirada?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +31,7 @@ export default function Login({
     <div className="login-page">
       <form className="login-form" onSubmit={handleSubmit}>
         <h1>Captacao Imobiliaria</h1>
+        {sessaoExpirada && <p className="error">Sessao expirada. Faca login novamente.</p>}
         <label>
           E-mail
           <input

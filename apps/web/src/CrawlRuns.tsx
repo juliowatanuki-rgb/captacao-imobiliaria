@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  SessaoExpiradaError,
   fetchCrawlRunDetail,
   fetchCrawlRuns,
   type CrawlRunSummary,
@@ -40,7 +41,13 @@ function SiteRunRow({ run }: { run: SiteCrawlRun }) {
   );
 }
 
-export default function CrawlRuns({ token }: { token: string }) {
+export default function CrawlRuns({
+  token,
+  onSessionExpired,
+}: {
+  token: string;
+  onSessionExpired: () => void;
+}) {
   const [runs, setRuns] = useState<CrawlRunSummary[]>([]);
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [siteRuns, setSiteRuns] = useState<SiteCrawlRun[]>([]);
@@ -58,6 +65,10 @@ export default function CrawlRuns({ token }: { token: string }) {
         setSelecionado(crawlRuns[0].id);
       }
     } catch (err) {
+      if (err instanceof SessaoExpiradaError) {
+        onSessionExpired();
+        return;
+      }
       setError(err instanceof Error ? err.message : "erro ao carregar execucoes");
     } finally {
       setLoading(false);
@@ -74,7 +85,13 @@ export default function CrawlRuns({ token }: { token: string }) {
     setLoadingDetalhe(true);
     fetchCrawlRunDetail(token, selecionado)
       .then(({ siteRuns }) => setSiteRuns(siteRuns))
-      .catch((err) => setError(err instanceof Error ? err.message : "erro ao carregar detalhe"))
+      .catch((err) => {
+        if (err instanceof SessaoExpiradaError) {
+          onSessionExpired();
+          return;
+        }
+        setError(err instanceof Error ? err.message : "erro ao carregar detalhe");
+      })
       .finally(() => setLoadingDetalhe(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selecionado]);

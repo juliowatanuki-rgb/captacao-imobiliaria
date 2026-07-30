@@ -28,11 +28,13 @@ function loadStoredAuth(): StoredAuth | null {
 export default function App() {
   const [auth, setAuth] = useState<StoredAuth | null>(loadStoredAuth);
   const [aba, setAba] = useState<Aba>("home");
+  const [sessaoExpirada, setSessaoExpirada] = useState(false);
 
   function handleLogin(token: string, user: AuthUser) {
     const stored = { token, user };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
     setAuth(stored);
+    setSessaoExpirada(false);
   }
 
   function handleLogout() {
@@ -40,8 +42,14 @@ export default function App() {
     setAuth(null);
   }
 
+  function handleSessionExpired() {
+    localStorage.removeItem(STORAGE_KEY);
+    setAuth(null);
+    setSessaoExpirada(true);
+  }
+
   if (!auth) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} sessaoExpirada={sessaoExpirada} />;
   }
 
   return (
@@ -95,10 +103,14 @@ export default function App() {
         </div>
       </header>
       <main>
-        {aba === "home" && <Dashboard token={auth.token} />}
-        {aba === "anuncios" && <ListingsNew token={auth.token} />}
-        {aba === "logs" && auth.user.role === "admin" && <CrawlRuns token={auth.token} />}
-        {aba === "usuarios" && auth.user.role === "admin" && <Users token={auth.token} />}
+        {aba === "home" && <Dashboard token={auth.token} onSessionExpired={handleSessionExpired} />}
+        {aba === "anuncios" && <ListingsNew token={auth.token} onSessionExpired={handleSessionExpired} />}
+        {aba === "logs" && auth.user.role === "admin" && (
+          <CrawlRuns token={auth.token} onSessionExpired={handleSessionExpired} />
+        )}
+        {aba === "usuarios" && auth.user.role === "admin" && (
+          <Users token={auth.token} onSessionExpired={handleSessionExpired} />
+        )}
       </main>
     </div>
   );

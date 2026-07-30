@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchDashboard, type CaptacaoPorDia, type DashboardData, type RankingSite } from "./api.js";
+import { SessaoExpiradaError, fetchDashboard, type CaptacaoPorDia, type DashboardData, type RankingSite } from "./api.js";
 
 function formatData(iso: string | null): string {
   if (!iso) return "-";
@@ -99,7 +99,13 @@ function RankingList({ ranking }: { ranking: RankingSite[] }) {
   );
 }
 
-export default function Dashboard({ token }: { token: string }) {
+export default function Dashboard({
+  token,
+  onSessionExpired,
+}: {
+  token: string;
+  onSessionExpired: () => void;
+}) {
   const [range, setRange] = useState(defaultRange);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,8 +116,15 @@ export default function Dashboard({ token }: { token: string }) {
     setError(null);
     fetchDashboard(token, range.from, range.to)
       .then(setData)
-      .catch((err) => setError(err instanceof Error ? err.message : "erro ao carregar dashboard"))
+      .catch((err) => {
+        if (err instanceof SessaoExpiradaError) {
+          onSessionExpired();
+          return;
+        }
+        setError(err instanceof Error ? err.message : "erro ao carregar dashboard");
+      })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, range.from, range.to]);
 
   return (

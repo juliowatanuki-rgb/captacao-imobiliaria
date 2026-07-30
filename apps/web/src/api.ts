@@ -101,6 +101,14 @@ export interface NewListing {
   site_nome: string;
 }
 
+/** Sessao expirada/invalida (HTTP 401) - tratado separadamente de erros comuns
+ * para permitir deslogar e voltar ao login em vez de so mostrar o erro cru. */
+export class SessaoExpiradaError extends Error {
+  constructor() {
+    super("sessao expirada");
+  }
+}
+
 async function request<T>(path: string, token: string | null, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -111,6 +119,7 @@ async function request<T>(path: string, token: string | null, init?: RequestInit
     },
   });
   if (!res.ok) {
+    if (res.status === 401) throw new SessaoExpiradaError();
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error ?? `erro ${res.status}`);
   }

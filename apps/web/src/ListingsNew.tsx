@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import {
+  SessaoExpiradaError,
   fetchNewListings,
   setListingNotes,
   setListingStatus,
   type NewListing,
 } from "./api.js";
 
-export default function ListingsNew({ token }: { token: string }) {
+export default function ListingsNew({
+  token,
+  onSessionExpired,
+}: {
+  token: string;
+  onSessionExpired: () => void;
+}) {
   const [listings, setListings] = useState<NewListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +26,10 @@ export default function ListingsNew({ token }: { token: string }) {
       const { listings } = await fetchNewListings(token);
       setListings(listings);
     } catch (err) {
+      if (err instanceof SessaoExpiradaError) {
+        onSessionExpired();
+        return;
+      }
       setError(err instanceof Error ? err.message : "erro ao carregar anuncios");
     } finally {
       setLoading(false);
@@ -31,8 +42,18 @@ export default function ListingsNew({ token }: { token: string }) {
   }, []);
 
   async function handleStatus(id: string, status: "analisado" | "descartado" | "selecionado_para_captacao") {
-    await setListingStatus(token, id, status);
-    setListings((prev) => prev.filter((l) => l.id !== id));
+    try {
+      await setListingStatus(token, id, status);
+      setListings((prev) => prev.filter((l) => l.id !== id));
+    } catch (err) {
+      if (err instanceof SessaoExpiradaError) {
+        onSessionExpired();
+        return;
+      }
+      // eslint-disable-next-line no-console
+      console.error("erro ao atualizar anuncio:", err);
+      window.alert(err instanceof Error ? err.message : "erro ao atualizar anuncio");
+    }
   }
 
   function draftFor(id: string) {
@@ -45,11 +66,21 @@ export default function ListingsNew({ token }: { token: string }) {
 
   async function saveNotes(id: string) {
     const draft = draftFor(id);
-    await setListingNotes(token, id, {
-      observacoes: draft.observacoes,
-      condominioIdentificadoManual: draft.condominio,
-      enderecoIdentificadoManual: draft.endereco,
-    });
+    try {
+      await setListingNotes(token, id, {
+        observacoes: draft.observacoes,
+        condominioIdentificadoManual: draft.condominio,
+        enderecoIdentificadoManual: draft.endereco,
+      });
+    } catch (err) {
+      if (err instanceof SessaoExpiradaError) {
+        onSessionExpired();
+        return;
+      }
+      // eslint-disable-next-line no-console
+      console.error("erro ao salvar observacoes:", err);
+      window.alert(err instanceof Error ? err.message : "erro ao salvar observacoes");
+    }
   }
 
   function escapeCsv(valor: string): string {

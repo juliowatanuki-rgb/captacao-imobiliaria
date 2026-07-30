@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createUser, fetchUsers, updateUser, type ManagedUser } from "./api.js";
+import { SessaoExpiradaError, createUser, fetchUsers, updateUser, type ManagedUser } from "./api.js";
 
 interface NovoUsuarioForm {
   nome: string;
@@ -31,7 +31,13 @@ function draftFromUser(user: ManagedUser): EditDraft {
   };
 }
 
-export default function Users({ token }: { token: string }) {
+export default function Users({
+  token,
+  onSessionExpired,
+}: {
+  token: string;
+  onSessionExpired: () => void;
+}) {
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +58,10 @@ export default function Users({ token }: { token: string }) {
       const { users } = await fetchUsers(token);
       setUsers(users);
     } catch (err) {
+      if (err instanceof SessaoExpiradaError) {
+        onSessionExpired();
+        return;
+      }
       setError(err instanceof Error ? err.message : "erro ao carregar usuarios");
     } finally {
       setLoading(false);
@@ -72,6 +82,10 @@ export default function Users({ token }: { token: string }) {
       setUsers((prev) => [...prev, user].sort((a, b) => a.nome.localeCompare(b.nome)));
       setNovo(FORM_VAZIO);
     } catch (err) {
+      if (err instanceof SessaoExpiradaError) {
+        onSessionExpired();
+        return;
+      }
       setErroNovo(err instanceof Error ? err.message : "erro ao criar usuario");
     } finally {
       setCriando(false);
@@ -120,6 +134,10 @@ export default function Users({ token }: { token: string }) {
       setUsers((prev) => prev.map((u) => (u.id === id ? user : u)));
       setEditandoId(null);
     } catch (err) {
+      if (err instanceof SessaoExpiradaError) {
+        onSessionExpired();
+        return;
+      }
       setErroEdicao(err instanceof Error ? err.message : "erro ao salvar usuario");
     } finally {
       setSalvandoId(null);
