@@ -177,3 +177,31 @@ jobs:
       - name: Rodar crawler - Grupo MR Solucoes Imobiliarias
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- grupo_mr_solucoes_imobiliarias
+
+      - name: Rodar crawler - Nova Geracao Imoveis Praia
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- nova_geracao_imoveis_praia
+
+      - name: Rodar crawler - Imoveis de Classe
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- imoveis_de_classe
+
+      - name: Rodar crawler - Central Imoveis Praia Grande
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- central_imoveis_praia_grande
+
+      - name: Rodar crawler - Malibu Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- malibu_imoveis
+
+      - name: Rodar crawler - Prime Imoveis PG
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- prime_imoveis_pg
+
+      - name: Rodar crawler - Nova CPI
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- nova_cpi
+
+      - name: Rodar crawler - Costa do Sol Imobiliaria
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- costa_do_sol_imobiliaria

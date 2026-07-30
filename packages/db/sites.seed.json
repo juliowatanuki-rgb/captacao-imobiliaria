@@ -347,7 +347,7 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts) - reaproveita o motor generico existente, nenhum motor novo necessario. Site mono-cidade (so Praia Grande, 474 imoveis). Sem bloqueio anti-bot observado (diferente de arthur_paraguay_investimentos e all_prime_imoveis, mesma plataforma). Crawler em crawlers/src/sites/malibu_imoveis.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 474 encontrados, 474 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts) - reaproveita o motor generico existente, nenhum motor novo necessario. Site mono-cidade (so Praia Grande, 474 imoveis). Sem bloqueio anti-bot observado (diferente de arthur_paraguay_investimentos e all_prime_imoveis, mesma plataforma). Crawler em crawlers/src/sites/malibu_imoveis.ts. 1a coleta: 474 encontrados, 474 novos, 0 erro. 2a coleta confirmada: 474 encontrados, 0 novos, 1 atualizado, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
   },
   {
     "id": "arthur_paraguay_investimentos",
@@ -367,7 +367,7 @@
     "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Site mono-cidade (Praia Grande, 666 imoveis), paginacao ?pagina=N confirmada ao vivo. Crawler em crawlers/src/sites/prime_imoveis_pg.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 666 encontrados, 657 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Site mono-cidade (Praia Grande), paginacao ?pagina=N confirmada ao vivo. Crawler em crawlers/src/sites/prime_imoveis_pg.ts. 1a coleta: 666 encontrados, 657 novos, 0 erro. 2a coleta confirmada: 665 encontrados, 9 novos, 1 atualizado, 12 ausentes, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
   },
   {
     "id": "nova_cpi",
@@ -377,7 +377,7 @@
     "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Codigos com sufixo '-NCE'. Inventario grande. Crawler em crawlers/src/sites/nova_cpi.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 2121 encontrados, 2121 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Codigos com sufixo '-NCE'. Inventario grande. Crawler em crawlers/src/sites/nova_cpi.ts. 1a coleta: 2121 encontrados, 2121 novos, 0 erro. 2a coleta confirmada: 2116 encontrados, 0 novos, 3 atualizados, 5 ausentes, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
   },
   {
     "id": "costa_do_sol_imobiliaria",
@@ -387,6 +387,36 @@
     "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Codigos com sufixo '-C0O'. Crawler em crawlers/src/sites/costa_do_sol_imobiliaria.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 1735 encontrados, 1735 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Codigos com sufixo '-C0O'. Crawler em crawlers/src/sites/costa_do_sol_imobiliaria.ts. 1a coleta: 1735 encontrados, 1735 novos, 0 erro. 2a coleta confirmada: 1735 encontrados, 1 novo, 1 atualizado, 1 ausente, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
+  },
+  {
+    "id": "nova_geracao_imoveis_praia",
+    "nome": "Nova Geracao Imoveis Praia",
+    "urlBase": "https://www.novageracaoimoveispraia.com.br",
+    "urlListagem": "https://www.novageracaoimoveispraia.com.br/imoveis/a-venda/praia-grande",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (logo alt=\"Kenlo\" no header, mesmo CDN static-sites.kenlo.io de platforms/kenlo.ts) - reaproveita o motor generico existente. Inventario grande. Crawler em crawlers/src/sites/nova_geracao_imoveis_praia.ts. 1a coleta: 2186 encontrados, 2186 novos, 0 erro. 2a coleta confirmada: 2190 encontrados, 5 novos, 2 ausentes, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
+  },
+  {
+    "id": "imoveis_de_classe",
+    "nome": "Imoveis de Classe",
+    "urlBase": "https://imoveisdeclasse.com.br",
+    "urlListagem": "https://imoveisdeclasse.com.br/p-imoveis-venda-praia_grande-ordenacao-7.html",
+    "plataforma": "Microsistec",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Microsistec (fotos em vault.imob.online). Usa a mesma variante de template <article class=\"box-result-properties\"> ja mapeada em sites/nova_kennedy.ts (codigo no header 'Cod.: N', link direto no footer) - scraper autocontido, nao usa platforms/microsistec.ts (que interpreta um terceiro template). Inventario grande (4061 imoveis, 15/pagina, ~272 paginas) - pausa de 2000ms entre paginas (ritmo mais rapido chegou a provocar bloqueio total de conexao do lado do servidor). Um anuncio (cod. 722991) tinha area_util com erro de digitacao na propria fonte (\"117711220 m²\") que estourava a coluna numeric(10,2) - protegido por areaUtilPlausivel (descarta area > 100.000 m²), mesmo fix aplicado tambem em central_imoveis_praia_grande.ts, nova_kennedy.ts, realizacao_imoveis.ts e platforms/microsistec.ts (todos compartilham a mesma logica de parsing). Crawler em crawlers/src/sites/imoveis_de_classe.ts. 1a coleta: 4061 encontrados, 4061 novos, 0 erro. 2a coleta confirmada: 4061 encontrados, 0 novos, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
+  },
+  {
+    "id": "central_imoveis_praia_grande",
+    "nome": "Central Imoveis Praia Grande",
+    "urlBase": "https://centralimoveispraiagrande.com.br",
+    "urlListagem": "https://centralimoveispraiagrande.com.br/p-imoveis-venda-praia_grande-ordenacao-7.html",
+    "plataforma": "Microsistec",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Microsistec (fotos em vault.imob.online). Usa a mesma variante de template <article class=\"box-result\"> (sem sufixo -properties) ja mapeada em sites/realizacao_imoveis.ts (codigo dentro do data-property JSON no footer) - scraper autocontido, nao usa platforms/microsistec.ts. Pausa de 2000ms entre paginas (mesma infraestrutura de imoveis_de_classe.ts, onde ritmo mais rapido provocou bloqueio total de conexao). Protegido por areaUtilPlausivel (descarta area_util > 100.000 m² - erro de digitacao ja visto na mesma plataforma). Crawler em crawlers/src/sites/central_imoveis_praia_grande.ts. 1a coleta: 482 encontrados, 482 novos, 0 erro. 2a coleta confirmada: 482 encontrados, 0 novos, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
   }
 ]
