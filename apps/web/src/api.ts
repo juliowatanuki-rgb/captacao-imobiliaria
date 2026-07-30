@@ -99,6 +99,18 @@ export interface NewListing {
   analysis_status: string;
   site_id: string;
   site_nome: string;
+  // Sugestao da investigacao via Gemini (tabela listing_investigations),
+  // null quando o anuncio ainda nao foi investigado.
+  ia_condominio: string | null;
+  ia_endereco: string | null;
+  ia_bairro: string | null;
+  ia_cidade: string | null;
+  ia_confianca: number | null;
+  ia_status: "localizado" | "parcial" | "nao_localizado" | null;
+  ia_evidencias: string[] | null;
+  ia_divergencias: string[] | null;
+  ia_criterio_confirmacao: string | null;
+  ia_criado_em: string | null;
 }
 
 /** Sessao expirada/invalida (HTTP 401) - tratado separadamente de erros comuns

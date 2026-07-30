@@ -294,6 +294,78 @@ main {
   margin: 0.25rem 0 0.5rem;
 }
 
+.ia-suggestion {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.75rem;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.ia-suggestion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.ia-suggestion-titulo {
+  font-weight: 700;
+  color: #5b21b6;
+}
+
+.ia-suggestion-confianca {
+  color: #666;
+  font-size: 0.78rem;
+}
+
+.ia-suggestion p {
+  margin: 0.2rem 0;
+}
+
+.ia-suggestion-criterio {
+  color: #555;
+  font-style: italic;
+}
+
+.ia-suggestion-vazia {
+  color: #777;
+}
+
+.ia-suggestion details {
+  margin-top: 0.4rem;
+}
+
+.ia-suggestion summary {
+  cursor: pointer;
+  color: #5b21b6;
+}
+
+.ia-suggestion ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.ia-suggestion-divergencias summary {
+  color: #a05a00;
+}
+
+.status-badge.ia-status-localizado {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+
+.status-badge.ia-status-parcial {
+  background: #fff4e5;
+  color: #a05a00;
+}
+
+.status-badge.ia-status-nao_localizado {
+  background: #f1f1f1;
+  color: #666;
+}
+
 .manual-fields {
   display: flex;
   flex-direction: column;

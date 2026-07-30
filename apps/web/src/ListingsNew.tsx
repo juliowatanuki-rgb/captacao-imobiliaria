@@ -7,6 +7,62 @@ import {
   type NewListing,
 } from "./api.js";
 
+function SugestaoIA({ listing, onUsarSugestao }: { listing: NewListing; onUsarSugestao: (listing: NewListing) => void }) {
+  if (!listing.ia_status) return null;
+  const temSugestao = Boolean(listing.ia_condominio || listing.ia_endereco);
+  return (
+    <div className="ia-suggestion">
+      <div className="ia-suggestion-header">
+        <span className="ia-suggestion-titulo">Sugestao da IA</span>
+        <span className={`status-badge ia-status-${listing.ia_status}`}>
+          {listing.ia_status === "localizado"
+            ? "localizado"
+            : listing.ia_status === "parcial"
+              ? "parcial"
+              : "nao localizado"}
+        </span>
+        {listing.ia_confianca !== null && (
+          <span className="ia-suggestion-confianca">confianca {listing.ia_confianca}%</span>
+        )}
+      </div>
+      {temSugestao ? (
+        <>
+          {listing.ia_condominio && <p><strong>Condominio:</strong> {listing.ia_condominio}</p>}
+          {listing.ia_endereco && <p><strong>Endereco:</strong> {listing.ia_endereco}</p>}
+          <button type="button" onClick={() => onUsarSugestao(listing)}>
+            Usar sugestao
+          </button>
+        </>
+      ) : (
+        <p className="ia-suggestion-vazia">Nenhum condominio/endereco identificado com confianca suficiente.</p>
+      )}
+      {listing.ia_criterio_confirmacao && (
+        <p className="ia-suggestion-criterio">{listing.ia_criterio_confirmacao}</p>
+      )}
+      {listing.ia_evidencias && listing.ia_evidencias.length > 0 && (
+        <details>
+          <summary>Evidencias ({listing.ia_evidencias.length})</summary>
+          <ul>
+            {listing.ia_evidencias.map((e, i) => (
+              <li key={i}>{e}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+      {listing.ia_divergencias && listing.ia_divergencias.length > 0 && (
+        <details className="ia-suggestion-divergencias">
+          <summary>Divergencias ({listing.ia_divergencias.length})</summary>
+          <ul>
+            {listing.ia_divergencias.map((d, i) => (
+              <li key={i}>{d}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
+}
+
 export default function ListingsNew({
   token,
   onSessionExpired,
@@ -62,6 +118,17 @@ export default function ListingsNew({
 
   function updateDraft(id: string, field: "observacoes" | "condominio" | "endereco", value: string) {
     setNotesDraft((prev) => ({ ...prev, [id]: { ...draftFor(id), [field]: value } }));
+  }
+
+  function usarSugestaoIA(listing: NewListing) {
+    setNotesDraft((prev) => ({
+      ...prev,
+      [listing.id]: {
+        ...draftFor(listing.id),
+        condominio: listing.ia_condominio || draftFor(listing.id).condominio,
+        endereco: listing.ia_endereco || draftFor(listing.id).endereco,
+      },
+    }));
   }
 
   async function saveNotes(id: string) {
@@ -146,6 +213,8 @@ export default function ListingsNew({
           <a href={listing.url_final ?? listing.url_original} target="_blank" rel="noreferrer">
             Abrir anuncio original
           </a>
+
+          <SugestaoIA listing={listing} onUsarSugestao={usarSugestaoIA} />
 
           <div className="manual-fields">
             <label>
