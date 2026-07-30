@@ -76,6 +76,15 @@ function parseMoeda(texto: string): number | null {
   return Number.isFinite(valor) ? valor : null;
 }
 
+// Protege contra erro de digitacao na fonte (visto ao vivo em
+// crawlers/src/sites/imoveis_de_classe.ts, mesma plataforma Microsistec:
+// "117711220 m²" em vez de algo plausivel) que estoura a coluna
+// numeric(10,2) de area_util no banco e derruba a coleta inteira. 100.000 m²
+// e uma folga generosa - nenhum imovel residencial real chega perto disso.
+function areaUtilPlausivel(valor: number | null): number | null {
+  return valor !== null && valor > 0 && valor <= 100_000 ? valor : null;
+}
+
 function parseItemNumero(itens: string[], rotulo: RegExp): number | null {
   for (const item of itens) {
     if (rotulo.test(item)) {
@@ -160,7 +169,7 @@ export function createMicrosistecCrawler(config: MicrosistecConfig): SiteCrawler
             cidade,
             bairro,
             preco: parseMoeda(card.preco),
-            areaUtil: parseItemNumero(card.itens, /área/i),
+            areaUtil: areaUtilPlausivel(parseItemNumero(card.itens, /área/i)),
             dormitorios: parseItemNumero(card.itens, /quarto/i),
             banheiros: parseItemNumero(card.itens, /banheiro/i),
             vagas: parseItemNumero(card.itens, /vaga/i),

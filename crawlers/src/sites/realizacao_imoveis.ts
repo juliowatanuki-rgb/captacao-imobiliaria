@@ -133,6 +133,16 @@ function parseMoeda(texto: string): number | null {
   return Number.isFinite(valor) ? valor : null;
 }
 
+// Protege contra erro de digitacao na fonte (visto ao vivo em
+// imoveis_de_classe.ts, mesma plataforma Microsistec: "117711220 m²" em vez
+// de algo plausivel) que estoura a coluna numeric(10,2) de area_util no
+// banco e derruba a coleta inteira. 100.000 m² e uma folga generosa - este
+// site roda no crawl.yml diario, entao um valor assim quebraria a coleta
+// automatica ate ser corrigido manualmente.
+function areaUtilPlausivel(valor: number | null): number | null {
+  return valor !== null && valor > 0 && valor <= 100_000 ? valor : null;
+}
+
 function parseItemNumero(itens: RawCard["itens"], rotulo: RegExp): number | null {
   const item = itens.find((i) => i.rotulo && rotulo.test(i.rotulo));
   if (!item) return null;
@@ -198,7 +208,7 @@ const realizacaoImoveisCrawler: SiteCrawlerModule = {
           cidade: extractCidade(card.alt),
           bairro: card.bairro,
           preco: parseMoeda(card.precoTexto),
-          areaUtil: parseItemNumero(card.itens, /área/i),
+          areaUtil: areaUtilPlausivel(parseItemNumero(card.itens, /área/i)),
           dormitorios: parseItemNumero(card.itens, /dorm/i),
           suites: parseItemNumero(card.itens, /su[íi]te/i),
           banheiros: parseItemNumero(card.itens, /banheiro/i),
