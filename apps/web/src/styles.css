@@ -295,9 +295,29 @@ main {
 }
 
 .caracteristicas {
-  color: #666;
-  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+}
+
+.caracteristicas > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 3.5rem;
+}
+
+.caracteristicas dt {
+  color: #888;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.caracteristicas dd {
+  margin: 0;
+  color: #333;
+  font-weight: 600;
 }
 
 .ia-suggestion {

@@ -7,13 +7,27 @@ import {
   type NewListing,
 } from "./api.js";
 
-function formatCaracteristicas(listing: NewListing): string | null {
-  const partes: string[] = [];
-  if (listing.area_util) partes.push(`${listing.area_util} m²`);
-  if (listing.dormitorios) partes.push(`${listing.dormitorios} dorm.`);
-  if (listing.suites) partes.push(`${listing.suites} suite${listing.suites > 1 ? "s" : ""}`);
-  if (listing.vagas) partes.push(`${listing.vagas} vaga${listing.vagas > 1 ? "s" : ""}`);
-  return partes.length > 0 ? partes.join(" · ") : null;
+function Caracteristicas({ listing }: { listing: NewListing }) {
+  return (
+    <dl className="caracteristicas">
+      <div>
+        <dt>Metragem</dt>
+        <dd>{listing.area_util ? `${listing.area_util} m²` : "-"}</dd>
+      </div>
+      <div>
+        <dt>Dormitorios</dt>
+        <dd>{listing.dormitorios ?? "-"}</dd>
+      </div>
+      <div>
+        <dt>Suites</dt>
+        <dd>{listing.suites ?? "-"}</dd>
+      </div>
+      <div>
+        <dt>Vagas</dt>
+        <dd>{listing.vagas ?? "-"}</dd>
+      </div>
+    </dl>
+  );
 }
 
 function SugestaoIA({ listing, onUsarSugestao }: { listing: NewListing; onUsarSugestao: (listing: NewListing) => void }) {
@@ -219,9 +233,7 @@ export default function ListingsNew({
             {listing.bairro ?? "bairro nao informado"}
             {listing.preco ? ` - R$ ${listing.preco}` : ""}
           </p>
-          {formatCaracteristicas(listing) && (
-            <p className="caracteristicas">{formatCaracteristicas(listing)}</p>
-          )}
+          <Caracteristicas listing={listing} />
           <a href={listing.url_final ?? listing.url_original} target="_blank" rel="noreferrer">
             Abrir anuncio original
           </a>
