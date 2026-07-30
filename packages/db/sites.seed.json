@@ -358,5 +358,35 @@
     "ativo": true,
     "isAgregador": false,
     "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts) - reaproveita o motor generico existente, nenhum motor novo necessario. Site cobre tambem Mongagua alem de Praia Grande - usa a URL dedicada /imoveis/a-venda/praia-grande-sp (~1456 imoveis). BLOQUEADO: 2 tentativas de coleta real deram 0 encontrados - pagina retorna titulo 'Human Verification' (mesmo tipo de bloqueio anti-bot do all_prime_imoveis, aqui parece ser 100% consistente em vez de intermitente). Crawler em crawlers/src/sites/arthur_paraguay_investimentos.ts, mantido cadastrado mas sem coleta ainda - nao vale insistir no bypass por ora (mesma decisao tomada para all_prime_imoveis)."
+  },
+  {
+    "id": "prime_imoveis_pg",
+    "nome": "Prime Imoveis PG",
+    "urlBase": "https://www.primeimoveispg.com.br",
+    "urlListagem": "https://www.primeimoveispg.com.br/imoveis/a-venda/praia-grande",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Site mono-cidade (Praia Grande, 666 imoveis), paginacao ?pagina=N confirmada ao vivo. Crawler em crawlers/src/sites/prime_imoveis_pg.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 666 encontrados, 657 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "nova_cpi",
+    "nome": "Nova CPI",
+    "urlBase": "https://www.novacpi.com.br",
+    "urlListagem": "https://www.novacpi.com.br/imoveis/a-venda/praia-grande",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Codigos com sufixo '-NCE'. Inventario grande. Crawler em crawlers/src/sites/nova_cpi.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 2121 encontrados, 2121 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "costa_do_sol_imobiliaria",
+    "nome": "Costa do Sol Imobiliaria",
+    "urlBase": "https://www.costadosolimobiliaria.com.br",
+    "urlListagem": "https://www.costadosolimobiliaria.com.br/imoveis/a-venda/praia-grande",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts) - reaproveita o motor generico existente. Codigos com sufixo '-C0O'. Crawler em crawlers/src/sites/costa_do_sol_imobiliaria.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 1735 encontrados, 1735 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
   }
 ]
