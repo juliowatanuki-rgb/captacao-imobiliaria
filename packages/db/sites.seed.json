@@ -227,7 +227,7 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Imoview' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 52 encontrados, 52 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Imoview' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 52 encontrados, 52 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "marco_hottz_imoveis",
@@ -237,7 +237,7 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Union Softwares' como chutado na planilha original. Inventario declarado pelo site: 794 imoveis. 1a coleta confirmada contra o Neon em 2026-07-29: 380 encontrados, 380 novos, 0 erro (menos que os 794 declarados - paginacao Praedium tem instabilidade conhecida de rate-limit/anti-bot, ver observacao de all_prime_imoveis). Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Union Softwares' como chutado na planilha original. Inventario declarado pelo site: 794 imoveis. 1a coleta confirmada contra o Neon em 2026-07-29: 380 encontrados, 380 novos, 0 erro (menos que os 794 declarados - paginacao Praedium tem instabilidade conhecida de rate-limit/anti-bot, ver observacao de all_prime_imoveis). 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "alo_imoveis_baixada",
@@ -247,7 +247,7 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Kenlo' como chutado na planilha original. Inventario declarado pelo site: 850 imoveis. 1a tentativa de coleta voltou 0 encontrados (bloqueio anti-bot momentaneo, mesma instabilidade conhecida do motor Praedium); repetida na sequencia com sucesso: 220 encontrados, 220 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Kenlo' como chutado na planilha original. Inventario declarado pelo site: 850 imoveis. 1a tentativa de coleta voltou 0 encontrados (bloqueio anti-bot momentaneo, mesma instabilidade conhecida do motor Praedium); repetida na sequencia com sucesso: 220 encontrados, 220 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "aetherna_empreendimentos",
@@ -257,7 +257,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts), NAO 'Union Softwares' como chutado na planilha original. Site exibe 'MARIO J. DA S. NETO CONSULTOR' como razao social por tras da marca Aetherna - mesmo site, sem duplicidade. 1a coleta confirmada contra o Neon em 2026-07-29: 1363 encontrados, 1363 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts), NAO 'Union Softwares' como chutado na planilha original. Site exibe 'MARIO J. DA S. NETO CONSULTOR' como razao social por tras da marca Aetherna - mesmo site, sem duplicidade. 1a coleta confirmada contra o Neon em 2026-07-29: 1363 encontrados, 1363 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "quintal_de_areia_imoveis",
@@ -267,7 +267,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts), NAO 'Vista Software' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1249 encontrados, 1249 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts), NAO 'Vista Software' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1249 encontrados, 1249 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "marise_gomes_moreira_imoveis",
@@ -277,7 +277,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts, mesmo hash de app.js que aetherna_empreendimentos e debora_santos_imoveis - provavelmente mesma rede/parceria de anuncios), NAO 'Tecimob' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1737 encontrados, 1737 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts, mesmo hash de app.js que aetherna_empreendimentos e debora_santos_imoveis - provavelmente mesma rede/parceria de anuncios), NAO 'Tecimob' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1737 encontrados, 1737 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "debora_santos_imoveis",
@@ -287,7 +287,7 @@
     "plataforma": "Coruja Sistemas",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts) - confirma o chute da planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1366 encontrados, 1366 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts) - confirma o chute da planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 1366 encontrados, 1366 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "msa_investimento_imobiliario",
@@ -297,7 +297,7 @@
     "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts). O site opera sob a marca 'Kadri Imoveis' (dominio kadriimoveis.com.br redireciona para este mesmo dominio/conteudo) - titulo da pagina mostra 'Kadri Imoveis - Imobiliaria em Praia Grande'. 1a coleta confirmada contra o Neon em 2026-07-29: 1081 encontrados, 1081 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Kenlo (mesmo CDN static-sites.kenlo.io e mesma estrutura de card 'a.card-with-buttons' de platforms/kenlo.ts). O site opera sob a marca 'Kadri Imoveis' (dominio kadriimoveis.com.br redireciona para este mesmo dominio/conteudo) - titulo da pagina mostra 'Kadri Imoveis - Imobiliaria em Praia Grande'. 1a coleta confirmada contra o Neon em 2026-07-29: 1081 encontrados, 1081 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
   },
   {
     "id": "bueno_santos_imoveis",
@@ -307,6 +307,36 @@
     "plataforma": "Nido",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Nido (meta author 'Nido Tecnologia', mesmo CDN objectstorage.sa-saopaulo-1.oraclecloud.com), NAO 'Coruja Sistemas' como chutado na planilha original. Template 'box-5' (variante do template 'box-7' usado em safira_imoveis_praia_grande) - motor compartilhado em platforms/nido_variant.ts. 1a coleta confirmada contra o Neon em 2026-07-29: 198 encontrados, 198 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+    "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e Nido (meta author 'Nido Tecnologia', mesmo CDN objectstorage.sa-saopaulo-1.oraclecloud.com), NAO 'Coruja Sistemas' como chutado na planilha original. Template 'box-5' (variante do template 'box-7' usado em safira_imoveis_praia_grande) - motor compartilhado em platforms/nido_variant.ts. 1a coleta: 198 encontrados, 198 novos, 0 erro. 2a coleta de confirmacao (2026-07-30): 201 encontrados, 3 novos (variacao organica), 0 atualizados, 0 ausentes."
+  },
+  {
+    "id": "ape_na_pg_imobiliaria",
+    "nome": "Ape na PG Imobiliaria",
+    "urlBase": "https://apenapg.com.br",
+    "urlListagem": "https://apenapg.com.br/comprar/imoveis",
+    "plataforma": "Tecimob",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Tecimob (rodape 'SITE PARA IMOBILIARIA'). Catalogo (/comprar/imoveis) cobre a regiao toda (Praia Grande, Sao Vicente, Peruibe, Mongagua, Santos), sem filtro de cidade por URL/click - motor descarta cards fora de Praia Grande. Paginacao via clique em 'li.next a' (SPA MUI, querystring ignorada). Crawler em crawlers/src/sites/ape_na_pg_imobiliaria.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 708 encontrados (de ~726 no catalogo total - maioria e Praia Grande), 688 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "debora_bueno_consultoria",
+    "nome": "Debora Bueno Consultoria",
+    "urlBase": "https://deborabuenoimoveis.com.br",
+    "urlListagem": "https://deborabuenoimoveis.com.br/imoveis/",
+    "plataforma": "Apresenta.me",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Apresenta.me (meta author, CDN img.apre.me). Listagem geral (441 imoveis) cobre outras cidades do litoral (Bertioga, Mongagua, Peruibe, Riviera de Sao Lourenco, Sao Paulo) - motor filtra pelo campo '.Endereco .cidade' de cada card. Carregamento via botao 'Mostrar mais Imoveis' (client-side, sem paginacao por URL). Crawler em crawlers/src/sites/debora_bueno_consultoria.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 437 encontrados (de 441 no total - maioria e Praia Grande), 437 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
+  },
+  {
+    "id": "grupo_mr_solucoes_imobiliarias",
+    "nome": "Grupo MR Solucoes Imobiliarias",
+    "urlBase": "https://gmrsolucoesimobiliarias.com.br",
+    "urlListagem": "https://gmrsolucoesimobiliarias.com.br/imoveis",
+    "plataforma": "Objetiva Software",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Objetiva Software (Next.js). Sede em Votuporanga/SP - inventario de Praia Grande e pequeno, mesmo padrao ja aceito para spinola_consultoria_imobiliaria. Site expoe API JSON propria (GET /api/imoveis?cidade=5238), sem necessidade de scraping de HTML - motor chama a API direto via fetch() no contexto da pagina. Crawler em crawlers/src/sites/grupo_mr_solucoes_imobiliarias.ts. 1a coleta confirmada contra o Neon em 2026-07-30: 4 encontrados, 4 novos, 0 erro. Falta a 2a coleta de confirmacao antes de mover para o workflow diario automatico (crawl.yml) - por ora so no workflow manual isolado."
   }
 ]

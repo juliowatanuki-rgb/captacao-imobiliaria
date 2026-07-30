@@ -121,3 +121,39 @@ jobs:
       - name: Rodar crawler - Praialar Imoveis
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- praialar_imoveis
+
+      - name: Rodar crawler - Realize Inteligencia Imobiliaria
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- realize_inteligencia_imobiliaria
+
+      - name: Rodar crawler - Marco Hottz Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- marco_hottz_imoveis
+
+      - name: Rodar crawler - Alo Imoveis Baixada
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- alo_imoveis_baixada
+
+      - name: Rodar crawler - Aetherna Empreendimentos
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- aetherna_empreendimentos
+
+      - name: Rodar crawler - Quintal de Areia Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- quintal_de_areia_imoveis
+
+      - name: Rodar crawler - Marise Gomes Moreira Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- marise_gomes_moreira_imoveis
+
+      - name: Rodar crawler - Debora Santos Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- debora_santos_imoveis
+
+      - name: Rodar crawler - MSA Investimento Imobiliario
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- msa_investimento_imobiliario
+
+      - name: Rodar crawler - Bueno Santos Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- bueno_santos_imoveis
