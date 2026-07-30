@@ -7,6 +7,15 @@ import {
   type NewListing,
 } from "./api.js";
 
+function formatCaracteristicas(listing: NewListing): string | null {
+  const partes: string[] = [];
+  if (listing.area_util) partes.push(`${listing.area_util} m²`);
+  if (listing.dormitorios) partes.push(`${listing.dormitorios} dorm.`);
+  if (listing.suites) partes.push(`${listing.suites} suite${listing.suites > 1 ? "s" : ""}`);
+  if (listing.vagas) partes.push(`${listing.vagas} vaga${listing.vagas > 1 ? "s" : ""}`);
+  return partes.length > 0 ? partes.join(" · ") : null;
+}
+
 function SugestaoIA({ listing, onUsarSugestao }: { listing: NewListing; onUsarSugestao: (listing: NewListing) => void }) {
   if (!listing.ia_status) return null;
   const temSugestao = Boolean(listing.ia_condominio || listing.ia_endereco);
@@ -210,6 +219,9 @@ export default function ListingsNew({
             {listing.bairro ?? "bairro nao informado"}
             {listing.preco ? ` - R$ ${listing.preco}` : ""}
           </p>
+          {formatCaracteristicas(listing) && (
+            <p className="caracteristicas">{formatCaracteristicas(listing)}</p>
+          )}
           <a href={listing.url_final ?? listing.url_original} target="_blank" rel="noreferrer">
             Abrir anuncio original
           </a>
