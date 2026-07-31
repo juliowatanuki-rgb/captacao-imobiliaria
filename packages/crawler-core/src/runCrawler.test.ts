@@ -153,6 +153,11 @@ function fakeClientQuery(pool: FakePool, text: string, params: any[]): { rows: a
     return { rows: [], rowCount: ids.length };
   }
 
+  if (text.includes("INSERT INTO listing_first_snapshot")) {
+    const [ids] = params;
+    return { rows: [], rowCount: ids.length };
+  }
+
   if (text.includes("INSERT INTO listing_events") && text.includes("'updated'")) {
     const [ids] = params;
     for (const id of ids) pool.events.push({ listing_id: id, tipo: "updated" });

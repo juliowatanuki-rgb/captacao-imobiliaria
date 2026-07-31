@@ -271,6 +271,27 @@ export async function upsertListingsBatch(
          SELECT unnest($1::uuid[]), $2`,
         [inserted.rows.map((r) => r.id), tipoEvento]
       );
+
+      // Snapshot imutavel da 1a captura (secao "Google Sheets" do README):
+      // gravado uma unica vez, aqui, no mesmo INSERT que cria o anuncio -
+      // nunca ha um UPDATE correspondente em listing_first_snapshot.
+      await client.query(
+        `INSERT INTO listing_first_snapshot (
+          listing_id, site_id, identity_key, external_id, site_nome,
+          titulo, tipo_imovel, cidade, bairro, preco, area_util,
+          dormitorios, suites, banheiros, vagas, condominio_nome, endereco, descricao,
+          url_original, url_normalizada, primeira_captura_em, status_primeira_captura
+        )
+        SELECT
+          l.id, l.site_id, l.identity_key, l.external_id, s.nome,
+          l.titulo, l.tipo_imovel, l.cidade, l.bairro, l.preco, l.area_util,
+          l.dormitorios, l.suites, l.banheiros, l.vagas, l.condominio_nome, l.endereco, l.descricao,
+          l.url_original, l.url_normalizada, l.primeira_captura_em, l.status
+        FROM listings l
+        JOIN monitored_sites s ON s.id = l.site_id
+        WHERE l.id = ANY($1::uuid[])`,
+        [inserted.rows.map((r) => r.id)]
+      );
     }
   }
 

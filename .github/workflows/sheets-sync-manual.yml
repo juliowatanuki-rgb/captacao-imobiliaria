@@ -1,0 +1,38 @@
+name: Sincronizacao manual da planilha (Google Sheets)
+
+# Disparo manual, sem nenhum crawler - so aplica migrations pendentes e roda
+# sheets-sync. Usado para a sincronizacao inicial (todo o historico do Neon)
+# e para repetir a sincronizacao isoladamente caso ela falhe, sem re-coletar
+# nenhum site (secao "Google Sheets" do README).
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  sheets-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+      GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Aplicar migrations pendentes
+        run: npm run migrate
+
+      - name: Sincronizar planilha Google Sheets
+        run: npm run sheets:sync

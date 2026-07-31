@@ -126,14 +126,34 @@ pode ser disparado manualmente pela aba Actions (`workflow_dispatch`).
 Google Sheets", com `if: always()` mesmo que algum crawler falhe) e acrescenta
 na planilha 100% dos anuncios de **qualquer status** (pendente, analisado,
 descartado, ativo ou ausente) que ainda nao foram exportados - nunca apaga
-nem reescreve uma linha ja gravada. O controle de "ja exportado" fica na
-coluna `sheets_exportado_em` da tabela `listings` (migration
-`0005_listings_sheets_sync.sql`). As colunas da planilha sao as mesmas da
-exportacao XLSX do painel, mais `status do anuncio` (ativo/ausente).
+nem reescreve uma linha ja gravada. E um arquivo historico da 1a captura de
+cada anuncio, nao um espelho ao vivo do banco.
 
-Como cada anuncio so entra na planilha uma vez, atualizacoes posteriores
-(preco mudou, virou ausente etc.) **nao** atualizam a linha ja gravada - e um
-arquivo historico, nao um espelho ao vivo do banco.
+**Snapshot imutavel da 1a captura.** Os campos historicos da planilha (titulo,
+preco, descricao, condominio, endereco, etc.) sao lidos exclusivamente da
+tabela `listing_first_snapshot` (migration `0006_listing_first_snapshot.sql`),
+gravada uma unica vez por `upsertListingsBatch` no exato momento em que o
+anuncio e inserido em `listings` e nunca atualizada depois - mesmo que o
+anuncio mude de preco, descricao ou status nas coletas seguintes (ver
+`packages/crawler-core/src/upsertListing.ts`). Anuncios que ja existiam antes
+dessa migration tiveram um snapshot reconstruido a partir dos dados atuais do
+banco (nao e possivel recuperar o valor historico verdadeiro que ja tinha sido
+sobrescrito) - esses ficam marcados com `reconstruido = true` na tabela e
+`sim` na coluna "snapshot reconstruido" da planilha. As colunas "status atual"
+e "status da analise" continuam sendo lidas ao vivo de `listings` no momento
+da exportacao (foto do instante da exportacao, nunca mais atualizada depois).
+
+**Auditoria e dedup.** As 3 ultimas colunas da planilha (`listing_id`,
+`site_id`, `identity_key`) identificam a linha de forma inequivoca e podem
+ficar ocultas, mas nunca devem ser removidas. O controle de "ja exportado"
+combina duas fontes: a coluna `sheets_exportado_em` da tabela `listings`
+(migration `0005_listings_sheets_sync.sql`) e uma leitura da coluna
+`listing_id` ja existente na propria planilha no inicio de cada execucao
+(`sheets-sync/src/sheetsClient.ts#listarListingIdsExistentes`). Isso torna a
+sincronizacao a prova de falha parcial: se o processo cair depois do
+`append()` na planilha e antes do `UPDATE` que marca `sheets_exportado_em`, a
+proxima execucao reconhece a linha (ja presente na planilha) e apenas
+reconcilia o Neon, sem duplicar (ver `sheets-sync/src/sync.ts`).
 
 Setup (uma vez, feito direto no Google Cloud e no GitHub, nao no codigo):
 

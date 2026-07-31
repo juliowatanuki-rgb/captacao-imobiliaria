@@ -13,6 +13,7 @@ import { markAbsentListings, upsertListing, upsertListingsBatch } from "./upsert
 class FakeListingsClient {
   rows: any[] = [];
   events: { listing_id: string; tipo: string }[] = [];
+  snapshots: any[] = [];
   queryLog: string[] = [];
   private nextId = 1;
 
@@ -150,6 +151,38 @@ class FakeListingsClient {
     if (text.includes("INSERT INTO listing_events") && text.includes("SELECT unnest($1::uuid[]), $2")) {
       const [ids, tipo] = params;
       for (const id of ids) this.events.push({ listing_id: id, tipo });
+      return { rows: [], rowCount: ids.length };
+    }
+
+    // upsertListingsBatch: snapshot imutavel da 1a captura (criado 1x, junto do INSERT)
+    if (text.includes("INSERT INTO listing_first_snapshot")) {
+      const [ids] = params;
+      for (const id of ids) {
+        const row = this.rows.find((r) => r.id === id);
+        if (!row) continue;
+        this.snapshots.push({
+          listing_id: row.id,
+          site_id: row.site_id,
+          identity_key: row.identity_key,
+          external_id: row.external_id,
+          titulo: row.titulo,
+          tipo_imovel: row.tipo_imovel,
+          cidade: row.cidade,
+          bairro: row.bairro,
+          preco: row.preco,
+          area_util: row.area_util,
+          dormitorios: row.dormitorios,
+          suites: row.suites,
+          banheiros: row.banheiros,
+          vagas: row.vagas,
+          condominio_nome: row.condominio_nome,
+          endereco: row.endereco,
+          descricao: row.descricao,
+          url_original: row.url_original,
+          url_normalizada: row.url_normalizada,
+          status_primeira_captura: row.status,
+        });
+      }
       return { rows: [], rowCount: ids.length };
     }
 
@@ -311,6 +344,50 @@ describe("upsertListingsBatch", () => {
     expect(summaryB.anunciosNovos).toBe(1);
     expect(client.rows).toHaveLength(2);
     expect(new Set(client.rows.map((r) => r.id)).size).toBe(2);
+  });
+
+  it("cria o snapshot da 1a captura junto da insercao, com os mesmos valores do anuncio novo", async () => {
+    const listing = scraped({ externalId: "40", preco: 300000, descricao: "Descricao original" });
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+
+    expect(client.snapshots).toHaveLength(1);
+    const snapshot = client.snapshots[0];
+    expect(snapshot.listing_id).toBe(client.rows[0].id);
+    expect(Number(snapshot.preco)).toBe(300000);
+    expect(snapshot.descricao).toBe("Descricao original");
+    expect(snapshot.status_primeira_captura).toBe("ativo");
+  });
+
+  it("nunca grava um 2o snapshot quando o anuncio ja existente e apenas atualizado", async () => {
+    const listing = scraped({ externalId: "41", preco: 300000 });
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+    client.queryLog = [];
+
+    await upsertListingsBatch(client as any, "site_a", [scraped({ externalId: "41", preco: 350000 })], urlBase, false);
+
+    expect(client.snapshots).toHaveLength(1); // continua so com o snapshot da 1a captura
+    const snapshotInsertQueries = client.queryLog.filter((q) => q.includes("INSERT INTO listing_first_snapshot"));
+    expect(snapshotInsertQueries).toHaveLength(0);
+  });
+
+  it("o snapshot preserva preco e descricao da 1a captura mesmo depois de atualizacoes subsequentes", async () => {
+    const listing = scraped({ externalId: "42", preco: 100000, descricao: "Descricao 1a captura" });
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+
+    await upsertListingsBatch(
+      client as any,
+      "site_a",
+      [scraped({ externalId: "42", preco: 999999, descricao: "Descricao mudou depois" })],
+      urlBase,
+      false
+    );
+
+    expect(Number(client.rows[0].preco)).toBe(999999); // listings (mutavel) reflete o valor novo
+    expect(client.rows[0].descricao).toBe("Descricao mudou depois");
+
+    const snapshot = client.snapshots.find((s) => s.listing_id === client.rows[0].id);
+    expect(Number(snapshot.preco)).toBe(100000); // snapshot (imutavel) continua com o valor original
+    expect(snapshot.descricao).toBe("Descricao 1a captura");
   });
 
   it("upsertListing (uso pontual, um item) delega para upsertListingsBatch com o mesmo resultado", async () => {
