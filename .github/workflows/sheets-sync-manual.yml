@@ -36,3 +36,6 @@ jobs:
 
       - name: Sincronizar planilha Google Sheets
         run: npm run sheets:sync
+
+      - name: Verificar duplicidade de listing_id na planilha
+        run: npm run sheets:verificar
