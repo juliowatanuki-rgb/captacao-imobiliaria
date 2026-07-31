@@ -120,6 +120,46 @@ Configurar em Settings > Secrets and variables > Actions:
 O workflow `.github/workflows/crawl.yml` roda diariamente (09:00 UTC) e tambem
 pode ser disparado manualmente pela aba Actions (`workflow_dispatch`).
 
+### Exportacao continua para o Google Sheets
+
+`sheets-sync/` roda ao final de todo `crawl.yml` (passo "Sincronizar planilha
+Google Sheets", com `if: always()` mesmo que algum crawler falhe) e acrescenta
+na planilha 100% dos anuncios de **qualquer status** (pendente, analisado,
+descartado, ativo ou ausente) que ainda nao foram exportados - nunca apaga
+nem reescreve uma linha ja gravada. O controle de "ja exportado" fica na
+coluna `sheets_exportado_em` da tabela `listings` (migration
+`0005_listings_sheets_sync.sql`). As colunas da planilha sao as mesmas da
+exportacao XLSX do painel, mais `status do anuncio` (ativo/ausente).
+
+Como cada anuncio so entra na planilha uma vez, atualizacoes posteriores
+(preco mudou, virou ausente etc.) **nao** atualizam a linha ja gravada - e um
+arquivo historico, nao um espelho ao vivo do banco.
+
+Setup (uma vez, feito direto no Google Cloud e no GitHub, nao no codigo):
+
+1. Criar/usar um projeto no [Google Cloud Console](https://console.cloud.google.com),
+   ativar a **Google Sheets API** (menu "APIs e servicos" > "Ativar APIs e
+   servicos" > procurar "Google Sheets API" > Ativar).
+2. Criar uma **Service Account** ("APIs e servicos" > "Credenciais" > "Criar
+   credenciais" > "Conta de servico"), sem precisar dar nenhum papel/role de
+   projeto (a permissao real vem do compartilhamento da planilha no passo 4).
+3. Na conta de servico criada, aba "Chaves" > "Adicionar chave" > "Criar nova
+   chave" > tipo **JSON** - isso baixa um arquivo `.json` pro computador.
+4. Criar a planilha no Google Sheets normalmente e compartilhar (botao
+   "Compartilhar") com o e-mail da service account (formato
+   `nome@projeto.iam.gserviceaccount.com`, visivel no arquivo JSON e na
+   pagina da conta de servico), com permissao de **Editor**.
+5. Copiar o ID da planilha (o trecho entre `/d/` e `/edit` na URL, ex.:
+   `https://docs.google.com/spreadsheets/d/`**`ESTE_TRECHO`**`/edit`).
+6. Em Settings > Secrets and variables > Actions do repositorio, criar dois
+   secrets novos:
+   - `GOOGLE_SHEETS_CREDENTIALS_JSON`: colar o **conteudo inteiro** do
+     arquivo `.json` baixado no passo 3.
+   - `GOOGLE_SHEETS_ID`: o ID copiado no passo 5.
+
+Depois disso o proximo `crawl.yml` (agendado ou disparado manualmente) ja
+cria a aba "Anuncios" na planilha com cabecalho e comeca a preencher.
+
 ### Adicionar os demais sites
 
 Repetir o passo 6 para cada uma das 20 imobiliarias, uma por vez ou em grupos

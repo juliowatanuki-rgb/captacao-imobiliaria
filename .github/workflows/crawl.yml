@@ -17,6 +17,8 @@ jobs:
     timeout-minutes: 120
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+      GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -205,3 +207,11 @@ jobs:
       - name: Rodar crawler - Costa do Sol Imobiliaria
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- costa_do_sol_imobiliaria
+
+      # Exporta 100% dos anuncios (qualquer status) para a planilha do
+      # Google Sheets, so acrescentando linhas novas desde a ultima
+      # sincronizacao (nunca apaga/reescreve linha existente - secao "Google
+      # Sheets" do README). Roda mesmo se algum crawler acima falhar.
+      - name: Sincronizar planilha Google Sheets
+        if: always()
+        run: npm run sheets:sync

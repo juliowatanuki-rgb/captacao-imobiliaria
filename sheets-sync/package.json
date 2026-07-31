@@ -1,0 +1,22 @@
+{
+  "name": "@captacao/sheets-sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "sheets:sync": "tsx src/exportar.ts"
+  },
+  "dependencies": {
+    "@captacao/db": "*",
+    "googleapis": "^144.0.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
