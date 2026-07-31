@@ -92,15 +92,23 @@ function numberEqual(a: number | null | undefined, b: string | number | null | u
 }
 
 /**
+ * Um anuncio que estava ausente/removido e reaparece precisa voltar a
+ * 'ativo' mesmo que os dados descritivos nao tenham mudado - usado tanto
+ * para decidir que isso conta como "mudou" (hasRelevantChange) quanto para
+ * decidir se o evento gravado e 'reactivated' (secao "eventos" do README).
+ */
+function eraAusente(existing: ExistingRow): boolean {
+  return existing.status !== "ativo" || existing.ausente_desde !== null || existing.coletas_ausente_consecutivas !== 0;
+}
+
+/**
  * Compara os campos mutaveis de um anuncio contra o que ja esta gravado,
  * incluindo o rastreamento de ausencia: um anuncio que reaparece precisa
  * voltar a 'ativo' mesmo que os dados descritivos nao tenham mudado, entao
  * isso conta como "mudou" para efeito de gravar no banco.
  */
 function hasRelevantChange(scraped: ScrapedListing, existing: ExistingRow): boolean {
-  if (existing.status !== "ativo") return true;
-  if (existing.ausente_desde !== null) return true;
-  if (existing.coletas_ausente_consecutivas !== 0) return true;
+  if (eraAusente(existing)) return true;
 
   return !(
     textEqual(scraped.urlOriginal, existing.url_original) &&
@@ -190,7 +198,7 @@ export async function upsertListingsBatch(
   const existingByKey = new Map(existingRows.map((r) => [r.identity_key, r]));
 
   const toInsert: PreparedItem[] = [];
-  const toUpdate: { item: PreparedItem; listingId: string }[] = [];
+  const toUpdate: { item: PreparedItem; listingId: string; reativado: boolean }[] = [];
   const unchanged: { item: PreparedItem; listingId: string }[] = [];
 
   for (const item of items) {
@@ -198,7 +206,7 @@ export async function upsertListingsBatch(
     if (!existing) {
       toInsert.push(item);
     } else if (hasRelevantChange(item.scraped, existing)) {
-      toUpdate.push({ item, listingId: existing.id });
+      toUpdate.push({ item, listingId: existing.id, reativado: eraAusente(existing) });
     } else {
       unchanged.push({ item, listingId: existing.id });
     }
@@ -275,17 +283,21 @@ export async function upsertListingsBatch(
       // Snapshot imutavel da 1a captura (secao "Google Sheets" do README):
       // gravado uma unica vez, aqui, no mesmo INSERT que cria o anuncio -
       // nunca ha um UPDATE correspondente em listing_first_snapshot.
+      // `descricao` NAO e gravada aqui (secao "otimizacao de armazenamento"
+      // do README) - a coluna continua existindo na tabela (nao foi
+      // removida), so paramos de preenche-la; o dado completo de descricao
+      // continua disponivel em `listings` para a investigacao via Gemini.
       await client.query(
         `INSERT INTO listing_first_snapshot (
           listing_id, site_id, identity_key, external_id, site_nome,
           titulo, tipo_imovel, cidade, bairro, preco, area_util,
-          dormitorios, suites, banheiros, vagas, condominio_nome, endereco, descricao,
+          dormitorios, suites, banheiros, vagas, condominio_nome, endereco,
           url_original, url_normalizada, primeira_captura_em, status_primeira_captura
         )
         SELECT
           l.id, l.site_id, l.identity_key, l.external_id, s.nome,
           l.titulo, l.tipo_imovel, l.cidade, l.bairro, l.preco, l.area_util,
-          l.dormitorios, l.suites, l.banheiros, l.vagas, l.condominio_nome, l.endereco, l.descricao,
+          l.dormitorios, l.suites, l.banheiros, l.vagas, l.condominio_nome, l.endereco,
           l.url_original, l.url_normalizada, l.primeira_captura_em, l.status
         FROM listings l
         JOIN monitored_sites s ON s.id = l.site_id
@@ -348,11 +360,18 @@ export async function upsertListingsBatch(
       ]
     );
 
-    await client.query(
-      `INSERT INTO listing_events (listing_id, tipo)
-       SELECT unnest($1::uuid[]), 'updated'`,
-      [toUpdate.map((u) => u.listingId)]
-    );
+    // So grava evento para reativacao (anuncio que estava ausente/removido e
+    // reapareceu) - secao "eventos" do README. Mudanca pura de atributo
+    // (preco, titulo, etc. em anuncio ja ativo) atualiza a linha normalmente
+    // mas NAO gera evento (nao ha mais tipo 'updated').
+    const reativados = toUpdate.filter((u) => u.reativado);
+    if (reativados.length > 0) {
+      await client.query(
+        `INSERT INTO listing_events (listing_id, tipo)
+         SELECT unnest($1::uuid[]), $2`,
+        [reativados.map((u) => u.listingId), "reactivated"]
+      );
+    }
 
     for (const u of toUpdate) {
       resultsByKey.set(u.item.identityKey, { listingId: u.listingId, outcome: "atualizado" });

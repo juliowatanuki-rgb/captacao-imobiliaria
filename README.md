@@ -130,11 +130,11 @@ nem reescreve uma linha ja gravada. E um arquivo historico da 1a captura de
 cada anuncio, nao um espelho ao vivo do banco.
 
 **Snapshot imutavel da 1a captura.** Os campos historicos da planilha (titulo,
-preco, descricao, condominio, endereco, etc.) sao lidos exclusivamente da
-tabela `listing_first_snapshot` (migration `0006_listing_first_snapshot.sql`),
+preco, condominio, endereco, etc.) sao lidos exclusivamente da tabela
+`listing_first_snapshot` (migration `0006_listing_first_snapshot.sql`),
 gravada uma unica vez por `upsertListingsBatch` no exato momento em que o
 anuncio e inserido em `listings` e nunca atualizada depois - mesmo que o
-anuncio mude de preco, descricao ou status nas coletas seguintes (ver
+anuncio mude de preco ou status nas coletas seguintes (ver
 `packages/crawler-core/src/upsertListing.ts`). Anuncios que ja existiam antes
 dessa migration tiveram um snapshot reconstruido a partir dos dados atuais do
 banco (nao e possivel recuperar o valor historico verdadeiro que ja tinha sido
@@ -142,6 +142,17 @@ sobrescrito) - esses ficam marcados com `reconstruido = true` na tabela e
 `sim` na coluna "snapshot reconstruido" da planilha. As colunas "status atual"
 e "status da analise" continuam sendo lidas ao vivo de `listings` no momento
 da exportacao (foto do instante da exportacao, nunca mais atualizada depois).
+
+**`descricao` NAO faz parte do snapshot nem da planilha** (analise de
+armazenamento de 2026-07-31): a coluna `descricao` ainda existe em
+`listing_first_snapshot` (nao foi removida fisicamente), mas `upsertListingsBatch`
+parou de preenche-la, e `sheets-sync` nunca a le nem exporta. O dado completo
+de `descricao` continua disponivel em `listings` (mutavel, nunca apagado),
+porque a investigacao via Gemini ainda depende dele. **Achado a parte:**
+hoje `descricao` esta NULL em 100% dos anuncios em producao - nenhum crawler
+(nem os 4 que citam "descricao" em comentarios de estrutura HTML) realmente
+extrai esse campo; nao e um bug de mapeamento/upsert/query, e simplesmente
+funcionalidade nunca implementada nos crawlers.
 
 **Auditoria e dedup.** As 3 ultimas colunas da planilha (`listing_id`,
 `site_id`, `identity_key`) identificam a linha de forma inequivoca e podem
@@ -167,6 +178,21 @@ sem limite de linha final, entao qualquer linha nova acrescentada por
 `sheets-sync/src/reformatar.ts`) aplica/reaplica isso na planilha real - e
 idempotente (recalcula os indices a partir do cabecalho atual antes de agir,
 entao rodar de novo nao reordena nem duplica nada).
+
+### Eventos (`listing_events`)
+
+Tipos gravados hoje: `created_from_initial_seed`, `created_as_new`,
+`marked_absent`, `marked_removed`, `reactivated`, `marked_analyzed`,
+`marked_discarded`, `marked_selected_for_capture` (migration
+`0007_listing_events_reactivated.sql`). `reactivated` e gravado quando um
+anuncio que estava `ausente`/`removido` reaparece numa coleta - antes disso
+(analise de armazenamento de 2026-07-31) esse caso virava um evento generico
+`updated`. Uma mudanca pura de atributo (preco, titulo, etc. mudando em um
+anuncio ja `ativo`) atualiza a linha em `listings` normalmente, mas **nao
+gera mais nenhum evento** - o tipo `updated` nao e mais usado por codigo
+novo. Os eventos `updated` gravados antes dessa mudanca nao foram apagados
+(continuam validos no `CHECK` da coluna `tipo`); a decisao de remove-los ou
+nao fica para uma limpeza futura, com autorizacao explicita.
 
 Setup (uma vez, feito direto no Google Cloud e no GitHub, nao no codigo):
 

@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { sincronizarPlanilha, type ListingRow, type PoolLike } from "./sync.js";
+import { _internal } from "./sheetsClient.js";
 
 /**
  * Fake do Neon: guarda so o que o sync.ts realmente le/escreve
@@ -247,5 +248,21 @@ describe("sincronizarPlanilha", () => {
     expect(pool.updateCalls).toBe(0);
     expect(pool.rows[0].sheets_exportado_em).toBeNull(); // Neon intacto, anuncio continua pendente para a proxima tentativa
     expect(sheet.linhas).toHaveLength(0);
+  });
+
+  it("otimizacao de armazenamento: descricao nunca aparece no cabecalho nem em nenhuma linha exportada", async () => {
+    expect(_internal.CABECALHO.some((c) => c.toLowerCase().includes("descri"))).toBe(false);
+
+    pool.rows.push(row({ id: "id-1", external_id: "1" }));
+    await sincronizarPlanilha({
+      pool,
+      garantirCabecalho: sheet.garantirCabecalho,
+      listarListingIdsExistentes: sheet.listarListingIdsExistentes,
+      acrescentarLinhas: sheet.acrescentarLinhas,
+    });
+
+    expect(sheet.linhas[0]).toHaveLength(_internal.CABECALHO.length);
+    // ListingRow (ver sync.ts) nem sequer tem campo `descricao` - nada a exportar.
+    expect("descricao" in row({})).toBe(false);
   });
 });

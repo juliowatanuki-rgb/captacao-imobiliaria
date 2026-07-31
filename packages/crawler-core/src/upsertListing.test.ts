@@ -177,19 +177,14 @@ class FakeListingsClient {
           vagas: row.vagas,
           condominio_nome: row.condominio_nome,
           endereco: row.endereco,
-          descricao: row.descricao,
+          // descricao NAO faz parte do snapshot (secao "otimizacao de
+          // armazenamento") - de proposito omitida aqui, espelhando o que a
+          // query real de INSERT INTO listing_first_snapshot faz.
           url_original: row.url_original,
           url_normalizada: row.url_normalizada,
           status_primeira_captura: row.status,
         });
       }
-      return { rows: [], rowCount: ids.length };
-    }
-
-    // upsertListingsBatch: eventos de update
-    if (text.includes("INSERT INTO listing_events") && text.includes("'updated'")) {
-      const [ids] = params;
-      for (const id of ids) this.events.push({ listing_id: id, tipo: "updated" });
       return { rows: [], rowCount: ids.length };
     }
 
@@ -306,25 +301,39 @@ describe("upsertListingsBatch", () => {
     expect(client.events).toHaveLength(0);
   });
 
-  it("atualiza (e gera evento 'updated') apenas quando um campo relevante realmente mudou", async () => {
+  it("atualiza a linha quando um campo relevante muda (preco) em anuncio ja ativo, mas NAO gera nenhum evento", async () => {
     const listing = scraped({ externalId: "8", preco: 100000 });
     await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+    client.events = []; // limpa o evento de criacao, so nos interessa o que a atualizacao gera
 
     const summary = await upsertListingsBatch(client as any, "site_a", [scraped({ externalId: "8", preco: 250000 })], urlBase, false);
 
     expect(summary.anunciosNovos).toBe(0);
-    expect(summary.anunciosAtualizados).toBe(1);
+    expect(summary.anunciosAtualizados).toBe(1); // contador continua correto mesmo sem evento
     expect(summary.anunciosSemAlteracao).toBe(0);
     expect(Number(client.rows[0].preco)).toBe(250000);
-    expect(client.events.filter((e) => e.tipo === "updated")).toHaveLength(1);
+    expect(client.events).toHaveLength(0); // nao ha mais tipo 'updated' - mudanca pura de atributo nao gera evento
   });
 
-  it("ao reaparecer, reativa um anuncio marcado ausente mesmo com dados identicos (conta como mudanca)", async () => {
+  it("atualiza titulo em anuncio ja ativo sem gerar evento (mesma regra que preco)", async () => {
+    const listing = scraped({ externalId: "8b", titulo: "Titulo original" });
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+    client.events = [];
+
+    await upsertListingsBatch(client as any, "site_a", [scraped({ externalId: "8b", titulo: "Titulo mudou" })], urlBase, false);
+
+    expect(client.rows[0].titulo).toBe("Titulo mudou");
+    expect(client.events).toHaveLength(0);
+  });
+
+  it("ao reaparecer, reativa um anuncio marcado ausente mesmo com dados identicos (conta como mudanca) e grava 'reactivated'", async () => {
     const listing = scraped({ externalId: "10" });
     await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
     client.rows[0].status = "ausente";
     client.rows[0].ausente_desde = new Date();
     client.rows[0].coletas_ausente_consecutivas = 1;
+    const listingId = client.rows[0].id;
+    client.events = [];
 
     const summary = await upsertListingsBatch(client as any, "site_a", [listing], urlBase, false);
 
@@ -333,6 +342,21 @@ describe("upsertListingsBatch", () => {
     expect(client.rows[0].status).toBe("ativo");
     expect(client.rows[0].ausente_desde).toBeNull();
     expect(client.rows[0].coletas_ausente_consecutivas).toBe(0);
+    expect(client.events).toEqual([{ listing_id: listingId, tipo: "reactivated" }]);
+  });
+
+  it("reaparecer com dados tambem mudados (ex: preco) ainda assim so grava 'reactivated', nao 'updated'", async () => {
+    const listing = scraped({ externalId: "11", preco: 100000 });
+    await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
+    client.rows[0].status = "removido";
+    client.rows[0].ausente_desde = new Date();
+    client.rows[0].coletas_ausente_consecutivas = 2;
+    client.events = [];
+
+    await upsertListingsBatch(client as any, "site_a", [scraped({ externalId: "11", preco: 150000 })], urlBase, false);
+
+    expect(Number(client.rows[0].preco)).toBe(150000);
+    expect(client.events.map((e) => e.tipo)).toEqual(["reactivated"]);
   });
 
   it("nunca mistura identity_key entre sites diferentes", async () => {
@@ -346,7 +370,7 @@ describe("upsertListingsBatch", () => {
     expect(new Set(client.rows.map((r) => r.id)).size).toBe(2);
   });
 
-  it("cria o snapshot da 1a captura junto da insercao, com os mesmos valores do anuncio novo", async () => {
+  it("cria o snapshot da 1a captura junto da insercao, com os mesmos valores do anuncio novo, SEM descricao", async () => {
     const listing = scraped({ externalId: "40", preco: 300000, descricao: "Descricao original" });
     await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
 
@@ -354,8 +378,10 @@ describe("upsertListingsBatch", () => {
     const snapshot = client.snapshots[0];
     expect(snapshot.listing_id).toBe(client.rows[0].id);
     expect(Number(snapshot.preco)).toBe(300000);
-    expect(snapshot.descricao).toBe("Descricao original");
     expect(snapshot.status_primeira_captura).toBe("ativo");
+    expect(client.rows[0].descricao).toBe("Descricao original"); // listings continua com a descricao...
+    expect(snapshot.descricao).toBeUndefined(); // ...mas o snapshot nunca recebe esse campo
+    expect(Object.prototype.hasOwnProperty.call(snapshot, "descricao")).toBe(false);
   });
 
   it("nunca grava um 2o snapshot quando o anuncio ja existente e apenas atualizado", async () => {
@@ -370,7 +396,7 @@ describe("upsertListingsBatch", () => {
     expect(snapshotInsertQueries).toHaveLength(0);
   });
 
-  it("o snapshot preserva preco e descricao da 1a captura mesmo depois de atualizacoes subsequentes", async () => {
+  it("o snapshot preserva o preco da 1a captura mesmo depois de atualizacoes subsequentes (descricao muda so em listings)", async () => {
     const listing = scraped({ externalId: "42", preco: 100000, descricao: "Descricao 1a captura" });
     await upsertListingsBatch(client as any, "site_a", [listing], urlBase, true);
 
@@ -383,11 +409,11 @@ describe("upsertListingsBatch", () => {
     );
 
     expect(Number(client.rows[0].preco)).toBe(999999); // listings (mutavel) reflete o valor novo
-    expect(client.rows[0].descricao).toBe("Descricao mudou depois");
+    expect(client.rows[0].descricao).toBe("Descricao mudou depois"); // listings continua guardando descricao (uso futuro do Gemini)
 
     const snapshot = client.snapshots.find((s) => s.listing_id === client.rows[0].id);
     expect(Number(snapshot.preco)).toBe(100000); // snapshot (imutavel) continua com o valor original
-    expect(snapshot.descricao).toBe("Descricao 1a captura");
+    expect(snapshot.descricao).toBeUndefined(); // snapshot nunca teve descricao, nem na 1a nem depois
   });
 
   it("upsertListing (uso pontual, um item) delega para upsertListingsBatch com o mesmo resultado", async () => {
