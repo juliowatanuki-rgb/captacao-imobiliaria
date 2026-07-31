@@ -156,7 +156,7 @@ describe("sincronizarPlanilha", () => {
     // roda porque o processo "morre" logo depois - simulado chamando
     // acrescentarLinhas diretamente e nunca chamando o UPDATE.
     await sheet.acrescentarLinhas([
-      ["1", "Imobiliaria A", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "nao", "id-1", "site_a", "chave-1"],
+      ["", "1", "Imobiliaria A", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "nao", "id-1", "site_a", "chave-1"],
     ]);
     expect(pool.rows[0].sheets_exportado_em).toBeNull(); // Neon ainda nao foi marcado - exatamente o cenario da falha parcial
 
@@ -176,7 +176,7 @@ describe("sincronizarPlanilha", () => {
   it("regra 4/8: anuncio ja presente na planilha com sheets_exportado_em nulo no Neon nao gera 2a linha", async () => {
     pool.rows.push(row({ id: "id-1", external_id: "1", sheets_exportado_em: null }));
     sheet.linhas.push([
-      "1", "Imobiliaria A", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "nao", "id-1", "site_a", "chave-1",
+      "", "1", "Imobiliaria A", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "nao", "id-1", "site_a", "chave-1",
     ]);
 
     await sincronizarPlanilha({
@@ -210,8 +210,9 @@ describe("sincronizarPlanilha", () => {
     });
 
     const linha = sheet.linhas[0];
-    expect(linha[2]).toBe("Titulo da 1a captura"); // titulo (snapshot)
-    expect(linha[5]).toBe(100000); // preco (snapshot)
+    expect(linha[0]).toBe("2026-01-01"); // primeira captura em (snapshot, agora a 1a coluna)
+    expect(linha[3]).toBe("Titulo da 1a captura"); // titulo (snapshot)
+    expect(linha[6]).toBe(100000); // preco (snapshot)
     expect(linha[14]).toBe("ativo"); // status na 1a captura (snapshot)
     expect(linha[15]).toBe("ausente"); // status atual (momento da exportacao, coluna separada)
   });

@@ -56,6 +56,7 @@ export function paraDataIso(valor: string): string {
 
 export function paraLinha(l: ListingRow): (string | number)[] {
   return [
+    paraDataIso(l.primeira_captura_em),
     idCurto(l),
     l.site_nome,
     l.titulo ?? "",
@@ -69,7 +70,6 @@ export function paraLinha(l: ListingRow): (string | number)[] {
     l.condominio_nome ?? "",
     l.endereco ?? "",
     l.url_original,
-    paraDataIso(l.primeira_captura_em),
     l.status_primeira_captura,
     l.status_atual,
     l.analysis_status,

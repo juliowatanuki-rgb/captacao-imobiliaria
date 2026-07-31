@@ -19,7 +19,8 @@
     "crawl:all": "npm run crawl:all -w @captacao/crawlers",
     "investigate:queue": "npm run investigate:queue -w @captacao/investigator",
     "sheets:sync": "npm run sheets:sync -w @captacao/sheets-sync",
-    "sheets:verificar": "npm run sheets:verificar -w @captacao/sheets-sync"
+    "sheets:verificar": "npm run sheets:verificar -w @captacao/sheets-sync",
+    "sheets:reformatar": "npm run sheets:reformatar -w @captacao/sheets-sync"
   },
   "devDependencies": {
     "typescript": "^5.6.3",

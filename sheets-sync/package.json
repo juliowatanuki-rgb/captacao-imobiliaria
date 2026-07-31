@@ -7,7 +7,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "sheets:sync": "tsx src/exportar.ts",
-    "sheets:verificar": "tsx src/verificar.ts"
+    "sheets:verificar": "tsx src/verificar.ts",
+    "sheets:reformatar": "tsx src/reformatar.ts"
   },
   "dependencies": {
     "@captacao/db": "*",

@@ -155,6 +155,19 @@ sincronizacao a prova de falha parcial: se o processo cair depois do
 proxima execucao reconhece a linha (ja presente na planilha) e apenas
 reconcilia o Neon, sem duplicar (ver `sheets-sync/src/sync.ts`).
 
+**Formatacao.** A 1a coluna e sempre `primeira captura em` (formato de data
+`dd/mm/yyyy`, sem horario - o snapshot so guarda a data). A coluna `preco` usa
+formato de moeda brasileira (`R$ #.##0,00`, via locale `pt_BR` da planilha);
+nao ha hoje nenhuma outra coluna financeira numerica (o `condominio` exportado
+e o nome do condominio, texto, e nao existe coluna de IPTU no modelo atual).
+O cabecalho fica congelado e com filtro ativo, e as 3 colunas de auditoria
+ficam ocultas (nao removidas). Essa formatacao e aplicada em toda a coluna,
+sem limite de linha final, entao qualquer linha nova acrescentada por
+`sheets:sync` ja nasce formatada. `npm run sheets:reformatar` (script
+`sheets-sync/src/reformatar.ts`) aplica/reaplica isso na planilha real - e
+idempotente (recalcula os indices a partir do cabecalho atual antes de agir,
+entao rodar de novo nao reordena nem duplica nada).
+
 Setup (uma vez, feito direto no Google Cloud e no GitHub, nao no codigo):
 
 1. Criar/usar um projeto no [Google Cloud Console](https://console.cloud.google.com),

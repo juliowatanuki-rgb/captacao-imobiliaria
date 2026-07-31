@@ -34,6 +34,9 @@ jobs:
       - name: Aplicar migrations pendentes
         run: npm run migrate
 
+      - name: Reformatar planilha (colunas/datas/moeda/congelar/filtro/ocultar)
+        run: npm run sheets:reformatar
+
       - name: Sincronizar planilha Google Sheets
         run: npm run sheets:sync
 

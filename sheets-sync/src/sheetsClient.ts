@@ -7,6 +7,7 @@ const ABA = "Anuncios";
 // final - podem ficar ocultas na planilha, mas nunca removidas: sao o que
 // permite provar sem ambiguidade que uma linha nunca foi duplicada).
 const CABECALHO = [
+  "primeira captura em",
   "id",
   "imobiliaria",
   "titulo",
@@ -20,7 +21,6 @@ const CABECALHO = [
   "condominio",
   "endereco",
   "link",
-  "primeira captura em",
   "status na 1a captura",
   "status atual (no momento da exportacao)",
   "status da analise (no momento da exportacao)",
