@@ -50,6 +50,20 @@ async function main() {
     process.exitCode = 1;
   }
 
+  const indiceData = colunas.indexOf("primeira captura em");
+  const indicePreco = colunas.indexOf("preco");
+  if (indiceData !== -1 && indicePreco !== -1) {
+    const letraData = colunaLetra(indiceData);
+    const letraPreco = colunaLetra(indicePreco);
+    const amostra = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${ABA}!${letraData}2:${letraPreco}4`,
+      valueRenderOption: "FORMATTED_VALUE",
+    });
+    console.log(`[verificar] cabecalho[0] (deve ser "primeira captura em"): ${colunas[0]}`);
+    console.log(`[verificar] amostra formatada (data .. preco), linhas 2-4:`, JSON.stringify(amostra.data.values));
+  }
+
   const indiceReconstruido = colunas.indexOf("snapshot reconstruido (anuncio anterior a criacao do historico)");
   if (indiceReconstruido === -1) throw new Error("coluna 'snapshot reconstruido' nao encontrada no cabecalho da aba");
   const letraReconstruido = colunaLetra(indiceReconstruido);
