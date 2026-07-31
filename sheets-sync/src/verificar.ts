@@ -49,6 +49,24 @@ async function main() {
     console.log("[verificar] exemplos de duplicados:", duplicados.slice(0, 10));
     process.exitCode = 1;
   }
+
+  const indiceReconstruido = colunas.indexOf("snapshot reconstruido (anuncio anterior a criacao do historico)");
+  if (indiceReconstruido === -1) throw new Error("coluna 'snapshot reconstruido' nao encontrada no cabecalho da aba");
+  const letraReconstruido = colunaLetra(indiceReconstruido);
+  const respostaReconstruido = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${ABA}!${letraReconstruido}2:${letraReconstruido}`,
+  });
+  const valoresReconstruido = (respostaReconstruido.data.values ?? []).map((l) => l[0]);
+  const sim = valoresReconstruido.filter((v) => v === "sim").length;
+  const nao = valoresReconstruido.filter((v) => v === "nao").length;
+  const outro = valoresReconstruido.length - sim - nao;
+  console.log(`[verificar] snapshot reconstruido = "sim": ${sim}`);
+  console.log(`[verificar] snapshot reconstruido = "nao": ${nao}`);
+  if (outro > 0) {
+    console.log(`[verificar] valores inesperados na coluna reconstruido: ${outro}`);
+    process.exitCode = 1;
+  }
 }
 
 function colunaLetra(indiceZeroBased: number): string {
