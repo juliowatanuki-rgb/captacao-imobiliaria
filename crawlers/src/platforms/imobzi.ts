@@ -185,7 +185,23 @@ export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
           // espera aqui evita capturar esse estado transitorio incompleto.
           await page.waitForTimeout(1_000);
           cards = await extractCards(page);
-          if (cards.length > 0 && cards.every((c) => c.href)) break;
+          if (cards.length > 0 && cards.every((c) => c.href)) {
+            // O href pode ja estar preenchido enquanto o codigo do
+            // .neighborhood-title ainda muda (ex.: ganha um sufixo de letra)
+            // nos instantes seguintes da hidratacao - confirma que os codigos
+            // nao mudam mais antes de aceitar a pagina, pra nao gravar um
+            // codigo transitorio como identidade do anuncio (secao 9) e
+            // duplicar o anuncio na proxima coleta com o codigo final.
+            await page.waitForTimeout(800);
+            const cardsConfirmacao = await extractCards(page);
+            const codigosIniciais = cards.map((c) => extractCodigo(c.codigoTexto, c.href));
+            const codigosConfirmacao = cardsConfirmacao.map((c) => extractCodigo(c.codigoTexto, c.href));
+            const estavel =
+              codigosIniciais.length === codigosConfirmacao.length &&
+              codigosIniciais.every((codigo, i) => codigo === codigosConfirmacao[i]);
+            if (estavel) break;
+            cards = cardsConfirmacao;
+          }
           if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
             await page.waitForTimeout(1_000 * tentativa);
           }
