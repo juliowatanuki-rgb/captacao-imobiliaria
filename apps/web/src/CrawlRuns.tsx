@@ -116,6 +116,7 @@ export default function CrawlRuns({
             </div>
             <div className="crawl-run-item-resumo">
               {run.sites_sucesso}/{run.sites_previstos} sites ok
+              {run.sites_alerta > 0 ? ` - ${run.sites_alerta} com alerta` : ""}
               {run.sites_erro > 0 ? ` - ${run.sites_erro} com erro` : ""}
             </div>
           </button>
@@ -147,14 +148,14 @@ export default function CrawlRuns({
             </tbody>
           </table>
         )}
-        {siteRuns.some((r) => r.status === "erro" && r.mensagem_erro) && (
+        {siteRuns.some((r) => (r.status === "erro" || r.status === "alerta") && r.mensagem_erro) && (
           <div className="erros-detalhe">
-            <h3>Erros</h3>
+            <h3>Erros e alertas</h3>
             {siteRuns
-              .filter((r) => r.status === "erro" && r.mensagem_erro)
+              .filter((r) => (r.status === "erro" || r.status === "alerta") && r.mensagem_erro)
               .map((r) => (
                 <p key={r.id}>
-                  <strong>{r.site_nome}:</strong> {r.mensagem_erro}
+                  <StatusBadge status={r.status} /> <strong>{r.site_nome}:</strong> {r.mensagem_erro}
                 </p>
               ))}
           </div>

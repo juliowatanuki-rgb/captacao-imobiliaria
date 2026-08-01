@@ -33,6 +33,37 @@ export interface CrawlSiteResult {
   detalheTecnico: string | null;
 }
 
+// Detecta o sintoma de "churn de identidade" (secao "auditoria de anuncios
+// novos" de 2026-08-01): um anuncio que muda de codigo/identity_key entre
+// coletas aparece simultaneamente como "novo" (codigo nunca visto) E como
+// "ausente" (o codigo antigo sumiu) na MESMA coleta, em vez de aparecer como
+// "sem alteracao". Confirmado ao vivo (navegador real, 6s de monitoramento,
+// 2 recarregamentos completos) que pelo menos parte disso NAO e um problema
+// de hidratacao/timing do nosso lado (o DOM ja estava estavel) - o mais
+// provavel e o proprio site de origem republicando o mesmo imovel com um
+// codigo levemente diferente (comportamento comum de CRMs imobiliarios).
+// Como isso nao da pra "consertar" com confianca no lado do scraper sem
+// risco de mesclar por engano anuncios que sao realmente diferentes, a
+// garantia de confiabilidade aqui e OUTRA: nunca deixar isso passar batido
+// como 'sucesso' silencioso - fica marcado 'alerta' para aparecer no painel
+// (Execucoes de coleta) e ser investigado, em vez de so inflar a fila de
+// "Anuncios novos" sem ninguem perceber.
+const LIMIAR_ALERTA_MOVIMENTACAO_ABSOLUTA = 15; // abaixo disso e ruido normal do dia a dia
+const LIMIAR_ALERTA_MOVIMENTACAO_PROPORCAO = 0.05; // 5% do inventario encontrado na mesma coleta
+
+function indicaChurnDeIdentidade(
+  anunciosEncontrados: number,
+  anunciosNovos: number,
+  anunciosAusentes: number,
+  isInitialSeed: boolean
+): boolean {
+  // 1a coleta de um site sempre tem 100% "novo" - e o esperado, nao uma anomalia.
+  if (isInitialSeed || anunciosEncontrados === 0) return false;
+  const movimentacao = anunciosNovos + anunciosAusentes;
+  if (movimentacao < LIMIAR_ALERTA_MOVIMENTACAO_ABSOLUTA) return false;
+  return movimentacao / anunciosEncontrados >= LIMIAR_ALERTA_MOVIMENTACAO_PROPORCAO;
+}
+
 /**
  * Executa a coleta de um site dentro de um crawl_run existente, gravando o
  * resultado em site_crawl_runs (log obrigatorio desde o primeiro crawler - secao 13).
@@ -97,11 +128,19 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
 
       await client.query("COMMIT");
 
+      const churnDeIdentidade = indicaChurnDeIdentidade(listings.length, anunciosNovos, marcadosAusentes, isInitialSeed);
+      const status: CrawlSiteResult["status"] = churnDeIdentidade ? "alerta" : "sucesso";
+      const mensagemErro = churnDeIdentidade
+        ? `possivel churn de identidade: ${anunciosNovos} novo(s) e ${marcadosAusentes} ausente(s) na mesma ` +
+          `coleta (${((anunciosNovos + marcadosAusentes) / listings.length * 100).toFixed(1)}% do total encontrado) - ` +
+          "verificar se sao o mesmo anuncio mudando de codigo entre coletas antes de confiar nesses numeros"
+        : null;
+
       const fimEm = new Date();
       await pool.query(
         `UPDATE site_crawl_runs SET
           fim_em = $2,
-          status = 'sucesso',
+          status = $11,
           paginas_visitadas = $3,
           anuncios_encontrados = $4,
           anuncios_novos = $5,
@@ -109,7 +148,8 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
           anuncios_atualizados = $7,
           anuncios_ausentes = $8,
           anuncios_sem_alteracao = $9,
-          anuncios_duplicados_coleta = $10
+          anuncios_duplicados_coleta = $10,
+          mensagem_erro = $12
          WHERE id = $1`,
         [
           siteCrawlRunId,
@@ -122,18 +162,20 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
           marcadosAusentes,
           batch.anunciosSemAlteracao,
           batch.duplicadosNaColeta,
+          status,
+          mensagemErro,
         ]
       );
 
       return {
-        status: "sucesso",
+        status,
         anunciosEncontrados: listings.length,
         anunciosNovos,
         anunciosExistentes,
         anunciosAtualizados,
         anunciosAusentes: marcadosAusentes,
         paginasVisitadas,
-        mensagemErro: null,
+        mensagemErro,
         detalheTecnico: null,
       };
     } catch (err) {
@@ -195,7 +237,18 @@ export async function finishCrawlRun(
   const totalAnunciosNovos = results.reduce((sum, r) => sum + r.anunciosNovos, 0);
   const totalAnunciosAtualizados = results.reduce((sum, r) => sum + r.anunciosAtualizados, 0);
 
-  const status = sitesErro === 0 ? "sucesso" : sitesSucesso > 0 ? "sucesso_parcial" : "erro";
+  // 'alerta' tambem rebaixa o status geral da execucao (reaproveita
+  // 'sucesso_parcial' - crawl_runs.status nao tem um valor proprio para
+  // "alerta", so listings/site_crawl_runs tem) para o alerta aparecer
+  // tambem na lista de execucoes, nao so no detalhe por site.
+  const status =
+    sitesErro > 0
+      ? sitesSucesso > 0
+        ? "sucesso_parcial"
+        : "erro"
+      : sitesAlerta > 0
+        ? "sucesso_parcial"
+        : "sucesso";
 
   await pool.query(
     `UPDATE crawl_runs SET

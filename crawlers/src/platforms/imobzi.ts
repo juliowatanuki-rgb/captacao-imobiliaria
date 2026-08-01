@@ -62,6 +62,7 @@ import type { SiteCrawlerModule } from "../siteRegistry.js";
 const MAX_PAGINAS_PADRAO = 150;
 const PAUSA_ENTRE_PAGINAS_MS = 800;
 const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
+const MAX_CONFIRMACOES_ESTABILIDADE = 2;
 
 interface RawCard {
   href: string;
@@ -162,6 +163,14 @@ export interface ImobziConfig {
   maxPaginas?: number;
 }
 
+function codigosDosCards(cards: RawCard[]): (string | null)[] {
+  return cards.map((c) => extractCodigo(c.codigoTexto, c.href));
+}
+
+function codigosBatem(a: (string | null)[], b: (string | null)[]): boolean {
+  return a.length === b.length && a.every((codigo, i) => codigo === b[i]);
+}
+
 export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
   return {
     async scrape({ page }) {
@@ -173,7 +182,17 @@ export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
         const separador = config.urlListagem.includes("?") ? "&" : "?";
         const url = pagina === 1 ? config.urlListagem : `${config.urlListagem}${separador}page=${pagina}`;
 
+        // `cards` so recebe conteudo quando os codigos ficam estaveis em
+        // varias leituras seguidas - se a pagina teve conteudo mas nunca
+        // estabilizou, ela e pulada (cards fica []) sem contar como "fim da
+        // paginacao" (paginaTinhaConteudo cuida disso separado). Um anuncio
+        // pulado assim so fica "nao visto" nesta coleta (no pior caso, some
+        // ao ficar 2 coletas seguidas sem aparecer - secao 9) - bem mais
+        // seguro do que gravar um codigo transitorio como identidade
+        // definitiva do anuncio e criar uma duplicata.
         let cards: RawCard[] = [];
+        let paginaTinhaConteudo = false;
+
         for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA; tentativa++) {
           await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
           await page.waitForSelector("imobzi-property-card, imobzi-grid-card", { timeout: 15_000 }).catch(() => {});
@@ -184,31 +203,43 @@ export function createImobziCrawler(config: ImobziConfig): SiteCrawlerModule {
           // hidratacao no cliente trocar pelo conteudo final) - uma pequena
           // espera aqui evita capturar esse estado transitorio incompleto.
           await page.waitForTimeout(1_000);
-          cards = await extractCards(page);
-          if (cards.length > 0 && cards.every((c) => c.href)) {
+          let leitura = await extractCards(page);
+
+          if (leitura.length > 0 && leitura.every((c) => c.href)) {
+            paginaTinhaConteudo = true;
             // O href pode ja estar preenchido enquanto o codigo do
             // .neighborhood-title ainda muda (ex.: ganha um sufixo de letra)
             // nos instantes seguintes da hidratacao - confirma que os codigos
-            // nao mudam mais antes de aceitar a pagina, pra nao gravar um
-            // codigo transitorio como identidade do anuncio (secao 9) e
-            // duplicar o anuncio na proxima coleta com o codigo final.
-            await page.waitForTimeout(800);
-            const cardsConfirmacao = await extractCards(page);
-            const codigosIniciais = cards.map((c) => extractCodigo(c.codigoTexto, c.href));
-            const codigosConfirmacao = cardsConfirmacao.map((c) => extractCodigo(c.codigoTexto, c.href));
-            const estavel =
-              codigosIniciais.length === codigosConfirmacao.length &&
-              codigosIniciais.every((codigo, i) => codigo === codigosConfirmacao[i]);
-            if (estavel) break;
-            cards = cardsConfirmacao;
+            // nao mudam mais em MAX_CONFIRMACOES_ESTABILIDADE leituras
+            // seguidas antes de aceitar a pagina, pra nao gravar um codigo
+            // transitorio como identidade do anuncio (secao 9).
+            let estavel = false;
+            let codigosAnteriores = codigosDosCards(leitura);
+            for (let confirmacao = 1; confirmacao <= MAX_CONFIRMACOES_ESTABILIDADE && !estavel; confirmacao++) {
+              await page.waitForTimeout(800);
+              const releitura = await extractCards(page);
+              const codigosAtuais = codigosDosCards(releitura);
+              estavel = codigosBatem(codigosAnteriores, codigosAtuais);
+              leitura = releitura;
+              codigosAnteriores = codigosAtuais;
+            }
+            if (estavel) {
+              cards = leitura;
+              break;
+            }
+            // Instavel mesmo apos as confirmacoes: nao aceita essa leitura.
+            // Tenta recarregar a pagina do zero na proxima `tentativa` (pode
+            // ser so uma renderizacao lenta); se todas as tentativas
+            // esgotarem, a pagina fica sem conteudo nesta coleta (ver acima).
           }
+
           if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
             await page.waitForTimeout(1_000 * tentativa);
           }
         }
 
         paginasVisitadas += 1;
-        if (cards.length === 0) break;
+        if (!paginaTinhaConteudo) break; // fim real da paginacao (pagina vazia em todas as tentativas)
 
         for (const card of cards) {
           if (!card.href) continue;

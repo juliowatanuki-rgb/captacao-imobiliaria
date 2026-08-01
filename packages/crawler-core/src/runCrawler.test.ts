@@ -32,12 +32,15 @@ class FakePool {
       return { rows: [{ total: String(doSite.length), rastreados: String(rastreados) }], rowCount: 1 };
     }
 
-    if (text.includes("UPDATE site_crawl_runs SET") && text.includes("status = 'sucesso'")) {
-      const [id, fimEm, paginasVisitadas, encontrados, novos, existentes, atualizados, ausentes, semAlteracao, duplicados] = params;
+    if (text.includes("UPDATE site_crawl_runs SET") && text.includes("anuncios_duplicados_coleta = $10")) {
+      const [
+        id, fimEm, paginasVisitadas, encontrados, novos, existentes, atualizados, ausentes,
+        semAlteracao, duplicados, status, mensagemErro,
+      ] = params;
       const run = this.siteCrawlRuns.find((r) => r.id === id);
       Object.assign(run, {
         fim_em: fimEm,
-        status: "sucesso",
+        status,
         paginas_visitadas: paginasVisitadas,
         anuncios_encontrados: encontrados,
         anuncios_novos: novos,
@@ -46,6 +49,7 @@ class FakePool {
         anuncios_ausentes: ausentes,
         anuncios_sem_alteracao: semAlteracao,
         anuncios_duplicados_coleta: duplicados,
+        mensagem_erro: mensagemErro,
       });
       return { rows: [], rowCount: 1 };
     }
@@ -201,6 +205,17 @@ function scraped(externalId: string): ScrapedListing {
   };
 }
 
+async function seedFakePool(pool: FakePool, siteId: string, quantidade: number) {
+  const listings = Array.from({ length: quantidade }, (_, i) => scraped(`seed-${i}`));
+  await crawlSite({
+    pool: pool as any,
+    crawlRunId: "crawl-1",
+    siteId,
+    urlBase,
+    scrape: async () => ({ listings, paginasVisitadas: 1 }),
+  });
+}
+
 describe("crawlSite - protecao contra coleta anomala", () => {
   let pool: FakePool;
 
@@ -326,5 +341,74 @@ describe("crawlSite - protecao contra coleta anomala", () => {
     const apos2 = pool.listings.find((r) => r.external_id === "seed-3");
     expect(apos2.status).toBe("removido");
     expect(apos2.coletas_ausente_consecutivas).toBe(2);
+  });
+});
+
+describe("crawlSite - alerta de possivel churn de identidade", () => {
+  // Auditoria de 2026-08-01: sites com o mesmo codigo mudando entre coletas
+  // aparecem com "novos" e "ausentes" altos ao mesmo tempo na mesma coleta
+  // (o anuncio antigo "some" e um "novo" com outro codigo toma o lugar dele),
+  // em vez do esperado "sem alteracao". Como nao da pra saber com certeza se
+  // e um bug de extracao ou o proprio site republicando o imovel, a garantia
+  // aqui e so nao deixar isso passar como 'sucesso' silencioso.
+  let pool: FakePool;
+
+  beforeEach(() => {
+    pool = new FakePool();
+  });
+
+  it("marca 'alerta' (nao 'sucesso') quando novos e ausentes sao altos na mesma coleta (2a+)", async () => {
+    await seedFakePool(pool, "site_a", 100);
+
+    // mantem 70 antigos, "perde" 30 (viram ausentes) e "ganha" 30 com codigo nunca visto (novos)
+    const mantidos = Array.from({ length: 70 }, (_, i) => scraped(`seed-${i}`));
+    const novosDeVerdade = Array.from({ length: 30 }, (_, i) => scraped(`churn-${i}`));
+    const result = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-1",
+      siteId: "site_a",
+      urlBase,
+      scrape: async () => ({ listings: [...mantidos, ...novosDeVerdade], paginasVisitadas: 1 }),
+    });
+
+    expect(result.status).toBe("alerta");
+    expect(result.anunciosNovos).toBe(30);
+    expect(result.anunciosAusentes).toBe(30);
+    expect(result.mensagemErro).toContain("churn de identidade");
+    const runSalvo = pool.siteCrawlRuns.find((r) => r.site_id === "site_a" && r.status === "alerta");
+    expect(runSalvo).toBeDefined();
+    expect(runSalvo.mensagem_erro).toContain("churn de identidade");
+  });
+
+  it("continua 'sucesso' quando a movimentacao de novos/ausentes e pequena (ruido normal)", async () => {
+    await seedFakePool(pool, "site_a", 100);
+
+    const mantidos = Array.from({ length: 95 }, (_, i) => scraped(`seed-${i}`));
+    const novosDeVerdade = Array.from({ length: 2 }, (_, i) => scraped(`novo-${i}`));
+    const result = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-1",
+      siteId: "site_a",
+      urlBase,
+      scrape: async () => ({ listings: [...mantidos, ...novosDeVerdade], paginasVisitadas: 1 }),
+    });
+
+    expect(result.status).toBe("sucesso");
+    expect(result.anunciosNovos).toBe(2);
+    expect(result.anunciosAusentes).toBe(5);
+    expect(result.mensagemErro).toBeNull();
+  });
+
+  it("1a coleta (base inicial) nunca gera alerta, mesmo sendo 100% novos", async () => {
+    const result = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-1",
+      siteId: "site_a",
+      urlBase,
+      scrape: async () => ({ listings: Array.from({ length: 50 }, (_, i) => scraped(`seed-${i}`)), paginasVisitadas: 1 }),
+    });
+
+    expect(result.status).toBe("sucesso");
+    expect(result.anunciosNovos).toBe(50);
   });
 });

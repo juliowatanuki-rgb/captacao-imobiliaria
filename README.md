@@ -194,6 +194,42 @@ novo. Os eventos `updated` gravados antes dessa mudanca nao foram apagados
 (continuam validos no `CHECK` da coluna `tipo`); a decisao de remove-los ou
 nao fica para uma limpeza futura, com autorizacao explicita.
 
+### Alerta de churn de identidade (`site_crawl_runs.status = 'alerta'`)
+
+Auditoria de 2026-08-01: a fila "Anuncios novos" do painel estava recebendo
+centenas de falsos "novos" por dia em alguns sites porque o codigo do imovel
+mudava entre coletas (o anuncio antigo "some" como ausente e um "novo" com
+outro codigo toma o lugar dele). Confirmado ao vivo, com o navegador, que
+pelo menos parte disso NAO e um problema de hidratacao/timing do nosso lado -
+o mais provavel e o proprio site de origem republicando o mesmo imovel com um
+codigo levemente diferente (comportamento comum de CRMs imobiliarios), o que
+nao da pra "consertar" com seguranca no lado do scraper sem risco de mesclar
+por engano anuncios que sao realmente diferentes.
+
+Duas camadas de mitigacao:
+
+1. **Motores mais defensivos.** `crawlers/src/platforms/imobzi.ts` (usado por
+   `aline_caetano_imoveis`, `group_house_fort`) e `imobeal.ts` (usado por
+   `praialar_imoveis`) agora exigem que o codigo/href do card fique estavel
+   em leituras consecutivas antes de aceitar a pagina; se nunca estabilizar,
+   a pagina e **pulada nesta coleta** (o anuncio so fica "nao visto" - no
+   pior caso, leva 2 coletas seguidas ausente pra virar `removido`) em vez de
+   gravar um codigo transitorio como identidade definitiva e criar uma
+   duplicata. Validado ao vivo em producao em 2026-08-01: `aline_caetano_imoveis`
+   caiu de 50 para 16 falsos "novos"/dia, `group_house_fort` de 7 para 2,
+   `praialar_imoveis` de 15 para 1 (esse ultimo passou a fechar `sucesso`,
+   sem alerta).
+2. **Alerta em vez de sucesso silencioso.** Mesmo com o motor mais robusto,
+   `packages/crawler-core/src/runCrawler.ts` (`indicaChurnDeIdentidade`)
+   marca a coleta de um site como `status = 'alerta'` (em vez de `'sucesso'`)
+   sempre que `anuncios_novos + anuncios_ausentes` for >= 15 e >= 5% do total
+   encontrado na mesma coleta (1a coleta de um site nunca conta - 100% novo e
+   esperado ali). Aparece na aba "Execucoes de coleta" do painel (badge
+   amarelo, mesma cor de `sucesso_parcial`) com a mensagem explicando a
+   proporcao encontrada - a garantia de confiabilidade aqui nao e "nunca vai
+   ter uma coleta estranha" (impossivel de prometer com sites de terceiros),
+   e sim "nunca vai passar batido sem alguem perceber".
+
 Setup (uma vez, feito direto no Google Cloud e no GitHub, nao no codigo):
 
 1. Criar/usar um projeto no [Google Cloud Console](https://console.cloud.google.com),

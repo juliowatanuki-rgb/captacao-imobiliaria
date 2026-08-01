@@ -44,6 +44,7 @@ import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 120;
 const ID_LENGTH = 8;
+const MAX_CONFIRMACOES_ESTABILIDADE = 2;
 
 interface RawCard {
   href: string;
@@ -113,6 +114,14 @@ export interface ImobealConfig {
   maxPaginas?: number;
 }
 
+function hrefsDosCards(cards: RawCard[]): string[] {
+  return cards.map((c) => c.href);
+}
+
+function hrefsBatem(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((href, i) => href === b[i]);
+}
+
 export function createImobealCrawler(config: ImobealConfig): SiteCrawlerModule {
   return {
     async scrape({ page }) {
@@ -124,9 +133,28 @@ export function createImobealCrawler(config: ImobealConfig): SiteCrawlerModule {
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
         await page.waitForSelector("a.pl-card", { timeout: 20_000 }).catch(() => {});
-        const cards = await extractCards(page);
+        let cards = await extractCards(page);
         paginasVisitadas += 1;
         if (cards.length === 0) break;
+
+        // Confirma que os hrefs (de onde vem o externalId - secao "otimizacao
+        // de armazenamento e auditoria de anuncios novos" de 2026-08-01) nao
+        // mudam antes de aceitar a pagina, na mesma linha do motor Imobzi -
+        // se nao estabilizar, pula o conteudo desta pagina (nao grava
+        // nenhum anuncio dela) em vez de arriscar um href/id transitorio
+        // virar identidade definitiva do anuncio e criar uma duplicata.
+        let estavel = false;
+        let ultimaLeituraBruta = cards; // mantida mesmo se instavel, so para o "clique na proxima pagina" abaixo
+        let hrefsAnteriores = hrefsDosCards(cards);
+        for (let confirmacao = 1; confirmacao <= MAX_CONFIRMACOES_ESTABILIDADE && !estavel; confirmacao++) {
+          await page.waitForTimeout(500);
+          const releitura = await extractCards(page);
+          const hrefsAtuais = hrefsDosCards(releitura);
+          estavel = hrefsBatem(hrefsAnteriores, hrefsAtuais);
+          ultimaLeituraBruta = releitura;
+          hrefsAnteriores = hrefsAtuais;
+        }
+        cards = estavel ? ultimaLeituraBruta : [];
 
         for (const card of cards) {
           if (!card.href) continue;
@@ -154,7 +182,7 @@ export function createImobealCrawler(config: ImobealConfig): SiteCrawlerModule {
         const desabilitado = (await proximoBotao.getAttribute("disabled").catch(() => "sim")) !== null;
         if (desabilitado) break;
 
-        const primeiroHrefAntes = cards[0]?.href ?? null;
+        const primeiroHrefAntes = ultimaLeituraBruta[0]?.href ?? null;
         await proximoBotao.click();
         await page
           .waitForFunction(
