@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import Login from "./Login.js";
-import Dashboard from "./Dashboard.js";
-import ListingsNew from "./ListingsNew.js";
-import CrawlRuns from "./CrawlRuns.js";
-import Users from "./Users.js";
 import type { AuthUser } from "./api.js";
+
+// Cada aba vira seu proprio chunk JS, baixado so quando o usuario visita ela
+// pela 1a vez (auditoria de performance de 2026-08-01 - antes tudo ia num so
+// bundle carregado de cara, incluindo telas admin que a maioria nunca abre).
+const Dashboard = lazy(() => import("./Dashboard.js"));
+const ListingsNew = lazy(() => import("./ListingsNew.js"));
+const CrawlRuns = lazy(() => import("./CrawlRuns.js"));
+const Users = lazy(() => import("./Users.js"));
 
 type Aba = "home" | "anuncios" | "logs" | "usuarios";
 
@@ -28,7 +32,18 @@ function loadStoredAuth(): StoredAuth | null {
 export default function App() {
   const [auth, setAuth] = useState<StoredAuth | null>(loadStoredAuth);
   const [aba, setAba] = useState<Aba>("home");
+  // Uma aba, uma vez visitada, fica montada (so escondida via CSS) daqui pra
+  // frente - evita refazer o fetch (e a query pesada por tras) toda vez que
+  // o usuario volta pra uma aba que ja tinha carregado (auditoria de
+  // performance de 2026-08-01 - a navegacao entre abas estava pesada porque
+  // cada troca desmontava e remontava o componente do zero).
+  const [visitadas, setVisitadas] = useState<Set<Aba>>(() => new Set(["home"]));
   const [sessaoExpirada, setSessaoExpirada] = useState(false);
+
+  function irPara(nova: Aba) {
+    setAba(nova);
+    setVisitadas((prev) => (prev.has(nova) ? prev : new Set(prev).add(nova)));
+  }
 
   function handleLogin(token: string, user: AuthUser) {
     const stored = { token, user };
@@ -64,14 +79,14 @@ export default function App() {
             <button
               type="button"
               className={aba === "home" ? "tab-active" : ""}
-              onClick={() => setAba("home")}
+              onClick={() => irPara("home")}
             >
               Home
             </button>
             <button
               type="button"
               className={aba === "anuncios" ? "tab-active" : ""}
-              onClick={() => setAba("anuncios")}
+              onClick={() => irPara("anuncios")}
             >
               Anuncios novos
             </button>
@@ -79,7 +94,7 @@ export default function App() {
               <button
                 type="button"
                 className={aba === "logs" ? "tab-active" : ""}
-                onClick={() => setAba("logs")}
+                onClick={() => irPara("logs")}
               >
                 Logs de coleta
               </button>
@@ -88,7 +103,7 @@ export default function App() {
               <button
                 type="button"
                 className={aba === "usuarios" ? "tab-active" : ""}
-                onClick={() => setAba("usuarios")}
+                onClick={() => irPara("usuarios")}
               >
                 Usuarios
               </button>
@@ -103,13 +118,33 @@ export default function App() {
         </div>
       </header>
       <main>
-        {aba === "home" && <Dashboard token={auth.token} onSessionExpired={handleSessionExpired} />}
-        {aba === "anuncios" && <ListingsNew token={auth.token} onSessionExpired={handleSessionExpired} />}
-        {aba === "logs" && auth.user.role === "admin" && (
-          <CrawlRuns token={auth.token} onSessionExpired={handleSessionExpired} />
+        {visitadas.has("home") && (
+          <div style={{ display: aba === "home" ? "contents" : "none" }}>
+            <Suspense fallback={<p className="status-msg">Carregando...</p>}>
+              <Dashboard token={auth.token} onSessionExpired={handleSessionExpired} />
+            </Suspense>
+          </div>
         )}
-        {aba === "usuarios" && auth.user.role === "admin" && (
-          <Users token={auth.token} onSessionExpired={handleSessionExpired} />
+        {visitadas.has("anuncios") && (
+          <div style={{ display: aba === "anuncios" ? "contents" : "none" }}>
+            <Suspense fallback={<p className="status-msg">Carregando...</p>}>
+              <ListingsNew token={auth.token} onSessionExpired={handleSessionExpired} />
+            </Suspense>
+          </div>
+        )}
+        {visitadas.has("logs") && auth.user.role === "admin" && (
+          <div style={{ display: aba === "logs" ? "contents" : "none" }}>
+            <Suspense fallback={<p className="status-msg">Carregando...</p>}>
+              <CrawlRuns token={auth.token} onSessionExpired={handleSessionExpired} />
+            </Suspense>
+          </div>
+        )}
+        {visitadas.has("usuarios") && auth.user.role === "admin" && (
+          <div style={{ display: aba === "usuarios" ? "contents" : "none" }}>
+            <Suspense fallback={<p className="status-msg">Carregando...</p>}>
+              <Users token={auth.token} onSessionExpired={handleSessionExpired} />
+            </Suspense>
+          </div>
         )}
       </main>
     </div>

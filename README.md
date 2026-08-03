@@ -94,6 +94,42 @@ cp .env.example .env   # ajustar VITE_API_URL para a URL da API local/deploy
 npm run dev
 ```
 
+### Performance do painel
+
+Auditoria de 2026-08-01 (usuario reportou o painel lento, principalmente ao
+trocar de aba). Achados e correcoes:
+
+- **Cada aba agora e um chunk JS separado** (`apps/web/src/App.tsx`, via
+  `React.lazy`), baixado so quando o usuario visita ela pela 1a vez -
+  ninguem paga pelo codigo de `Users`/`CrawlRuns` (telas admin) so pra abrir
+  o Dashboard.
+- **`xlsx` (429 KB / 143 KB gzip) saiu do bundle principal** -
+  `apps/web/src/ListingsNew.tsx` agora importa a biblioteca dinamicamente
+  (`await import("xlsx")`) so quando o botao "Exportar para Excel" e
+  clicado, em vez de no topo do arquivo. Confirmado no `npm run build`: o
+  chunk principal caiu para 148 KB (48 KB gzip); antes, o `xlsx` inteiro ia
+  junto em toda visita.
+- **Trocar de aba nao recarrega mais os dados do zero** - uma aba, uma vez
+  visitada, fica montada (so escondida via CSS `display:none`) em vez de
+  desmontar; voltar pra ela e instantaneo, sem repetir o fetch nem a query.
+- **Digitar num campo de observacoes nao re-renderiza mais a fila inteira**
+  - a aba "Anuncios novos" (com ate ~700 cards) tinha o rascunho de todos os
+  campos manuais num unico objeto de estado no componente pai; cada tecla
+  digitada re-renderizava todos os cards. Extraido um componente `ListingCard`
+  memoizado (`React.memo`) com estado proprio por card.
+- **Indice composto em `listing_investigations`** (migration
+  `0008_listing_investigations_perf_index.sql`, `(listing_id, criado_em DESC)`)
+  - a query de `/api/listings/new` faz um `LEFT JOIN LATERAL` por linha
+  buscando a investigacao mais recente; sem esse indice, cada busca exigia
+  um sort em memoria. Ainda nao e o maior gargalo hoje (tabela pequena, POC
+  do Gemini ainda nao autorizada em producao), mas evita que vire um quando
+  o volume de investigacoes crescer.
+- **Nao implementado ainda:** paginacao de `/api/listings/new` (hoje retorna
+  a fila inteira de `analysis_status = 'pendente'`, ~700 linhas). Enquanto a
+  fila ficar na casa das centenas isso e tranquilo; se crescer muito
+  alem disso (milhares), vale revisitar com paginacao real no backend e no
+  painel.
+
 ## Deploy
 
 ### Vercel (frontend e API)
