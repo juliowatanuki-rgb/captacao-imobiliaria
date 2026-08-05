@@ -130,6 +130,45 @@ trocar de aba). Achados e correcoes:
   alem disso (milhares), vale revisitar com paginacao real no backend e no
   painel.
 
+### Sincronizacao manual ("Sincronizar agora")
+
+O card "Ultima sincronizacao" do Dashboard tem 2 botoes: **"Atualizar"**
+(qualquer usuario - so reconsulta o status atual, sem disparar nada) e
+**"Sincronizar agora"** (so admin - dispara de verdade uma nova coleta).
+
+O botao "Sincronizar agora" chama `POST /api/crawl/trigger`
+(`apps/api/api/crawl/trigger.ts`), que dispara o `workflow_dispatch` do
+`crawl.yml` no GitHub Actions - rodar os crawlers de verdade (Playwright, ~40
+sites, dezenas de minutos) direto numa function serverless da Vercel nao e
+viavel (timeout curto demais). Depois de clicar, a coleta aparece no painel
+em alguns minutos, exatamente como a execucao diaria agendada; a automatica
+continua rodando normalmente todo dia, o botao so acrescenta a opcao de
+disparar uma coleta extra quando quiser.
+
+Setup necessario (uma vez, so quem administra o repositorio):
+
+1. No GitHub, criar um **Personal Access Token** com permissao de `Actions:
+   write` no repositorio (Settings > Developer settings > Fine-grained
+   tokens, ou um classic token com escopo `repo` + `workflow`).
+2. Na Vercel, no projeto da API (`apps/api`), adicionar a env var
+   `GITHUB_DISPATCH_TOKEN` com esse token (Settings > Environment
+   Variables).
+3. Fazer um novo deploy (ou a Vercel aplica na proxima automaticamente).
+
+Sem essa env var configurada, o botao "Sincronizar agora" aparece pra admin
+mas retorna erro 500 ao clicar (mensagem clara, nao falha silenciosa).
+
+**Bug corrigido junto (auditoria de 2026-08-05):** `crawlers/src/runSite.ts`
+e `runAll.ts` podiam deixar um `crawl_run` preso em `em_andamento` para
+sempre se `browser.launch()`/`context.close()` lancasse excecao depois que
+`startCrawlRun` ja tinha rodado (`finishCrawlRun` nunca era chamado nesse
+caminho) - era por isso que o card "Ultima sincronizacao" as vezes parecia
+travado. Agora `finishCrawlRun` sempre roda num `finally`, com um resultado
+de erro sintetico se `crawlSite` nunca chegou a executar. 6 execucoes ja
+presas (desde 2026-07-29) foram reconciliadas manualmente para `status =
+'erro'` no Neon - nenhum dado de `listings` foi alterado, so o bookkeeping
+de `crawl_runs`.
+
 ## Deploy
 
 ### Vercel (frontend e API)

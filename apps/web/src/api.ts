@@ -167,6 +167,10 @@ export function fetchDashboard(token: string, from?: string, to?: string) {
   return request<DashboardData>(`/api/dashboard${query ? `?${query}` : ""}`, token);
 }
 
+export function triggerCrawl(token: string) {
+  return request<{ disparado: true }>("/api/crawl/trigger", token, { method: "POST" });
+}
+
 export function fetchCrawlRunDetail(token: string, id: string) {
   return request<{ crawlRun: CrawlRunSummary; siteRuns: SiteCrawlRun[] }>(
     `/api/crawl-runs/${id}`,

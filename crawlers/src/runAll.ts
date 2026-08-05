@@ -28,51 +28,59 @@ async function main() {
   const { crawlRunId } = await startCrawlRun(pool, sites.length);
   console.log(`[runAll] crawl_run ${crawlRunId} iniciado para ${sites.length} site(s)`);
 
-  const browser = await chromium.launch();
   const results: CrawlSiteResult[] = [];
 
+  // Auditoria de 2026-08-05: se algo depois de startCrawlRun lancar excecao
+  // sem passar por aqui (browser.launch(), context.close(), um crash no meio
+  // do loop), o crawl_run fica preso em 'em_andamento' pra sempre - foi o
+  // que aconteceu na pratica (painel mostrando "sincronizacao" travada).
+  // finishCrawlRun SEMPRE roda no finally, com os resultados parciais que
+  // ja tiverem sido coletados ate ali.
   try {
-    // Sequencial: cada site roda um apos o outro. Um erro em um site
-    // (capturado dentro de crawlSite) nao impede os demais (secao 18).
-    for (const site of sites) {
-      console.log(`[runAll] iniciando site "${site.id}"`);
-      const context = await browser.newContext();
-      try {
-        // A carga do modulo do site acontece DENTRO do scrape(), para que uma
-        // falha (ex: arquivo do crawler inexistente) seja capturada por
-        // crawlSite() e vire um registro de erro em site_crawl_runs, em vez
-        // de deixar aquele site sem nenhum log (secao 13).
-        const result = await crawlSite({
-          pool,
-          crawlRunId,
-          siteId: site.id,
-          urlBase: site.url_base,
-          scrape: async () => {
-            const module = await loadSiteModule(site.id);
-            const page = await context.newPage();
-            const output = await module.scrape({ page, urlBase: site.url_base, urlListagem: site.url_listagem });
-            return { ...output, urlOptions: module.urlOptions };
-          },
-        });
+    const browser = await chromium.launch();
+    try {
+      // Sequencial: cada site roda um apos o outro. Um erro em um site
+      // (capturado dentro de crawlSite) nao impede os demais (secao 18).
+      for (const site of sites) {
+        console.log(`[runAll] iniciando site "${site.id}"`);
+        const context = await browser.newContext();
+        try {
+          // A carga do modulo do site acontece DENTRO do scrape(), para que uma
+          // falha (ex: arquivo do crawler inexistente) seja capturada por
+          // crawlSite() e vire um registro de erro em site_crawl_runs, em vez
+          // de deixar aquele site sem nenhum log (secao 13).
+          const result = await crawlSite({
+            pool,
+            crawlRunId,
+            siteId: site.id,
+            urlBase: site.url_base,
+            scrape: async () => {
+              const module = await loadSiteModule(site.id);
+              const page = await context.newPage();
+              const output = await module.scrape({ page, urlBase: site.url_base, urlListagem: site.url_listagem });
+              return { ...output, urlOptions: module.urlOptions };
+            },
+          });
 
-        results.push(result);
-        console.log(
-          `[runAll] site "${site.id}" -> status=${result.status} encontrados=${result.anunciosEncontrados} novos=${result.anunciosNovos} atualizados=${result.anunciosAtualizados} ausentes=${result.anunciosAusentes}`
-        );
-        if (result.mensagemErro) {
-          console.error(`[runAll] site "${site.id}" erro: ${result.mensagemErro}`);
+          results.push(result);
+          console.log(
+            `[runAll] site "${site.id}" -> status=${result.status} encontrados=${result.anunciosEncontrados} novos=${result.anunciosNovos} atualizados=${result.anunciosAtualizados} ausentes=${result.anunciosAusentes}`
+          );
+          if (result.mensagemErro) {
+            console.error(`[runAll] site "${site.id}" erro: ${result.mensagemErro}`);
+          }
+        } finally {
+          await context.close().catch(() => {});
         }
-      } finally {
-        await context.close();
       }
+    } finally {
+      await browser.close().catch(() => {});
     }
   } finally {
-    await browser.close();
+    await finishCrawlRun(pool, crawlRunId, results);
+    console.log(`[runAll] crawl_run ${crawlRunId} finalizado (${results.length}/${sites.length} site(s) com resultado)`);
+    await pool.end();
   }
-
-  await finishCrawlRun(pool, crawlRunId, results);
-  console.log(`[runAll] crawl_run ${crawlRunId} finalizado`);
-  await pool.end();
 }
 
 main().catch((err) => {

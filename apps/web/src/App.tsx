@@ -121,7 +121,7 @@ export default function App() {
         {visitadas.has("home") && (
           <div style={{ display: aba === "home" ? "contents" : "none" }}>
             <Suspense fallback={<p className="status-msg">Carregando...</p>}>
-              <Dashboard token={auth.token} onSessionExpired={handleSessionExpired} />
+              <Dashboard token={auth.token} role={auth.user.role} onSessionExpired={handleSessionExpired} />
             </Suspense>
           </div>
         )}
