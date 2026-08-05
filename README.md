@@ -192,8 +192,26 @@ Configurar em Settings > Secrets and variables > Actions:
 
 - `DATABASE_URL`
 
-O workflow `.github/workflows/crawl.yml` roda diariamente (09:00 UTC) e tambem
-pode ser disparado manualmente pela aba Actions (`workflow_dispatch`).
+O workflow `.github/workflows/crawl.yml` roda diariamente (05:00 UTC = 02:00
+America/Sao_Paulo - de madrugada, de proposito, pra terminar antes do
+expediente) e tambem pode ser disparado manualmente pela aba Actions
+(`workflow_dispatch`) ou pelo botao "Sincronizar agora" do painel.
+
+**Historico (auditoria de 2026-08-05):** o horario era 09:00 UTC (06:00
+local) com `timeout-minutes: 120`. A coleta sequencial de ~40 sites passou a
+levar mais de 2h, e **toda execucao agendada de 2026-07-31 a 2026-08-05 foi
+cancelada pelo proprio GitHub por estourar o timeout** (confirmado no
+historico do Actions - `gh run list --workflow=crawl.yml`), sem que ninguem
+percebesse ate o usuario notar o card "Ultima sincronizacao" parecendo
+travado no painel. Corrigido movendo o horario pra madrugada, subindo o
+timeout pra 240 minutos, e removendo `realize_inteligencia_imobiliaria` da
+coleta diaria (sozinho levava ~39 min pra achar so 52 anuncios em 150
+paginas - `ativo=false` em `monitored_sites`, passo comentado no workflow;
+reativar so depois de investigar esse motor especifico). Tambem foram
+reconciliadas manualmente 2 execucoes que ficaram duplicadas rodando ao
+mesmo tempo (disparo em dobro do botao "Sincronizar agora") e mais alguns
+`site_crawl_runs`/`crawl_runs` presos de dias anteriores - nenhum dado de
+`listings` foi alterado, so bookkeeping de execucao.
 
 ### Exportacao continua para o Google Sheets
 

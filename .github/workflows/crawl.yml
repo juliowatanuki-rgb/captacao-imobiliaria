@@ -4,8 +4,13 @@ name: Coleta diaria de anuncios
 # computador pessoal ou servidor proprio. Repositorio publico para nao
 # consumir minutos limitados de repositorio privado.
 on:
+  # Auditoria de 2026-08-05: horario movido pra madrugada (era 09:00 UTC =
+  # 06:00 America/Sao_Paulo, que na pratica so comecava a rodar mais tarde
+  # por fila do runner e ja invadia o horario comercial, ainda mais sem
+  # terminar dentro do timeout - ver timeout-minutes abaixo). 05:00 UTC = 02:00
+  # America/Sao_Paulo, com folga de sobra pra terminar antes do expediente.
   schedule:
-    - cron: "0 9 * * *" # 09:00 UTC = 06:00 America/Sao_Paulo
+    - cron: "0 5 * * *" # 05:00 UTC = 02:00 America/Sao_Paulo
   workflow_dispatch: {}
 
 permissions:
@@ -14,7 +19,11 @@ permissions:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # Era 120 - a coleta sequencial de ~40 sites vem passando disso ha dias
+    # (confirmado no historico do Actions: toda execucao agendada desde
+    # 2026-07-31 foi cancelada pelo proprio GitHub por estourar o timeout,
+    # sempre por volta de 2h05). 240 da folga real, com margem.
+    timeout-minutes: 240
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
@@ -124,9 +133,14 @@ jobs:
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- praialar_imoveis
 
-      - name: Rodar crawler - Realize Inteligencia Imobiliaria
-        if: always()
-        run: npm run crawl:site -w @captacao/crawlers -- realize_inteligencia_imobiliaria
+      # Removido da coleta diaria em 2026-08-05: sozinho levava ~39 min pra
+      # achar so 52 anuncios em 150 paginas (paginacao/retentativas
+      # ineficientes), puxando a execucao inteira pra cima do timeout. Fica
+      # desativado em monitored_sites.ativo tambem - reativar so depois de
+      # investigar e corrigir o motor desse site especificamente.
+      # - name: Rodar crawler - Realize Inteligencia Imobiliaria
+      #   if: always()
+      #   run: npm run crawl:site -w @captacao/crawlers -- realize_inteligencia_imobiliaria
 
       - name: Rodar crawler - Marco Hottz Imoveis
         if: always()
