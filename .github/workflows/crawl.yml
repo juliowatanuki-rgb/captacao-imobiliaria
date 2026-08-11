@@ -262,6 +262,15 @@ jobs:
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- rios_imoveis_pg
 
+      # Homologado em 2026-08-11: Microsistec (mesmo motor de
+      # feliciano_imoveis_praia_grande). 1a coleta achou 375 imoveis; 2a
+      # coleta poucos minutos depois subiu para 501 com alerta de churn de
+      # identidade (catalogo completo so apareceu na 2a leitura) - 3a coleta
+      # confirmou 501 estavel (0 novos, 0 ausentes, status=sucesso).
+      - name: Rodar crawler - Bom Lugar Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- bom_lugar_imoveis
+
       # Exporta 100% dos anuncios (qualquer status) para a planilha do
       # Google Sheets, so acrescentando linhas novas desde a ultima
       # sincronizacao (nunca apaga/reescreve linha existente - secao "Google

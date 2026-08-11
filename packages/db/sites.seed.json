@@ -448,5 +448,15 @@
     "ativo": true,
     "isAgregador": false,
     "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Microsistec (fotos em vault.imob.online). Usa a mesma variante de template <article class=\"box-result\"> (sem sufixo -properties) ja mapeada em sites/realizacao_imoveis.ts (codigo dentro do data-property JSON no footer) - scraper autocontido, nao usa platforms/microsistec.ts. Pausa de 2000ms entre paginas (mesma infraestrutura de imoveis_de_classe.ts, onde ritmo mais rapido provocou bloqueio total de conexao). Protegido por areaUtilPlausivel (descarta area_util > 100.000 m² - erro de digitacao ja visto na mesma plataforma). Crawler em crawlers/src/sites/central_imoveis_praia_grande.ts. 1a coleta: 482 encontrados, 482 novos, 0 erro. 2a coleta confirmada: 482 encontrados, 0 novos, 0 duplicidade - promovido para o crawl.yml (workflow diario)."
+  },
+  {
+    "id": "bom_lugar_imoveis",
+    "nome": "Bom Lugar Imoveis",
+    "urlBase": "https://bomlugarimoveis.com.br",
+    "urlListagem": "https://bomlugarimoveis.com.br/busca/nenhuma/praia-grande-sp?filters=eyJjaXR5IjoiOTUyNyIsIm9yZGVyIjozfQ%3D%3D",
+    "plataforma": "Microsistec",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-08-11. Plataforma real e Microsistec (article.box-construction-8, link /detalhes/imovel/{tipo}/{cidade}/{bairro}/codigo/{codigo}) - reaproveita o motor generico existente (mesmo de feliciano_imoveis_praia_grande.ts). URL de listagem dedicada por cidade (city=9527 = Praia Grande, mesmo id de feliciano_imoveis_praia_grande). Crawler em crawlers/src/sites/bom_lugar_imoveis.ts. Validado com npm run validate:site: 2 paginas, 30 imoveis, 100% externalId e url presentes, 100% cidade=\"Praia Grande\". 1a coleta real: 375 encontrados/375 novos. 2a coleta (poucos minutos depois) subiu para 501 encontrados com alerta de churn de identidade (126 novos/0 ausentes, 25% do total) - 3a coleta confirmou 501 estavel (0 novos, 0 ausentes, status=sucesso), indicando que a 1a coleta simplesmente nao pegou o catalogo completo (mesma transitoriedade ja documentada em platforms/microsistec.ts) e nao um problema real de codigo instavel. Promovido para o crawl.yml (workflow diario)."
   }
 ]
