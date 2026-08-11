@@ -225,9 +225,9 @@
     "urlBase": "https://realizeimoveispg.com.br",
     "urlListagem": "https://realizeimoveispg.com.br/imoveis/a-venda/praia-grande-sp",
     "plataforma": "Praedium",
-    "ativo": true,
+    "ativo": false,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Imoview' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 52 encontrados, 52 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
+    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts), NAO 'Imoview' como chutado na planilha original. 1a coleta confirmada contra o Neon em 2026-07-29: 52 encontrados, 52 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml). Removido do crawl.yml em 2026-08-05 (auditoria de performance): sozinho levava ~39 min pra achar so 52 anuncios em 150 paginas, empurrando a coleta diaria inteira pra cima do timeout. ativo=false ate investigar e corrigir esse motor especificamente."
   },
   {
     "id": "marco_hottz_imoveis",
@@ -357,7 +357,37 @@
     "plataforma": "Praedium",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts) - reaproveita o motor generico existente, nenhum motor novo necessario. Site cobre tambem Mongagua alem de Praia Grande - usa a URL dedicada /imoveis/a-venda/praia-grande-sp (~1456 imoveis). BLOQUEADO: 2 tentativas de coleta real deram 0 encontrados - pagina retorna titulo 'Human Verification' (mesmo tipo de bloqueio anti-bot do all_prime_imoveis, aqui parece ser 100% consistente em vez de intermitente). Crawler em crawlers/src/sites/arthur_paraguay_investimentos.ts, mantido cadastrado mas sem coleta ainda - nao vale insistir no bypass por ora (mesma decisao tomada para all_prime_imoveis)."
+    "observacoes": "Inspecionado ao vivo em 2026-07-30. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br e mesma estrutura de card 'div.thumbnail_one' de platforms/praedium.ts) - reaproveita o motor generico existente, nenhum motor novo necessario. Site cobre tambem Mongagua alem de Praia Grande - usa a URL dedicada /imoveis/a-venda/praia-grande-sp (~1456 imoveis). BLOQUEADO: 2 tentativas de coleta real deram 0 encontrados - pagina retorna titulo 'Human Verification' (mesmo tipo de bloqueio anti-bot do all_prime_imoveis, aqui parece ser 100% consistente em vez de intermitente). Crawler em crawlers/src/sites/arthur_paraguay_investimentos.ts, mantido cadastrado mas sem coleta ainda - nao vale insistir no bypass por ora (mesma decisao tomada para all_prime_imoveis). Atualizacao 2026-08-05: homologado com sucesso (1a coleta real: 680 encontrados/680 novos; a 2a tentativa de confirmacao bateu de novo no bloqueio anti-bot, provavelmente por excesso de requisicoes em pouco tempo durante os proprios testes) - adicionado ao crawl.yml no ritmo normal de 1x/dia."
+  },
+  {
+    "id": "elite_imoveis_pg",
+    "nome": "Elite Imoveis",
+    "urlBase": "https://eliteimoveispg.com.br",
+    "urlListagem": "https://eliteimoveispg.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-08-05. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br) - reaproveita o motor generico existente. URL dedicada por cidade (~1365 imoveis em Praia Grande). Validado com validate:site (2 paginas, 40 imoveis, 0 sem externalId/url). 1a coleta real: 600 encontrados/600 novos. 2a coleta de confirmacao bateu no bloqueio anti-bot da Praedium (mesmo padrao do arthur_paraguay_investimentos, provavelmente por varios sites Praedium testados em sequencia rapida) - adicionado ao crawl.yml no ritmo normal de 1x/dia."
+  },
+  {
+    "id": "agencia_da_praia_imoveis",
+    "nome": "Agencia da Praia Imoveis",
+    "urlBase": "https://www.agenciadapraia.com.br",
+    "urlListagem": "https://www.agenciadapraia.com.br/imoveis/a-venda/praia-grande",
+    "plataforma": "Kenlo",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-08-05 (usar sempre www., mesmo padrao de nova_casarao_imoveis). Plataforma real e Kenlo (mesmo motor generico de nova_casarao_imoveis). URL sem filtro de cidade (/imoveis/a-venda) cobre 725 imoveis de varias cidades - trocada para a URL dedicada de Praia Grande. Validado com validate:site (2 paginas, 24 imoveis, 0 sem externalId/url, 100% cidade=Praia Grande). 1a tentativa de coleta real deu timeout de navegacao numa pagina no meio (falha de rede pontual, sem gravar nada). Repetida: 2698 encontrados/2698 novos. 2a coleta de confirmacao 100% estavel (2698 encontrados, 0 novos, 0 duplicidade) - promovido para o crawl.yml."
+  },
+  {
+    "id": "rios_imoveis_pg",
+    "nome": "Rios Imoveis",
+    "urlBase": "https://riosimoveispg.com.br",
+    "urlListagem": "https://riosimoveispg.com.br/imoveis/a-venda/praia-grande-sp",
+    "plataforma": "Praedium",
+    "ativo": true,
+    "isAgregador": false,
+    "observacoes": "Inspecionado ao vivo em 2026-08-05. Plataforma real e Praedium (mesmo CDN cdn3.praedium.com.br) - reaproveita o motor generico existente. URL dedicada por cidade. Validado com validate:site (2 paginas, 40 imoveis, 0 sem externalId/url). Bairro vem com prefixo de rua neste site (ex.: 'Rua Paula Ney - Vila Assuncao') - cosmetico, nao impede o uso. 1a tentativa de coleta real bateu no bloqueio anti-bot da Praedium antes de gravar qualquer coisa (testado logo apos elite_imoveis_pg, mesma plataforma/CDN) - 0 dado gravado no Neon ainda, isInitialSeed continua valendo na proxima tentativa. Adicionado ao crawl.yml no ritmo normal de 1x/dia; 1a execucao bem-sucedida ali serve de 1a coleta de verdade."
   },
   {
     "id": "prime_imoveis_pg",

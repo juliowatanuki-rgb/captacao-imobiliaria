@@ -236,6 +236,32 @@ jobs:
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- arthur_paraguay_investimentos
 
+      # Homologado em 2026-08-05: 1a coleta achou 600 imoveis reais. A 2a
+      # coleta de confirmacao bateu no mesmo bloqueio anti-bot da Praedium
+      # (ver Arthur Paraguay acima) - mesmo motivo provavel (varios sites
+      # Praedium testados em sequencia rapida). No ritmo de 1 coleta/dia
+      # deve ser raro.
+      - name: Rodar crawler - Elite Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- elite_imoveis_pg
+
+      # Homologado em 2026-08-05: 1a coleta achou 2698 imoveis, 2a coleta de
+      # confirmacao 100% estavel (2698 encontrados, 0 novos, 0 duplicidade).
+      - name: Rodar crawler - Agencia da Praia Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- agencia_da_praia_imoveis
+
+      # Cadastrado em 2026-08-05, extracao validada com validate:site (40
+      # imoveis limpos, 2 paginas) mas a 1a coleta real bateu no bloqueio
+      # anti-bot da Praedium antes de conseguir gravar (testado em sequencia
+      # logo apos Elite Imoveis, mesma plataforma/CDN) - ainda SEM nenhum
+      # dado gravado no Neon (isInitialSeed continua valendo na proxima
+      # tentativa). Mantido no ritmo normal de 1 coleta/dia; primeira
+      # execucao bem-sucedida serve de 1a coleta de verdade.
+      - name: Rodar crawler - Rios Imoveis
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- rios_imoveis_pg
+
       # Exporta 100% dos anuncios (qualquer status) para a planilha do
       # Google Sheets, so acrescentando linhas novas desde a ultima
       # sincronizacao (nunca apaga/reescreve linha existente - secao "Google
