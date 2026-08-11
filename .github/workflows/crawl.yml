@@ -222,6 +222,20 @@ jobs:
         if: always()
         run: npm run crawl:site -w @captacao/crawlers -- costa_do_sol_imobiliaria
 
+      # Homologado em 2026-08-05: 1a coleta achou 680 imoveis reais (dados
+      # limpos, extracao validada ao vivo), mas a 2a coleta de confirmacao
+      # (rodada poucos minutos depois, junto de outros testes manuais no
+      # mesmo site) foi bloqueada por verificacao anti-bot (Cloudflare
+      # "Human Verification") - aparenta ser gatilho por excesso de
+      # requisicoes em pouco tempo, nao um bloqueio permanente. No ritmo de
+      # 1 coleta/dia isso deve ser raro; a protecao de queda suspeita
+      # (secao 18) ja evita gravar dado incorreto se falhar de novo. Se
+      # falhar repetidamente na coleta diaria, investigar espacamento entre
+      # requisicoes/headers antes de manter na lista.
+      - name: Rodar crawler - Arthur Paraguay Investimentos
+        if: always()
+        run: npm run crawl:site -w @captacao/crawlers -- arthur_paraguay_investimentos
+
       # Exporta 100% dos anuncios (qualquer status) para a planilha do
       # Google Sheets, so acrescentando linhas novas desde a ultima
       # sincronizacao (nunca apaga/reescreve linha existente - secao "Google
