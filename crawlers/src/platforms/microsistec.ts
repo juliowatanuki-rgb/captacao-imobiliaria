@@ -39,6 +39,7 @@ import type { ScrapedListing } from "@captacao/shared";
 import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 200;
+const MAX_TENTATIVAS_NAVEGACAO = 3;
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
@@ -123,6 +124,27 @@ function comPagina(urlListagem: string, pagina: number): string {
   return url.toString();
 }
 
+async function navegarComRetry(page: Page, url: string): Promise<void> {
+  let ultimoErro: unknown;
+
+  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_NAVEGACAO; tentativa++) {
+    try {
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+      return;
+    } catch (erro) {
+      ultimoErro = erro;
+      if (tentativa < MAX_TENTATIVAS_NAVEGACAO) {
+        // Timeout de navegacao costuma ser transitorio (WAF/CDN ou conexao
+        // lenta). Aguarda antes de repetir para nao transformar a tentativa
+        // seguinte em mais uma rajada contra a origem.
+        await page.waitForTimeout(2_000 * tentativa);
+      }
+    }
+  }
+
+  throw ultimoErro;
+}
+
 export interface MicrosistecConfig {
   urlListagem: string;
   maxPaginas?: number;
@@ -139,7 +161,7 @@ export function createMicrosistecCrawler(config: MicrosistecConfig): SiteCrawler
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
         const url = comPagina(config.urlListagem, pagina);
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+        await navegarComRetry(page, url);
         paginasVisitadas += 1;
 
         await page.waitForSelector("article.box-construction-8", { timeout: 15_000 }).catch(() => {});

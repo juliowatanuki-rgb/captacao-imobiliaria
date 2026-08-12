@@ -14,6 +14,7 @@ class FakePool {
   listings: any[] = [];
   events: { listing_id: string; tipo: string }[] = [];
   siteCrawlRuns: any[] = [];
+  transactionSnapshot: { listings: any[]; events: any[] } | null = null;
   private nextListingId = 1;
   private nextRunId = 1;
 
@@ -80,7 +81,23 @@ class FakePool {
 // (para que a SELECT de contagem em crawlSite enxergue o que o client grava
 // na mesma "transacao").
 function fakeClientQuery(pool: FakePool, text: string, params: any[]): { rows: any[]; rowCount: number } {
-  if (text.includes("BEGIN") || text.includes("COMMIT") || text.includes("ROLLBACK")) {
+  if (text.includes("BEGIN")) {
+    pool.transactionSnapshot = {
+      listings: structuredClone(pool.listings),
+      events: structuredClone(pool.events),
+    };
+    return { rows: [], rowCount: 0 };
+  }
+  if (text.includes("ROLLBACK")) {
+    if (pool.transactionSnapshot) {
+      pool.listings = pool.transactionSnapshot.listings;
+      pool.events = pool.transactionSnapshot.events;
+      pool.transactionSnapshot = null;
+    }
+    return { rows: [], rowCount: 0 };
+  }
+  if (text.includes("COMMIT")) {
+    pool.transactionSnapshot = null;
     return { rows: [], rowCount: 0 };
   }
 
@@ -375,6 +392,8 @@ describe("crawlSite - alerta de possivel churn de identidade", () => {
     expect(result.anunciosNovos).toBe(30);
     expect(result.anunciosAusentes).toBe(30);
     expect(result.mensagemErro).toContain("churn de identidade");
+    expect(pool.listings).toHaveLength(100);
+    expect(pool.listings.filter((r) => r.status === "ausente")).toHaveLength(0);
     const runSalvo = pool.siteCrawlRuns.find((r) => r.site_id === "site_a" && r.status === "alerta");
     expect(runSalvo).toBeDefined();
     expect(runSalvo.mensagem_erro).toContain("churn de identidade");

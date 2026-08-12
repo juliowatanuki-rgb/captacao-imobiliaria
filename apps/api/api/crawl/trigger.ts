@@ -6,12 +6,12 @@ import { HttpError, requireAuth, requireRole, withHandler } from "../../src/lib/
 // projeto na Vercel.
 const GITHUB_OWNER = "juliowatanuki-rgb";
 const GITHUB_REPO = "captacao-imobiliaria";
-const WORKFLOW_FILE = "crawl.yml";
+const WORKFLOW_FILE = "crawl-parallel.yml";
 const GITHUB_REF = "master";
 
 /**
  * Botao "Sincronizar agora" do painel (secao "performance/confiabilidade" -
- * auditoria de 2026-08-05): dispara o workflow_dispatch do crawl.yml no
+ * auditoria de 2026-08-05): dispara o workflow_dispatch do crawl-parallel.yml no
  * GitHub Actions, que roda os crawlers de verdade (Playwright, ~40 sites) -
  * inviavel de rodar direto numa function serverless da Vercel (timeout
  * curto demais para uma coleta que leva dezenas de minutos). So admin pode

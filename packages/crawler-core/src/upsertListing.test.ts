@@ -25,11 +25,13 @@ class FakeListingsClient {
     }
 
     // upsertListingsBatch: SELECT existente por site_id + identity_key (lote)
-    if (text.includes("FROM listings") && text.includes("identity_key = ANY($2::text[])")) {
-      const [siteId, identityKeys] = params;
-      const matched = this.rows.filter((r) => r.site_id === siteId && identityKeys.includes(r.identity_key));
-      return { rows: matched.map((r) => ({ ...r })), rowCount: matched.length };
-    }
+  if (text.includes("FROM listings") && text.includes("identity_key = ANY($2::text[])")) {
+    const [siteId, identityKeys, urlNormalizadas] = params;
+    const matched = this.rows.filter(
+      (r) => r.site_id === siteId && (identityKeys.includes(r.identity_key) || urlNormalizadas.includes(r.url_normalizada))
+    );
+    return { rows: matched.map((r) => ({ ...r })), rowCount: matched.length };
+  }
 
     // upsertListingsBatch: INSERT em lote com ON CONFLICT DO NOTHING
     if (text.includes("INSERT INTO listings (") && text.includes("ON CONFLICT (site_id, identity_key) DO NOTHING")) {
@@ -324,6 +326,19 @@ describe("upsertListingsBatch", () => {
 
     expect(client.rows[0].titulo).toBe("Titulo mudou");
     expect(client.events).toHaveLength(0);
+  });
+
+  it("reutiliza o anuncio quando o codigo muda mas a URL normalizada permanece igual", async () => {
+    const antigo = scraped({ externalId: "codigo-antigo" });
+    await upsertListingsBatch(client as any, "site_a", [antigo], urlBase, true);
+
+    const novoCodigo = scraped({ externalId: "codigo-novo" });
+    novoCodigo.urlOriginal = antigo.urlOriginal;
+    const summary = await upsertListingsBatch(client as any, "site_a", [novoCodigo], urlBase, false);
+
+    expect(summary.anunciosNovos).toBe(0);
+    expect(summary.anunciosSemAlteracao).toBe(1);
+    expect(client.rows).toHaveLength(1);
   });
 
   it("ao reaparecer, reativa um anuncio marcado ausente mesmo com dados identicos (conta como mudanca) e grava 'reactivated'", async () => {

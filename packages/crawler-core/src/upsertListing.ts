@@ -61,6 +61,7 @@ interface ExistingRow {
   id: string;
   url_original: string;
   url_final: string | null;
+  url_normalizada: string | null;
   titulo: string | null;
   tipo_imovel: string | null;
   cidade: string | null;
@@ -187,22 +188,41 @@ export async function upsertListingsBatch(
   // 2. Busca em lote o que ja existe para essas identity_key nesse site.
   const identityKeys = items.map((i) => i.identityKey);
   const { rows: existingRows } = await client.query<ExistingRow>(
-    `SELECT id, url_original, url_final, titulo, tipo_imovel, cidade, bairro,
+    `SELECT id, url_original, url_final, url_normalizada, titulo, tipo_imovel, cidade, bairro,
       preco, area_util, dormitorios, suites, banheiros, vagas,
       condominio_nome, endereco, descricao, status, ausente_desde,
       coletas_ausente_consecutivas, identity_key
      FROM listings
-     WHERE site_id = $1 AND identity_key = ANY($2::text[])`,
-    [siteId, identityKeys]
+     WHERE site_id = $1
+       AND (identity_key = ANY($2::text[]) OR url_normalizada = ANY($3::text[]))`,
+    [siteId, identityKeys, items.map((i) => i.urlNormalizada).filter((url): url is string => Boolean(url))]
   );
   const existingByKey = new Map(existingRows.map((r) => [r.identity_key, r]));
+  // Quando o CRM troca o codigo, mas preserva a URL canonica do detalhe,
+  // trata como o mesmo anuncio dentro da mesma imobiliaria. URLs repetidas
+  // entre registros existentes sao consideradas ambiguas e nao sao usadas
+  // para fazer uma associacao automatica.
+  const existingByUrl = new Map<string, ExistingRow>();
+  const urlsAmbiguas = new Set<string>();
+  for (const row of existingRows) {
+    if (!row.url_normalizada || urlsAmbiguas.has(row.url_normalizada)) continue;
+    if (existingByUrl.has(row.url_normalizada)) {
+      existingByUrl.delete(row.url_normalizada);
+      urlsAmbiguas.add(row.url_normalizada);
+      continue;
+    }
+    existingByUrl.set(row.url_normalizada, row);
+  }
 
   const toInsert: PreparedItem[] = [];
   const toUpdate: { item: PreparedItem; listingId: string; reativado: boolean }[] = [];
   const unchanged: { item: PreparedItem; listingId: string }[] = [];
 
   for (const item of items) {
-    const existing = existingByKey.get(item.identityKey);
+    const existing = existingByKey.get(item.identityKey) ??
+      (item.urlNormalizada && !urlsAmbiguas.has(item.urlNormalizada)
+        ? existingByUrl.get(item.urlNormalizada)
+        : undefined);
     if (!existing) {
       toInsert.push(item);
     } else if (hasRelevantChange(item.scraped, existing)) {

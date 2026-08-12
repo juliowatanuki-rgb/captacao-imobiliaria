@@ -14,7 +14,7 @@ Nao e um portal de imoveis. Nao republica anuncios nem armazena fotos.
 - `packages/shared` - tipos TypeScript compartilhados
 - `packages/crawler-core` - normalizacao de URL, geracao de `identity_key`, upsert, logging de execucao
 - `crawlers` - um crawler por imobiliaria (`crawlers/src/sites/<site_id>.ts`), com Playwright
-- `.github/workflows/crawl.yml` - roda a coleta diaria via GitHub Actions
+- `.github/workflows/crawl-parallel.yml` - roda a coleta diaria via GitHub Actions
 
 ## Setup do zero
 
@@ -138,7 +138,7 @@ O card "Ultima sincronizacao" do Dashboard tem 2 botoes: **"Atualizar"**
 
 O botao "Sincronizar agora" chama `POST /api/crawl/trigger`
 (`apps/api/api/crawl/trigger.ts`), que dispara o `workflow_dispatch` do
-`crawl.yml` no GitHub Actions - rodar os crawlers de verdade (Playwright, ~40
+`crawl-parallel.yml` no GitHub Actions - rodar os crawlers de verdade (Playwright, ~40
 sites, dezenas de minutos) direto numa function serverless da Vercel nao e
 viavel (timeout curto demais). Depois de clicar, a coleta aparece no painel
 em alguns minutos, exatamente como a execucao diaria agendada; a automatica
@@ -192,7 +192,7 @@ Configurar em Settings > Secrets and variables > Actions:
 
 - `DATABASE_URL`
 
-O workflow `.github/workflows/crawl.yml` roda diariamente (05:00 UTC = 02:00
+O workflow `.github/workflows/crawl-parallel.yml` roda diariamente (05:00 UTC = 02:00
 America/Sao_Paulo - de madrugada, de proposito, pra terminar antes do
 expediente) e tambem pode ser disparado manualmente pela aba Actions
 (`workflow_dispatch`) ou pelo botao "Sincronizar agora" do painel.
@@ -215,7 +215,7 @@ mesmo tempo (disparo em dobro do botao "Sincronizar agora") e mais alguns
 
 ### Exportacao continua para o Google Sheets
 
-`sheets-sync/` roda ao final de todo `crawl.yml` (passo "Sincronizar planilha
+`sheets-sync/` roda ao final de todo `crawl-parallel.yml` (passo "Sincronizar planilha
 Google Sheets", com `if: always()` mesmo que algum crawler falhe) e acrescenta
 na planilha 100% dos anuncios de **qualquer status** (pendente, analisado,
 descartado, ativo ou ausente) que ainda nao foram exportados - nunca apaga
@@ -312,16 +312,17 @@ Duas camadas de mitigacao:
    caiu de 50 para 16 falsos "novos"/dia, `group_house_fort` de 7 para 2,
    `praialar_imoveis` de 15 para 1 (esse ultimo passou a fechar `sucesso`,
    sem alerta).
-2. **Alerta em vez de sucesso silencioso.** Mesmo com o motor mais robusto,
+2. **Alerta com bloqueio de gravacao.** Mesmo com o motor mais robusto,
    `packages/crawler-core/src/runCrawler.ts` (`indicaChurnDeIdentidade`)
    marca a coleta de um site como `status = 'alerta'` (em vez de `'sucesso'`)
    sempre que `anuncios_novos + anuncios_ausentes` for >= 15 e >= 5% do total
    encontrado na mesma coleta (1a coleta de um site nunca conta - 100% novo e
    esperado ali). Aparece na aba "Execucoes de coleta" do painel (badge
    amarelo, mesma cor de `sucesso_parcial`) com a mensagem explicando a
-   proporcao encontrada - a garantia de confiabilidade aqui nao e "nunca vai
-   ter uma coleta estranha" (impossivel de prometer com sites de terceiros),
-   e sim "nunca vai passar batido sem alguem perceber".
+   proporcao encontrada. A transacao inteira e desfeita quando esse limiar e
+   atingido: nenhum anuncio novo e criado e nenhum anuncio antigo e marcado
+   como ausente. Assim, o alerta nao apenas aparece para investigacao, como
+   tambem impede que uma coleta instavel contamine a fila de captacao.
 
 Setup (uma vez, feito direto no Google Cloud e no GitHub, nao no codigo):
 
@@ -345,7 +346,7 @@ Setup (uma vez, feito direto no Google Cloud e no GitHub, nao no codigo):
      arquivo `.json` baixado no passo 3.
    - `GOOGLE_SHEETS_ID`: o ID copiado no passo 5.
 
-Depois disso o proximo `crawl.yml` (agendado ou disparado manualmente) ja
+Depois disso o proximo `crawl-parallel.yml` (agendado ou disparado manualmente) ja
 cria a aba "Anuncios" na planilha com cabecalho e comeca a preencher.
 
 ### Adicionar os demais sites

@@ -114,8 +114,10 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
     }
 
     const client = await pool.connect();
+    let transacaoAberta = false;
     try {
       await client.query("BEGIN");
+      transacaoAberta = true;
 
       const batch = await upsertListingsBatch(client, siteId, listings, urlBase, isInitialSeed, effectiveUrlOptions);
       const anunciosNovos = batch.anunciosNovos;
@@ -126,15 +128,24 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
         ? { marcadosAusentes: 0 }
         : await markAbsentListings(client, siteId, batch.seenListingIds);
 
-      await client.query("COMMIT");
-
       const churnDeIdentidade = indicaChurnDeIdentidade(listings.length, anunciosNovos, marcadosAusentes, isInitialSeed);
       const status: CrawlSiteResult["status"] = churnDeIdentidade ? "alerta" : "sucesso";
       const mensagemErro = churnDeIdentidade
         ? `possivel churn de identidade: ${anunciosNovos} novo(s) e ${marcadosAusentes} ausente(s) na mesma ` +
           `coleta (${((anunciosNovos + marcadosAusentes) / listings.length * 100).toFixed(1)}% do total encontrado) - ` +
-          "verificar se sao o mesmo anuncio mudando de codigo entre coletas antes de confiar nesses numeros"
+          "alteracoes bloqueadas para evitar duplicacao; confirmar a estabilidade da origem e repetir a coleta"
         : null;
+
+      // Alerta nao pode ser apenas cosmetico: desfaz toda a transacao para
+      // impedir que anuncios com identidade instavel sejam criados e que os
+      // antigos sejam marcados como ausentes. Os numeros abaixo continuam no
+      // log como diagnostico da coleta rejeitada.
+      if (churnDeIdentidade) {
+        await client.query("ROLLBACK");
+      } else {
+        await client.query("COMMIT");
+      }
+      transacaoAberta = false;
 
       const fimEm = new Date();
       await pool.query(
@@ -179,7 +190,9 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
         detalheTecnico: null,
       };
     } catch (err) {
-      await client.query("ROLLBACK");
+      if (transacaoAberta) {
+        await client.query("ROLLBACK");
+      }
       throw err;
     } finally {
       client.release();
@@ -215,6 +228,30 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
 
 export interface StartCrawlRunResult {
   crawlRunId: string;
+}
+
+/** Reconciliacao defensiva para quedas abruptas do runner ou do processo. */
+export async function reconcileStaleCrawlRuns(pool: pg.Pool, maxAgeHours = 6): Promise<number> {
+  await pool.query(
+    `UPDATE site_crawl_runs scr
+     SET status = 'erro', fim_em = COALESCE(scr.fim_em, now()),
+         mensagem_erro = COALESCE(scr.mensagem_erro, 'execucao encerrada automaticamente por estar presa')
+     FROM crawl_runs cr
+     WHERE scr.crawl_run_id = cr.id
+       AND cr.status = 'em_andamento'
+       AND cr.inicio_em < now() - ($1::int * interval '1 hour')
+       AND scr.fim_em IS NULL`,
+    [maxAgeHours]
+  );
+  const result = await pool.query(
+    `UPDATE crawl_runs
+     SET status = 'erro', fim_em = COALESCE(fim_em, now()),
+         mensagem = COALESCE(mensagem, 'execucao encerrada automaticamente por estar presa')
+     WHERE status = 'em_andamento'
+       AND inicio_em < now() - ($1::int * interval '1 hour')`,
+    [maxAgeHours]
+  );
+  return result.rowCount ?? 0;
 }
 
 export async function startCrawlRun(pool: pg.Pool, sitesPrevistos: number): Promise<StartCrawlRunResult> {

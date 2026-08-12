@@ -18,6 +18,9 @@ permissions:
 
 jobs:
   crawl:
+    # Substituido pelo crawl-parallel.yml. Mantido para preservar o historico
+    # do workflow antigo sem permitir duas coletas diarias diferentes.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     # Era 120 - a coleta sequencial de ~40 sites vem passando disso ha dias
     # (confirmado no historico do Actions: toda execucao agendada desde
@@ -59,6 +62,7 @@ jobs:
       # confirmacao no Neon (hoje: all_prime_imoveis) - use o workflow
       # manual isolado de cada site pra validar antes de mover para ca.
       - name: Rodar crawler - Casa Paris Imoveis
+        if: always()
         run: npm run crawl:site -w @captacao/crawlers -- casa_paris_imoveis
 
       - name: Rodar crawler - Imigrantes Imoveis
