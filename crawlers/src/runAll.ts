@@ -73,33 +73,52 @@ async function main() {
               if (!grupo) return;
 
               for (const site of grupo) {
-          console.log(`[runAll] iniciando site "${site.id}"`);
-          const context = await browser.newContext();
           try {
-            // A carga do modulo acontece dentro do scrape(), para que falhas
-            // de um crawler sejam registradas como erro isolado do site.
-            const result = await crawlSite({
-              pool,
-              crawlRunId,
-              siteId: site.id,
-              urlBase: site.url_base,
-              scrape: async () => {
-                const module = await loadSiteModule(site.id);
-                const page = await context.newPage();
-                const output = await module.scrape({ page, urlBase: site.url_base, urlListagem: site.url_listagem });
-                return { ...output, urlOptions: module.urlOptions };
-              },
-            });
+            console.log(`[runAll] iniciando site "${site.id}"`);
+            const context = await browser.newContext();
+            try {
+              // A carga do modulo acontece dentro do scrape(), para que falhas
+              // de um crawler sejam registradas como erro isolado do site.
+              const result = await crawlSite({
+                pool,
+                crawlRunId,
+                siteId: site.id,
+                urlBase: site.url_base,
+                scrape: async () => {
+                  const module = await loadSiteModule(site.id);
+                  const page = await context.newPage();
+                  const output = await module.scrape({ page, urlBase: site.url_base, urlListagem: site.url_listagem });
+                  return { ...output, urlOptions: module.urlOptions };
+                },
+              });
 
-            results.push(result);
-            console.log(
-              `[runAll] site "${site.id}" -> status=${result.status} encontrados=${result.anunciosEncontrados} novos=${result.anunciosNovos} atualizados=${result.anunciosAtualizados} ausentes=${result.anunciosAusentes}`
-            );
-            if (result.mensagemErro) {
-              console.error(`[runAll] site "${site.id}" erro: ${result.mensagemErro}`);
+              results.push(result);
+              console.log(
+                `[runAll] site "${site.id}" -> status=${result.status} encontrados=${result.anunciosEncontrados} novos=${result.anunciosNovos} atualizados=${result.anunciosAtualizados} ausentes=${result.anunciosAusentes}`
+              );
+              if (result.mensagemErro) {
+                console.error(`[runAll] site "${site.id}" erro: ${result.mensagemErro}`);
+              }
+            } finally {
+              await context.close().catch(() => {});
             }
-          } finally {
-            await context.close().catch(() => {});
+          } catch (err) {
+            // Nenhum erro de infraestrutura de um site pode rejeitar o
+            // trabalhador inteiro e deixar o crawl_run preso em andamento.
+            const mensagemErro = err instanceof Error ? err.message : String(err);
+            const detalheTecnico = err instanceof Error ? (err.stack ?? null) : null;
+            console.error(`[runAll] falha inesperada no site "${site.id}": ${mensagemErro}`);
+            results.push({
+              status: "erro",
+              anunciosEncontrados: 0,
+              anunciosNovos: 0,
+              anunciosExistentes: 0,
+              anunciosAtualizados: 0,
+              anunciosAusentes: 0,
+              paginasVisitadas: 0,
+              mensagemErro,
+              detalheTecnico,
+            });
           }
               }
             }
