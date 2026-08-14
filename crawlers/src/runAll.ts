@@ -73,6 +73,9 @@ async function main() {
               if (!grupo) return;
 
               for (const site of grupo) {
+          if (!crawlLock.isHealthy()) {
+            throw new Error("conexao do lock global foi encerrada pelo banco durante a coleta");
+          }
           try {
             console.log(`[runAll] iniciando site "${site.id}"`);
             const context = await browser.newContext();

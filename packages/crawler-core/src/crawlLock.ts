@@ -4,6 +4,7 @@ const LOCK_NAME = "captacao-imobiliaria:crawl";
 
 export interface CrawlLock {
   release(): Promise<void>;
+  isHealthy(): boolean;
 }
 
 /**
@@ -25,12 +26,29 @@ export async function tryAcquireCrawlLock(pool: pg.Pool): Promise<CrawlLock | nu
     }
 
     let released = false;
+    let healthy = true;
+    const heartbeat = setInterval(() => {
+      client.query("SELECT 1").catch(() => {
+        healthy = false;
+      });
+    }, 20_000);
+    heartbeat.unref?.();
+    client.on("error", () => {
+      healthy = false;
+    });
     return {
+      isHealthy() {
+        return healthy && !released;
+      },
       async release() {
         if (released) return;
         released = true;
+        clearInterval(heartbeat);
         try {
           await client.query("SELECT pg_advisory_unlock(hashtext($1))", [LOCK_NAME]);
+        } catch {
+          // Se a conexao ja caiu, o Postgres liberou o advisory lock ao
+          // encerrar a sessao.
         } finally {
           client.release();
         }

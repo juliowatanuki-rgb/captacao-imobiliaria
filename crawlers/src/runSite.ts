@@ -36,6 +36,9 @@ async function main() {
   let result: CrawlSiteResult | null = null;
 
   try {
+    if (!crawlLock.isHealthy()) {
+      throw new Error("conexao do lock global foi encerrada pelo banco durante a coleta");
+    }
     await reconcileStaleCrawlRuns(pool);
     const { rows } = await pool.query<typeof site>(
       `SELECT id, nome, url_base, url_listagem, ativo FROM monitored_sites WHERE id = $1`,
