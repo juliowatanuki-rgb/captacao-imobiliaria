@@ -266,16 +266,21 @@ describe("crawlSite - protecao contra coleta anomala", () => {
   it("aborta sem gravar e sem incrementar ausencia quando a coleta encontra 0 anuncios", async () => {
     await seed("site_a", 10);
     const before = pool.listings.map((r) => ({ ...r }));
+    let tentativas = 0;
 
     const result = await crawlSite({
       pool: pool as any,
       crawlRunId: "crawl-2",
       siteId: "site_a",
       urlBase,
-      scrape: async () => ({ listings: [], paginasVisitadas: 1 }),
+      scrape: async () => {
+        tentativas += 1;
+        return { listings: [], paginasVisitadas: 1 };
+      },
     });
 
     expect(result.status).toBe("erro");
+    expect(tentativas).toBe(2);
     expect(pool.listings).toEqual(before);
     expect(pool.listings.every((r) => r.coletas_ausente_consecutivas === 0)).toBe(true);
   });

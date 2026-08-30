@@ -50,6 +50,8 @@ export interface CrawlSiteResult {
 // "Anuncios novos" sem ninguem perceber.
 const LIMIAR_ALERTA_MOVIMENTACAO_ABSOLUTA = 15; // abaixo disso e ruido normal do dia a dia
 const LIMIAR_ALERTA_MOVIMENTACAO_PROPORCAO = 0.05; // 5% do inventario encontrado na mesma coleta
+const MAX_TENTATIVAS_SCRAPE = 2;
+const ESPERA_ENTRE_TENTATIVAS_MS = 2_000;
 
 function indicaChurnDeIdentidade(
   anunciosEncontrados: number,
@@ -62,6 +64,30 @@ function indicaChurnDeIdentidade(
   const movimentacao = anunciosNovos + anunciosAusentes;
   if (movimentacao < LIMIAR_ALERTA_MOVIMENTACAO_ABSOLUTA) return false;
   return movimentacao / anunciosEncontrados >= LIMIAR_ALERTA_MOVIMENTACAO_PROPORCAO;
+}
+
+async function scrapeComRetry(
+  scrape: CrawlSiteParams["scrape"],
+  repetirSeVazio: boolean
+): Promise<Awaited<ReturnType<CrawlSiteParams["scrape"]>>> {
+  let ultimoErro: unknown = null;
+
+  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_SCRAPE; tentativa += 1) {
+    try {
+      const resultado = await scrape();
+      if (!repetirSeVazio || resultado.listings.length > 0 || tentativa === MAX_TENTATIVAS_SCRAPE) {
+        return resultado;
+      }
+      ultimoErro = new Error("coleta retornou zero anuncios");
+    } catch (err) {
+      ultimoErro = err;
+      if (tentativa === MAX_TENTATIVAS_SCRAPE) throw err;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, ESPERA_ENTRE_TENTATIVAS_MS));
+  }
+
+  throw ultimoErro instanceof Error ? ultimoErro : new Error(String(ultimoErro));
 }
 
 /**
@@ -92,7 +118,11 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
     const isInitialSeed = Number(countRows[0].total) === 0;
     const rastreadosAntesDaColeta = Number(countRows[0].rastreados);
 
-    const scrapeResult = await scrape();
+    // Sites podem responder temporariamente com bloqueio, HTML de erro ou
+    // pagina vazia. Repetimos uma vez antes de classificar como erro. A
+    // validacao de queda suspeita abaixo continua sendo obrigatoria e os
+    // alertas de identidade continuam sendo rejeitados.
+    const scrapeResult = await scrapeComRetry(scrape, !isInitialSeed);
     const { listings, paginasVisitadas } = scrapeResult;
     const effectiveUrlOptions = scrapeResult.urlOptions ?? urlOptions;
 
