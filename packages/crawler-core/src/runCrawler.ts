@@ -52,6 +52,7 @@ const LIMIAR_ALERTA_MOVIMENTACAO_ABSOLUTA = 15; // abaixo disso e ruido normal d
 const LIMIAR_ALERTA_MOVIMENTACAO_PROPORCAO = 0.05; // 5% do inventario encontrado na mesma coleta
 const MAX_TENTATIVAS_SCRAPE = 2;
 const ESPERA_ENTRE_TENTATIVAS_MS = 2_000;
+const MAX_TENTATIVAS_IDENTIDADE = 2;
 
 function indicaChurnDeIdentidade(
   anunciosEncontrados: number,
@@ -122,111 +123,121 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
     // pagina vazia. Repetimos uma vez antes de classificar como erro. A
     // validacao de queda suspeita abaixo continua sendo obrigatoria e os
     // alertas de identidade continuam sendo rejeitados.
-    const scrapeResult = await scrapeComRetry(scrape, !isInitialSeed);
-    const { listings, paginasVisitadas } = scrapeResult;
-    const effectiveUrlOptions = scrapeResult.urlOptions ?? urlOptions;
+    let scrapeResult = await scrapeComRetry(scrape, !isInitialSeed);
 
-    // Protecao contra falha silenciosa de scraping (ex: anti-bot, timeout de
-    // renderizacao, bloqueio): uma coleta que encontra 0 anuncios ou uma
-    // quantidade anormalmente baixa (menos da metade do que ja esta
-    // rastreado como ativo/ausente) nunca deve ser tratada como sucesso -
-    // isso marcaria anuncios existentes como ausentes/removidos por uma
-    // falha temporaria, em vez de uma alta real. Melhor falhar alto (vira
-    // 'erro' no catch abaixo, sem gravar nada e sem incrementar nenhum
-    // contador de ausencia) do que arriscar dado incorreto.
-    const LIMIAR_QUEDA_SUSPEITA = 0.5;
-    if (!isInitialSeed && rastreadosAntesDaColeta > 0 && listings.length < rastreadosAntesDaColeta * LIMIAR_QUEDA_SUSPEITA) {
-      throw new Error(
-        `coleta encontrou apenas ${listings.length} anuncio(s) para o site "${siteId}", bem abaixo do ` +
-          `esperado (${rastreadosAntesDaColeta} rastreado(s) atualmente) - abortando sem gravar para nao ` +
-          "marcar anuncios existentes como ausentes/removidos por uma falha de scraping (bloqueio, timeout, etc)"
-      );
-    }
+    for (let tentativaIdentidade = 1; tentativaIdentidade <= MAX_TENTATIVAS_IDENTIDADE; tentativaIdentidade += 1) {
+      const { listings, paginasVisitadas } = scrapeResult;
+      const effectiveUrlOptions = scrapeResult.urlOptions ?? urlOptions;
 
-    const client = await pool.connect();
-    let transacaoAberta = false;
-    try {
-      await client.query("BEGIN");
-      transacaoAberta = true;
-
-      const batch = await upsertListingsBatch(client, siteId, listings, urlBase, isInitialSeed, effectiveUrlOptions);
-      const anunciosNovos = batch.anunciosNovos;
-      const anunciosAtualizados = batch.anunciosAtualizados;
-      const anunciosExistentes = batch.anunciosAtualizados + batch.anunciosSemAlteracao;
-
-      const { marcadosAusentes } = isInitialSeed
-        ? { marcadosAusentes: 0 }
-        : await markAbsentListings(client, siteId, batch.seenListingIds);
-
-      const churnDeIdentidade = indicaChurnDeIdentidade(listings.length, anunciosNovos, marcadosAusentes, isInitialSeed);
-      const status: CrawlSiteResult["status"] = churnDeIdentidade ? "alerta" : "sucesso";
-      const mensagemErro = churnDeIdentidade
-        ? `possivel churn de identidade: ${anunciosNovos} novo(s) e ${marcadosAusentes} ausente(s) na mesma ` +
-          `coleta (${((anunciosNovos + marcadosAusentes) / listings.length * 100).toFixed(1)}% do total encontrado) - ` +
-          "alteracoes bloqueadas para evitar duplicacao; confirmar a estabilidade da origem e repetir a coleta"
-        : null;
-
-      // Alerta nao pode ser apenas cosmetico: desfaz toda a transacao para
-      // impedir que anuncios com identidade instavel sejam criados e que os
-      // antigos sejam marcados como ausentes. Os numeros abaixo continuam no
-      // log como diagnostico da coleta rejeitada.
-      if (churnDeIdentidade) {
-        await client.query("ROLLBACK");
-      } else {
-        await client.query("COMMIT");
+      // Protecao contra falha silenciosa de scraping (ex: anti-bot, timeout de
+      // renderizacao, bloqueio): uma coleta que encontra 0 anuncios ou uma
+      // quantidade anormalmente baixa (menos da metade do que ja esta
+      // rastreado como ativo/ausente) nunca deve ser tratada como sucesso.
+      const LIMIAR_QUEDA_SUSPEITA = 0.5;
+      if (!isInitialSeed && rastreadosAntesDaColeta > 0 && listings.length < rastreadosAntesDaColeta * LIMIAR_QUEDA_SUSPEITA) {
+        throw new Error(
+          `coleta encontrou apenas ${listings.length} anuncio(s) para o site "${siteId}", bem abaixo do ` +
+            `esperado (${rastreadosAntesDaColeta} rastreado(s) atualmente) - abortando sem gravar para nao ` +
+            "marcar anuncios existentes como ausentes/removidos por uma falha de scraping (bloqueio, timeout, etc)"
+        );
       }
-      transacaoAberta = false;
 
-      const fimEm = new Date();
-      await pool.query(
-        `UPDATE site_crawl_runs SET
-          fim_em = $2,
-          status = $11,
-          paginas_visitadas = $3,
-          anuncios_encontrados = $4,
-          anuncios_novos = $5,
-          anuncios_existentes = $6,
-          anuncios_atualizados = $7,
-          anuncios_ausentes = $8,
-          anuncios_sem_alteracao = $9,
-          anuncios_duplicados_coleta = $10,
-          mensagem_erro = $12
-         WHERE id = $1`,
-        [
-          siteCrawlRunId,
-          fimEm,
-          paginasVisitadas,
-          listings.length,
+      const client = await pool.connect();
+      let transacaoAberta = false;
+      try {
+        await client.query("BEGIN");
+        transacaoAberta = true;
+
+        const batch = await upsertListingsBatch(client, siteId, listings, urlBase, isInitialSeed, effectiveUrlOptions);
+        const anunciosNovos = batch.anunciosNovos;
+        const anunciosAtualizados = batch.anunciosAtualizados;
+        const anunciosExistentes = batch.anunciosAtualizados + batch.anunciosSemAlteracao;
+
+        const { marcadosAusentes } = isInitialSeed
+          ? { marcadosAusentes: 0 }
+          : await markAbsentListings(client, siteId, batch.seenListingIds);
+
+        const churnDeIdentidade = indicaChurnDeIdentidade(listings.length, anunciosNovos, marcadosAusentes, isInitialSeed);
+
+        if (churnDeIdentidade && tentativaIdentidade < MAX_TENTATIVAS_IDENTIDADE) {
+          // A primeira leitura pode ter sido uma pagina incompleta ou uma
+          // resposta instavel do CRM. Desfazemos tudo antes de tentar de novo.
+          await client.query("ROLLBACK");
+          transacaoAberta = false;
+          await new Promise((resolve) => setTimeout(resolve, ESPERA_ENTRE_TENTATIVAS_MS));
+          scrapeResult = await scrapeComRetry(scrape, !isInitialSeed);
+          continue;
+        }
+
+        const status: CrawlSiteResult["status"] = churnDeIdentidade ? "alerta" : "sucesso";
+        const mensagemErro = churnDeIdentidade
+          ? `possivel churn de identidade persistente: ${anunciosNovos} novo(s) e ${marcadosAusentes} ausente(s) na mesma ` +
+            `coleta (${((anunciosNovos + marcadosAusentes) / listings.length * 100).toFixed(1)}% do total encontrado) - ` +
+            "alteracoes bloqueadas apos 2 tentativas; dados anteriores preservados"
+          : null;
+
+        // Alerta persistente nao pode ser apenas cosmetico: desfaz a ultima
+        // transacao para impedir anuncios instaveis e ausencias falsas.
+        if (churnDeIdentidade) {
+          await client.query("ROLLBACK");
+        } else {
+          await client.query("COMMIT");
+        }
+        transacaoAberta = false;
+
+        const fimEm = new Date();
+        await pool.query(
+          `UPDATE site_crawl_runs SET
+            fim_em = $2,
+            status = $11,
+            paginas_visitadas = $3,
+            anuncios_encontrados = $4,
+            anuncios_novos = $5,
+            anuncios_existentes = $6,
+            anuncios_atualizados = $7,
+            anuncios_ausentes = $8,
+            anuncios_sem_alteracao = $9,
+            anuncios_duplicados_coleta = $10,
+            mensagem_erro = $12
+           WHERE id = $1`,
+          [
+            siteCrawlRunId,
+            fimEm,
+            paginasVisitadas,
+            listings.length,
+            anunciosNovos,
+            anunciosExistentes,
+            anunciosAtualizados,
+            marcadosAusentes,
+            batch.anunciosSemAlteracao,
+            batch.duplicadosNaColeta,
+            status,
+            mensagemErro,
+          ]
+        );
+
+        return {
+          status,
+          anunciosEncontrados: listings.length,
           anunciosNovos,
           anunciosExistentes,
           anunciosAtualizados,
-          marcadosAusentes,
-          batch.anunciosSemAlteracao,
-          batch.duplicadosNaColeta,
-          status,
+          anunciosAusentes: marcadosAusentes,
+          paginasVisitadas,
           mensagemErro,
-        ]
-      );
-
-      return {
-        status,
-        anunciosEncontrados: listings.length,
-        anunciosNovos,
-        anunciosExistentes,
-        anunciosAtualizados,
-        anunciosAusentes: marcadosAusentes,
-        paginasVisitadas,
-        mensagemErro,
-        detalheTecnico: null,
-      };
-    } catch (err) {
-      if (transacaoAberta) {
-        await client.query("ROLLBACK");
+          detalheTecnico: null,
+        };
+      } catch (err) {
+        if (transacaoAberta) {
+          await client.query("ROLLBACK");
+        }
+        throw err;
+      } finally {
+        client.release();
       }
-      throw err;
-    } finally {
-      client.release();
     }
+
+    throw new Error("coleta terminou sem produzir uma tentativa valida");
   } catch (err) {
     const fimEm = new Date();
     const mensagemErro = err instanceof Error ? err.message : String(err);

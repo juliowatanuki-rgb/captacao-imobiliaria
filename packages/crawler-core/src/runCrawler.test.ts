@@ -381,6 +381,7 @@ describe("crawlSite - alerta de possivel churn de identidade", () => {
 
   it("marca 'alerta' (nao 'sucesso') quando novos e ausentes sao altos na mesma coleta (2a+)", async () => {
     await seedFakePool(pool, "site_a", 100);
+    let tentativas = 0;
 
     // mantem 70 antigos, "perde" 30 (viram ausentes) e "ganha" 30 com codigo nunca visto (novos)
     const mantidos = Array.from({ length: 70 }, (_, i) => scraped(`seed-${i}`));
@@ -390,10 +391,14 @@ describe("crawlSite - alerta de possivel churn de identidade", () => {
       crawlRunId: "crawl-1",
       siteId: "site_a",
       urlBase,
-      scrape: async () => ({ listings: [...mantidos, ...novosDeVerdade], paginasVisitadas: 1 }),
+      scrape: async () => {
+        tentativas += 1;
+        return { listings: [...mantidos, ...novosDeVerdade], paginasVisitadas: 1 };
+      },
     });
 
     expect(result.status).toBe("alerta");
+    expect(tentativas).toBe(2);
     expect(result.anunciosNovos).toBe(30);
     expect(result.anunciosAusentes).toBe(30);
     expect(result.mensagemErro).toContain("churn de identidade");
@@ -402,6 +407,35 @@ describe("crawlSite - alerta de possivel churn de identidade", () => {
     const runSalvo = pool.siteCrawlRuns.find((r) => r.site_id === "site_a" && r.status === "alerta");
     expect(runSalvo).toBeDefined();
     expect(runSalvo.mensagem_erro).toContain("churn de identidade");
+  });
+
+  it("aceita a segunda coleta quando a primeira apresentou churn e a segunda estabiliza", async () => {
+    await seedFakePool(pool, "site_a", 100);
+    const estaveis = Array.from({ length: 95 }, (_, i) => scraped(`seed-${i}`));
+    const novos = Array.from({ length: 2 }, (_, i) => scraped(`novo-${i}`));
+    let tentativas = 0;
+
+    const result = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-1",
+      siteId: "site_a",
+      urlBase,
+      scrape: async () => {
+        tentativas += 1;
+        if (tentativas === 1) {
+          return {
+            listings: [...Array.from({ length: 70 }, (_, i) => scraped(`seed-${i}`)), ...Array.from({ length: 30 }, (_, i) => scraped(`churn-${i}`))],
+            paginasVisitadas: 1,
+          };
+        }
+        return { listings: [...estaveis, ...novos], paginasVisitadas: 1 };
+      },
+    });
+
+    expect(result.status).toBe("sucesso");
+    expect(tentativas).toBe(2);
+    expect(result.anunciosNovos).toBe(2);
+    expect(pool.listings).toHaveLength(102);
   });
 
   it("continua 'sucesso' quando a movimentacao de novos/ausentes e pequena (ruido normal)", async () => {
