@@ -134,6 +134,16 @@ async function main() {
     } finally {
       await finishCrawlRun(pool, crawlRunId, results);
       console.log(`[runAll] crawl_run ${crawlRunId} finalizado (${results.length}/${sites.length} site(s) com resultado)`);
+
+      const sitesErro = results.filter((result) => result.status === "erro").length;
+      const sitesAlerta = results.filter((result) => result.status === "alerta").length;
+      if (sitesAlerta > 0) {
+        console.warn(`[runAll] coleta concluida com ${sitesAlerta} alerta(s); dados instaveis foram preservados sem sobrescrever o estado anterior`);
+      }
+      if (sitesErro > 0) {
+        console.error(`[runAll] coleta concluida com ${sitesErro} erro(s); o job sera marcado como falho para exigir investigacao`);
+        process.exitCode = 1;
+      }
     }
   } finally {
     await crawlLock.release();

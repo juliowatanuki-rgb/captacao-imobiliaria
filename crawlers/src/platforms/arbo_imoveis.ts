@@ -198,7 +198,10 @@ export function createArboImoveisCrawler(config: ArboImoveisConfig): SiteCrawler
     async scrape({ page }) {
       const maxRolagens = config.maxPaginas ?? MAX_ROLAGENS_PADRAO;
 
-      await page.goto(config.urlListagem, { waitUntil: "networkidle", timeout: 60_000 });
+      // Nao esperar networkidle: o front-end mantem requisicoes abertas e isso
+      // fazia paginas validas estourarem o timeout de navegacao.
+      await page.goto(config.urlListagem, { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await page.waitForSelector('div[class^="ImovelCard_card__"]', { timeout: 20_000 }).catch(() => {});
       await page.waitForTimeout(1_500);
 
       let contagemAnterior = await contarCardsUnicos(page);

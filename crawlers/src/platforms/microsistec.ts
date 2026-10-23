@@ -129,7 +129,10 @@ async function navegarComRetry(page: Page, url: string): Promise<void> {
 
   for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_NAVEGACAO; tentativa++) {
     try {
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+      // Alguns sites Microsistec atrasam indefinidamente o DOMContentLoaded
+      // por recursos de terceiros. O evento commit confirma a resposta HTTP;
+      // os seletores abaixo continuam validando que a pagina e utilizavel.
+      await page.goto(url, { waitUntil: "commit", timeout: 30_000 });
       return;
     } catch (erro) {
       ultimoErro = erro;

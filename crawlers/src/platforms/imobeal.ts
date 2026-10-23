@@ -129,7 +129,10 @@ export function createImobealCrawler(config: ImobealConfig): SiteCrawlerModule {
       const maxPaginas = config.maxPaginas ?? MAX_PAGINAS_PADRAO;
       let paginasVisitadas = 0;
 
-      await page.goto(config.urlListagem, { waitUntil: "networkidle", timeout: 60_000 });
+      // O app usa socket.io e pode manter a rede ocupada indefinidamente;
+      // domcontentloaded + seletor do card e a sincronizacao confiavel.
+      await page.goto(config.urlListagem, { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await page.waitForSelector("a.pl-card", { timeout: 20_000 }).catch(() => {});
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
         await page.waitForSelector("a.pl-card", { timeout: 20_000 }).catch(() => {});

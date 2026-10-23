@@ -136,7 +136,9 @@ export function createUsoSoftwaresCrawler(config: UsoSoftwaresConfig): SiteCrawl
 
         let cards: RawCard[] = [];
         for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA; tentativa++) {
-          await page.goto(url, { waitUntil: "networkidle", timeout: 60_000 });
+          // Recursos de terceiros podem impedir networkidle mesmo quando a
+          // listagem ja esta pronta para extracao.
+          await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
           cards = await extractCards(page);
           if (cards.length > 0) break;
           if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
