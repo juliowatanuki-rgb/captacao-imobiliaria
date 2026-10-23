@@ -4,13 +4,8 @@ name: Coleta diaria de anuncios
 # computador pessoal ou servidor proprio. Repositorio publico para nao
 # consumir minutos limitados de repositorio privado.
 on:
-  # Auditoria de 2026-08-05: horario movido pra madrugada (era 09:00 UTC =
-  # 06:00 America/Sao_Paulo, que na pratica so comecava a rodar mais tarde
-  # por fila do runner e ja invadia o horario comercial, ainda mais sem
-  # terminar dentro do timeout - ver timeout-minutes abaixo). 05:00 UTC = 02:00
-  # America/Sao_Paulo, com folga de sobra pra terminar antes do expediente.
-  schedule:
-    - cron: "0 5 * * *" # 05:00 UTC = 02:00 America/Sao_Paulo
+  # Workflow legado: o agendamento automatico foi removido. A coleta oficial
+  # e feita exclusivamente pelo crawl-parallel.yml.
   workflow_dispatch: {}
 
 permissions:
