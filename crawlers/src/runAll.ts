@@ -19,6 +19,7 @@ interface SiteRow {
 }
 
 const MAX_GRUPOS_CONCORRENTES = 4;
+const PAUSA_ENTRE_SITES_MESMA_PLATAFORMA_MS = 5_000;
 
 /** Executa a coleta diaria de todos os sites ativos (secao 17 e 19, passo 15). */
 async function main() {
@@ -72,7 +73,11 @@ async function main() {
               const grupo = gruposArray[indice];
               if (!grupo) return;
 
-              for (const site of grupo) {
+              for (const [indiceSite, site] of grupo.entries()) {
+          if (indiceSite > 0) {
+            console.log(`[runAll] aguardando ${PAUSA_ENTRE_SITES_MESMA_PLATAFORMA_MS}ms antes do proximo site da mesma plataforma`);
+            await new Promise((resolve) => setTimeout(resolve, PAUSA_ENTRE_SITES_MESMA_PLATAFORMA_MS));
+          }
           if (!crawlLock.isHealthy()) {
             throw new Error("conexao do lock global foi encerrada pelo banco durante a coleta");
           }

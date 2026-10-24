@@ -36,6 +36,7 @@ import type { ScrapedListing } from "@captacao/shared";
 import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 200;
+const TIMEOUT_NAVEGACAO_MS = 30_000;
 
 interface RawCard {
   href: string;
@@ -119,9 +120,24 @@ export function createCorujaCrawler(config: CorujaConfig): SiteCrawlerModule {
           await page.waitForTimeout(800);
         }
         const separador = config.urlListagem.includes("?") ? "&" : "?";
-        await page.goto(`${config.urlListagem}${separador}pagina=${pagina}`, {
-          waitUntil: "domcontentloaded",
-        });
+        const url = `${config.urlListagem}${separador}pagina=${pagina}`;
+        let navegacaoConcluida = false;
+        let ultimoErroNavegacao: unknown = null;
+        for (let tentativa = 1; tentativa <= 3; tentativa++) {
+          try {
+            await page.goto(url, { waitUntil: "commit", timeout: TIMEOUT_NAVEGACAO_MS });
+            navegacaoConcluida = true;
+            ultimoErroNavegacao = null;
+            break;
+          } catch (erro) {
+            ultimoErroNavegacao = erro;
+            if (tentativa < 3) await page.waitForTimeout(2_000 * tentativa);
+          }
+        }
+        if (!navegacaoConcluida) {
+          const mensagem = ultimoErroNavegacao instanceof Error ? ultimoErroNavegacao.message : String(ultimoErroNavegacao);
+          throw new Error(`falha ao carregar pagina ${pagina} do crawler Coruja (${url}): ${mensagem}`);
+        }
         paginasVisitadas += 1;
 
         await page.waitForSelector("section.property-card-search", { timeout: 15_000 }).catch(() => {});

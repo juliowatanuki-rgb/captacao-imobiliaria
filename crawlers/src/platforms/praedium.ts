@@ -45,6 +45,7 @@ const MAX_PAGINAS_PADRAO = 150;
 const CODIGO_REGEX = /-id-(\d+)\/?$/;
 const PAUSA_ENTRE_PAGINAS_MS = 800;
 const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
+const TIMEOUT_NAVEGACAO_MS = 30_000;
 
 interface RawCard {
   href: string;
@@ -132,14 +133,29 @@ export function createPraediumCrawler(config: PraediumConfig): SiteCrawlerModule
         const url = `${config.urlListagem}${separador}pagina=${pagina}`;
 
         let cards: RawCard[] = [];
+        let ultimoErroNavegacao: unknown = null;
         for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA; tentativa++) {
-          await page.goto(url, { waitUntil: "domcontentloaded" });
-          await page.waitForSelector("div.thumbnail_one", { timeout: 15_000 }).catch(() => {});
-          cards = await extractCards(page);
+          try {
+            // O servidor/CDN pode manter o DOM aberto por recursos de
+            // terceiros. O evento commit basta para iniciar a leitura dos
+            // cards e evita perder uma pagina valida por timeout de DOM.
+            await page.goto(url, { waitUntil: "commit", timeout: TIMEOUT_NAVEGACAO_MS });
+            await page.waitForSelector("div.thumbnail_one", { timeout: 15_000 }).catch(() => {});
+            cards = await extractCards(page);
+            ultimoErroNavegacao = null;
+          } catch (erro) {
+            ultimoErroNavegacao = erro;
+            cards = [];
+          }
           if (cards.length > 0) break;
           if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
-            await page.waitForTimeout(1_000 * tentativa);
+            await page.waitForTimeout(2_000 * tentativa);
           }
+        }
+
+        if (ultimoErroNavegacao && cards.length === 0) {
+          const mensagem = ultimoErroNavegacao instanceof Error ? ultimoErroNavegacao.message : String(ultimoErroNavegacao);
+          throw new Error(`falha ao carregar pagina ${pagina} do crawler Praedium (${url}): ${mensagem}`);
         }
 
         paginasVisitadas += 1;

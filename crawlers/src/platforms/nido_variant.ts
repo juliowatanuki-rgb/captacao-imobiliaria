@@ -27,6 +27,7 @@ import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 120;
 const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
+const TIMEOUT_NAVEGACAO_MS = 30_000;
 
 interface RawCard {
   href: string;
@@ -86,16 +87,28 @@ export function createNidoVariantCrawler(config: NidoVariantConfig): SiteCrawler
         const url = `${baseSemBarra}/${pagina}`;
 
         let cards: RawCard[] = [];
+        let ultimoErroNavegacao: unknown = null;
         for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA; tentativa++) {
-          await page.goto(url, { waitUntil: "domcontentloaded" });
-          await page
-            .waitForSelector(`.${config.cardSelector}`, { timeout: 15_000 })
-            .catch(() => {});
-          cards = await extractCards(page, config.cardSelector, config.priceSelector);
+          try {
+            await page.goto(url, { waitUntil: "commit", timeout: TIMEOUT_NAVEGACAO_MS });
+            await page
+              .waitForSelector(`.${config.cardSelector}`, { timeout: 15_000 })
+              .catch(() => {});
+            cards = await extractCards(page, config.cardSelector, config.priceSelector);
+            ultimoErroNavegacao = null;
+          } catch (erro) {
+            ultimoErroNavegacao = erro;
+            cards = [];
+          }
           if (cards.length > 0) break;
           if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
-            await page.waitForTimeout(1_000 * tentativa);
+            await page.waitForTimeout(2_000 * tentativa);
           }
+        }
+
+        if (ultimoErroNavegacao && cards.length === 0) {
+          const mensagem = ultimoErroNavegacao instanceof Error ? ultimoErroNavegacao.message : String(ultimoErroNavegacao);
+          throw new Error(`falha ao carregar pagina ${pagina} do crawler Nido (${url}): ${mensagem}`);
         }
 
         paginasVisitadas += 1;
