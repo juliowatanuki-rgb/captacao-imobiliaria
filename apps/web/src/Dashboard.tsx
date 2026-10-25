@@ -204,8 +204,21 @@ export default function Dashboard({
               {loading ? "Atualizando..." : "Atualizar"}
             </button>
             {role === "admin" && (
-              <button type="button" onClick={handleSincronizarAgora} disabled={disparando}>
-                {disparando ? "Disparando..." : "Sincronizar agora"}
+              <button
+                type="button"
+                onClick={handleSincronizarAgora}
+                disabled={disparando || data?.ultimaSincronizacao?.status === "em_andamento"}
+                title={
+                  data?.ultimaSincronizacao?.status === "em_andamento"
+                    ? "Ja existe uma coleta em andamento"
+                    : undefined
+                }
+              >
+                {disparando
+                  ? "Disparando..."
+                  : data?.ultimaSincronizacao?.status === "em_andamento"
+                    ? "Coleta em andamento"
+                    : "Sincronizar agora"}
               </button>
             )}
           </div>
@@ -215,7 +228,9 @@ export default function Dashboard({
           <p>
             {formatData(data.ultimaSincronizacao.inicio_em)}{" "}
             <span className={`status-badge status-${data.ultimaSincronizacao.status}`}>
-              {data.ultimaSincronizacao.status}
+              {data.ultimaSincronizacao.status === "em_andamento"
+                ? "EM ANDAMENTO"
+                : data.ultimaSincronizacao.status}
             </span>
           </p>
         ) : (
@@ -224,7 +239,11 @@ export default function Dashboard({
 
         <div className="sites-status-grid">
           {data?.sites.map((s) => (
-            <div key={s.site_id} className="site-status-item">
+            <div
+              key={s.site_id}
+              className="site-status-item"
+              title={s.mensagem_erro ?? undefined}
+            >
               <span>{s.site_nome}</span>
               <StatusBadge status={s.status} />
             </div>

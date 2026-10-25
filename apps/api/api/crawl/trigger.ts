@@ -29,6 +29,19 @@ export default withHandler(async (req: VercelRequest, res: VercelResponse) => {
     throw new HttpError(500, "GITHUB_DISPATCH_TOKEN nao configurado no servidor - ver README secao 'Sincronizacao manual'");
   }
 
+  const pool = (await import("../../../../packages/db/src/client.js")).getPool();
+  const execucaoAtiva = await pool.query<{ id: string; inicio_em: string }>(
+    `SELECT id, inicio_em
+     FROM crawl_runs
+     WHERE status = 'em_andamento'
+       AND inicio_em >= now() - interval '6 hours'
+     ORDER BY inicio_em DESC
+     LIMIT 1`
+  );
+  if (execucaoAtiva.rows.length > 0) {
+    throw new HttpError(409, "ja existe uma coleta em andamento; aguarde a finalizacao antes de disparar outra");
+  }
+
   const resposta = await fetch(
     `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
     {
