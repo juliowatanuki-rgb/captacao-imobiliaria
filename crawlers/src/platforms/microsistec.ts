@@ -43,6 +43,13 @@ const MAX_TENTATIVAS_NAVEGACAO = 3;
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
+async function diagnosticarPaginaVazia(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const texto = (document.body?.innerText ?? "").replace(/\s+/g, " ").trim();
+    return `titulo="${document.title}" texto="${texto.slice(0, 180)}" url="${location.href}"`;
+  }).catch(() => "diagnostico indisponivel");
+}
+
 interface RawCard {
   href: string;
   codigo: string | null;
@@ -179,7 +186,14 @@ export function createMicrosistecCrawler(config: MicrosistecConfig): SiteCrawler
           await page.waitForTimeout(2_000);
           await page.waitForSelector("article.box-construction-8", { timeout: 10_000 }).catch(() => {});
           cards = await extractCards(page);
-          if (cards.length === 0) break;
+          if (cards.length === 0) {
+            if (pagina === 1) {
+              throw new Error(
+                `Microsistec retornou pagina 1 sem cards; possivel bloqueio/tela de verificacao ou alteracao de template (${await diagnosticarPaginaVazia(page)})`
+              );
+            }
+            break;
+          }
         }
 
         for (const card of cards) {

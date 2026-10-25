@@ -63,7 +63,19 @@ const siteCrawler: SiteCrawlerModule = {
       const url = `${urlBase}/api/imoveis?includeParents=false&page=${numeroPagina}&limit=${LIMIT}&cidade=${CODIGO_CIDADE_PRAIA_GRANDE}`;
       const resposta: ApiResposta = await page.evaluate(async (apiUrl) => {
         const res = await fetch(apiUrl);
-        return res.json();
+        const corpo = await res.text();
+        const contentType = res.headers.get("content-type") ?? "";
+        if (!res.ok) {
+          throw new Error(`API Objetiva respondeu HTTP ${res.status}`);
+        }
+        if (!contentType.toLowerCase().includes("json")) {
+          throw new Error(`API Objetiva respondeu ${contentType || "conteudo sem tipo"} em vez de JSON`);
+        }
+        try {
+          return JSON.parse(corpo) as ApiResposta;
+        } catch {
+          throw new Error("API Objetiva devolveu JSON invalido");
+        }
       }, url);
 
       paginasVisitadas += 1;

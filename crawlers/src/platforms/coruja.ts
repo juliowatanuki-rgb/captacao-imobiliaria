@@ -38,6 +38,13 @@ import type { SiteCrawlerModule } from "../siteRegistry.js";
 const MAX_PAGINAS_PADRAO = 200;
 const TIMEOUT_NAVEGACAO_MS = 30_000;
 
+async function diagnosticarPaginaVazia(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const texto = (document.body?.innerText ?? "").replace(/\s+/g, " ").trim();
+    return `titulo="${document.title}" texto="${texto.slice(0, 180)}" url="${location.href}"`;
+  }).catch(() => "diagnostico indisponivel");
+}
+
 interface RawCard {
   href: string;
   titulo: string;
@@ -155,7 +162,14 @@ export function createCorujaCrawler(config: CorujaConfig): SiteCrawlerModule {
             await page.waitForSelector("section.property-card-search", { timeout: 10_000 }).catch(() => {});
             cards = await extractCards(page);
           }
-          if (cards.length === 0) break;
+          if (cards.length === 0) {
+            if (pagina === 1) {
+              throw new Error(
+                `Coruja retornou pagina 1 sem cards; possivel bloqueio/tela de verificacao ou alteracao de template (${await diagnosticarPaginaVazia(page)})`
+              );
+            }
+            break;
+          }
         }
 
         for (const card of cards) {

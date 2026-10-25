@@ -47,6 +47,13 @@ const PAUSA_ENTRE_PAGINAS_MS = 800;
 const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
 const TIMEOUT_NAVEGACAO_MS = 30_000;
 
+async function diagnosticarPaginaVazia(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const texto = (document.body?.innerText ?? "").replace(/\s+/g, " ").trim();
+    return `titulo="${document.title}" texto="${texto.slice(0, 180)}" url="${location.href}"`;
+  }).catch(() => "diagnostico indisponivel");
+}
+
 interface RawCard {
   href: string;
   titulo: string;
@@ -156,6 +163,12 @@ export function createPraediumCrawler(config: PraediumConfig): SiteCrawlerModule
         if (ultimoErroNavegacao && cards.length === 0) {
           const mensagem = ultimoErroNavegacao instanceof Error ? ultimoErroNavegacao.message : String(ultimoErroNavegacao);
           throw new Error(`falha ao carregar pagina ${pagina} do crawler Praedium (${url}): ${mensagem}`);
+        }
+
+        if (pagina === 1 && cards.length === 0) {
+          throw new Error(
+            `Praedium retornou pagina 1 sem cards; possivel bloqueio/tela de verificacao ou alteracao de template (${await diagnosticarPaginaVazia(page)})`
+          );
         }
 
         paginasVisitadas += 1;

@@ -19,7 +19,13 @@ interface SiteRow {
 }
 
 const MAX_GRUPOS_CONCORRENTES = 4;
-const PAUSA_ENTRE_SITES_MESMA_PLATAFORMA_MS = 5_000;
+// Os CRMs compartilham o mesmo CDN/WAF entre varias imobiliarias. Cinco
+// segundos ainda era uma rajada para Praedium/Microsistec: o primeiro site
+// passava e os seguintes recebiam HTML vazio ou tela de verificacao. Um
+// intervalo maior reduz bloqueios sem serializar plataformas diferentes.
+const PAUSA_ENTRE_SITES_MESMA_PLATAFORMA_MS = 15_000;
+const USER_AGENT_PADRAO =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 /** Executa a coleta diaria de todos os sites ativos (secao 17 e 19, passo 15). */
 async function main() {
@@ -83,7 +89,12 @@ async function main() {
           }
           try {
             console.log(`[runAll] iniciando site "${site.id}"`);
-            const context = await browser.newContext();
+            const context = await browser.newContext({
+              userAgent: USER_AGENT_PADRAO,
+              locale: "pt-BR",
+              timezoneId: "America/Sao_Paulo",
+              viewport: { width: 1365, height: 900 },
+            });
             try {
               // A carga do modulo acontece dentro do scrape(), para que falhas
               // de um crawler sejam registradas como erro isolado do site.
