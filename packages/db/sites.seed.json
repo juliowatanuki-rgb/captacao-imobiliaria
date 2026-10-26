@@ -123,11 +123,11 @@
     "id": "tavares_e_polati_imoveis",
     "nome": "Tavares e Polati Imoveis",
     "urlBase": "https://tavaresepolati.com.br",
-    "urlListagem": "https://tavaresepolati.com.br/imoveis/a-venda",
-    "plataforma": "Praedium",
+    "urlListagem": "https://tavaresepolati.com.br/imoveis/venda",
+    "plataforma": "Market Imóvel",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Esteira validada em 2026-07-28 (1a+2a coleta confirmadas contra o Neon, ver commit 6ea6fda). Crawler em crawlers/src/sites/tavares_e_polati_imoveis.ts, motor generico Praedium. Plataforma real e Praedium, nao Imoview como chutado antes. ~412 imoveis / 26 por pagina / ~16 paginas. Codigo do imovel vem no final da URL (-id-N)."
+    "observacoes": "Atualizado em 2026-10-26: o site migrou de Praedium para Market Imovel. A rota ativa /imoveis/venda exibe 793 imoveis, 12 por pagina, com paginacao ?page=N e codigo #NNN no card. Crawler em crawlers/src/sites/tavares_e_polati_imoveis.ts."
   },
   {
     "id": "feliciano_imoveis_praia_grande",
@@ -253,11 +253,11 @@
     "id": "aetherna_empreendimentos",
     "nome": "Aetherna Empreendimentos",
     "urlBase": "https://aetherna.emp.br",
-    "urlListagem": "https://aetherna.emp.br/a-venda/praia-grande-sp",
-    "plataforma": "Coruja Sistemas",
+    "urlListagem": "https://www.aetherna.emp.br/imoveis/a-venda/praia-grande",
+    "plataforma": "Kenlo",
     "ativo": true,
     "isAgregador": false,
-    "observacoes": "Inspecionado ao vivo em 2026-07-29. Plataforma real e Coruja Sistemas (meta author 'Coruja Sistemas', mesma estrutura de card 'section.property-card-search' de platforms/coruja.ts), NAO 'Union Softwares' como chutado na planilha original. Site exibe 'MARIO J. DA S. NETO CONSULTOR' como razao social por tras da marca Aetherna - mesmo site, sem duplicidade. 1a coleta confirmada contra o Neon em 2026-07-29: 1363 encontrados, 1363 novos, 0 erro. 2a coleta de confirmacao rodada em 2026-07-30: estavel, sem duplicidade/novos indevidos - promovido para o workflow diario (crawl.yml)."
+    "observacoes": "Atualizado em 2026-10-26: o site migrou de Coruja para Kenlo. A listagem ativa /imoveis/a-venda/praia-grande exibe 44 imoveis e usa cards card-with-buttons com codigo Kenlo. A URL antiga /a-venda/praia-grande-sp retorna pagina sem cards. Crawler em crawlers/src/sites/aetherna_empreendimentos.ts."
   },
   {
     "id": "quintal_de_areia_imoveis",

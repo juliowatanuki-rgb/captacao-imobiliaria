@@ -1,8 +1,8 @@
-// Validado manualmente contra https://www.tavaresepolati.com.br em 2026-07-28.
-// Plataforma real: Praedium (o seed original tinha "Imoview" como chute -
-// nao confirmado - a inspecao ao vivo mostrou HTML/CDN da Praedium).
-import { createPraediumCrawler } from "../platforms/praedium.js";
+// Atualizado em 2026-10-26: o site migrou de Praedium para Market Imóvel.
+// A rota antiga /imoveis/a-venda agora retorna 404; a listagem ativa é
+// /imoveis/venda e usa paginação client-side com ?page=N.
+import { createMarketImovelCrawler } from "../platforms/market_imovel.js";
 
-export default createPraediumCrawler({
-  urlListagem: "https://tavaresepolati.com.br/imoveis/a-venda",
+export default createMarketImovelCrawler({
+  urlListagem: "https://tavaresepolati.com.br/imoveis/venda",
 });

@@ -5,8 +5,8 @@
 // original. URL exibe "MARIO J. DA S. NETO CONSULTOR" como razao social por
 // tras da marca Aetherna - mesmo site, sem duplicidade. 1363 imoveis
 // declarados na listagem filtrada por Praia Grande.
-import { createCorujaCrawler } from "../platforms/coruja.js";
+import { createKenloCrawler } from "../platforms/kenlo.js";
 
-export default createCorujaCrawler({
-  urlListagem: "https://aetherna.emp.br/a-venda/praia-grande-sp",
+export default createKenloCrawler({
+  urlListagem: "https://www.aetherna.emp.br/imoveis/a-venda/praia-grande",
 });
