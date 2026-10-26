@@ -40,6 +40,16 @@ function enderecoPartes(endereco: string | null): { bairro: string | null; cidad
   return { bairro: partes[0] || null, cidade: partes[1] || null };
 }
 
+function slugDetalhe(titulo: string, codigo: string, urlListagem: string): string {
+  const slug = titulo
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `${new URL(urlListagem).origin}/${slug}-${codigo}-${codigo}`;
+}
+
 export interface MarketImovelConfig { urlListagem: string; maxPaginas?: number; }
 
 export function createMarketImovelCrawler(config: MarketImovelConfig): SiteCrawlerModule {
@@ -65,7 +75,7 @@ export function createMarketImovelCrawler(config: MarketImovelConfig): SiteCrawl
           const { bairro, cidade } = enderecoPartes(card.endereco);
           listings.push({
             externalId: card.codigo,
-            urlOriginal: `${url}#imovel-${card.codigo}`,
+            urlOriginal: slugDetalhe(card.titulo, card.codigo ?? "", config.urlListagem),
             titulo: card.titulo || null,
             tipoImovel: card.titulo?.split(" para ")[0] ?? null,
             cidade, bairro, preco: moeda(card.texto),
