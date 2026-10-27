@@ -35,6 +35,9 @@ jobs:
       - name: Aplicar migrations pendentes
         run: npm run migrate
 
+      - name: Atualizar cadastro dos sites monitorados
+        run: npm run seed:sites
+
       - name: Rodar crawlers ativos por grupos de plataforma
         run: npm run crawl:all
 
