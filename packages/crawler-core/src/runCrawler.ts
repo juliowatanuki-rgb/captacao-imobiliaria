@@ -116,8 +116,12 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
        FROM listings WHERE site_id = $1`,
       [siteId]
     );
-    const isInitialSeed = Number(countRows[0].total) === 0;
     const rastreadosAntesDaColeta = Number(countRows[0].rastreados);
+    // Depois de uma migração de plataforma, o histórico antigo pode ter sido
+    // preservado como `removido`. Se não há mais itens ativos/ausentes para
+    // comparar, a próxima leitura é uma nova base legítima, mesmo que ainda
+    // existam linhas históricas no banco.
+    const isInitialSeed = Number(countRows[0].total) === 0 || rastreadosAntesDaColeta === 0;
 
     // Sites podem responder temporariamente com bloqueio, HTML de erro ou
     // pagina vazia. Repetimos uma vez antes de classificar como erro. A
