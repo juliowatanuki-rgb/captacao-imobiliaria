@@ -86,6 +86,7 @@ export function createKenloCrawler(config: KenloConfig): SiteCrawlerModule {
   return {
     async scrape({ page }) {
       const listings: ScrapedListing[] = [];
+      const idsJaVistos = new Set<string>();
       const maxPaginas = config.maxPaginas ?? MAX_PAGINAS_PADRAO;
       let paginasVisitadas = 0;
 
@@ -101,7 +102,19 @@ export function createKenloCrawler(config: KenloConfig): SiteCrawlerModule {
         const cards = await extractCards(page);
         if (cards.length === 0) break;
 
-        for (const card of cards) {
+        // Alguns sites Kenlo ignoram o parâmetro `pagina` e devolvem a mesma
+        // primeira página indefinidamente. Sem esta trava, o crawler repete
+        // anúncios até atingir o limite artificial de páginas e pode deixar
+        // a execução muito lenta ou gerar falso alerta de duplicidade.
+        const cardsNovos = cards.filter((card) => {
+          const id = card.codigo ?? extractCodigoFromHref(card.href);
+          if (!id || idsJaVistos.has(id)) return false;
+          idsJaVistos.add(id);
+          return true;
+        });
+        if (cardsNovos.length === 0) break;
+
+        for (const card of cardsNovos) {
           if (!card.href) continue;
           const { bairro, cidade } = extractEndereco(card.heading);
 
