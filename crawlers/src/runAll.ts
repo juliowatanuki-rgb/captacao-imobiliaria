@@ -60,7 +60,11 @@ async function main() {
     // do loop), o crawl_run fica preso em 'em_andamento' para sempre.
     // finishCrawlRun sempre roda no finally, com os resultados parciais.
     try {
-      const browser = await chromium.launch();
+      const browser = await chromium.launch(
+        process.env.CHROME_EXECUTABLE_PATH
+          ? { executablePath: process.env.CHROME_EXECUTABLE_PATH }
+          : undefined,
+      );
       try {
         const grupos = new Map<string, SiteRow[]>();
         for (const site of sites) {
