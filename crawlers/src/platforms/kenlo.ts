@@ -23,6 +23,7 @@ import type { ScrapedListing } from "@captacao/shared";
 import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 400;
+const PAUSA_ENTRE_PAGINAS_MS = 800;
 
 interface RawCard {
   href: string;
@@ -91,6 +92,12 @@ export function createKenloCrawler(config: KenloConfig): SiteCrawlerModule {
       let paginasVisitadas = 0;
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
+        if (pagina > 1) {
+          // O Kenlo compartilha CDN entre varios dominios. Sem uma pausa,
+          // paginas sucessivas podem retornar a primeira pagina novamente ou
+          // uma resposta incompleta, provocando churn falso no banco.
+          await page.waitForTimeout(PAUSA_ENTRE_PAGINAS_MS);
+        }
         const separador = config.urlListagem.includes("?") ? "&" : "?";
         await page.goto(`${config.urlListagem}${separador}pagina=${pagina}`, {
           waitUntil: "domcontentloaded",
