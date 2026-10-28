@@ -40,6 +40,10 @@ import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 200;
 const MAX_TENTATIVAS_NAVEGACAO = 3;
+// A Microsistec pode responder corretamente no navegador e, ainda assim,
+// atrasar ou interromper uma sequencia muito rapida de paginas no runner do
+// GitHub. Uma pausa curta reduz timeout/WAF sem serializar outros sites.
+const PAUSA_ENTRE_PAGINAS_MS = 750;
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
@@ -213,6 +217,10 @@ export function createMicrosistecCrawler(config: MicrosistecConfig): SiteCrawler
             banheiros: parseItemNumero(card.itens, /banheiro/i),
             vagas: parseItemNumero(card.itens, /vaga/i),
           });
+        }
+
+        if (pagina < maxPaginas) {
+          await page.waitForTimeout(PAUSA_ENTRE_PAGINAS_MS);
         }
       }
 
