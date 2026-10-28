@@ -59,7 +59,10 @@ async function main() {
     try {
       const browser = await chromium.launch(
         process.env.CHROME_EXECUTABLE_PATH
-          ? { executablePath: process.env.CHROME_EXECUTABLE_PATH }
+          ? {
+              executablePath: process.env.CHROME_EXECUTABLE_PATH,
+              headless: process.env.CHROME_HEADLESS !== "false",
+            }
           : undefined,
       );
       try {

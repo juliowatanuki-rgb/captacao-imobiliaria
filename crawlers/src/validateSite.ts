@@ -57,7 +57,10 @@ async function main() {
   const urlBase = new URL(urlListagem).origin;
   const browser = await chromium.launch(
     process.env.CHROME_EXECUTABLE_PATH
-      ? { executablePath: process.env.CHROME_EXECUTABLE_PATH }
+      ? {
+          executablePath: process.env.CHROME_EXECUTABLE_PATH,
+          headless: process.env.CHROME_HEADLESS !== "false",
+        }
       : undefined,
   );
   const context = await browser.newContext();
