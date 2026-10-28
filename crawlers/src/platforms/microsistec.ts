@@ -131,6 +131,10 @@ function extractTipoImovel(tituloH2: string | null): string | null {
 
 function comPagina(urlListagem: string, pagina: number): string {
   const url = new URL(urlListagem);
+  // A primeira pagina e a URL original. Alguns sites Microsistec, como a
+  // Bom Lugar, retornam pagina inexistente/erro quando recebem `page=1`;
+  // somente as paginas seguintes usam esse parametro.
+  if (pagina <= 1) return urlListagem;
   url.searchParams.set("page", String(pagina));
   return url.toString();
 }
