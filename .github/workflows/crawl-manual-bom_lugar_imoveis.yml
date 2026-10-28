@@ -1,0 +1,41 @@
+name: Coleta manual - Bom Lugar Imoveis
+
+on:
+  workflow_dispatch:
+    inputs:
+      site_id:
+        description: "Site a validar"
+        required: true
+        default: "bom_lugar_imoveis"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  crawl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar navegador do Playwright
+        run: npx --workspace=@captacao/crawlers playwright install --with-deps chromium
+
+      - name: Aplicar migrations pendentes
+        run: npm run migrate
+
+      - name: Rodar crawler da imobiliaria
+        run: npm run crawl:site -w @captacao/crawlers -- ${{ inputs.site_id }}
