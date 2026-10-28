@@ -57,7 +57,11 @@ async function main() {
     // 'em_andamento' para sempre. `result` sempre acaba sendo finalizado no
     // `finally`, com um resultado de erro sintetico se crawlSite nao rodar.
     try {
-      const browser = await chromium.launch();
+      const browser = await chromium.launch(
+        process.env.CHROME_EXECUTABLE_PATH
+          ? { executablePath: process.env.CHROME_EXECUTABLE_PATH }
+          : undefined,
+      );
       try {
         const context = await browser.newContext();
         try {
