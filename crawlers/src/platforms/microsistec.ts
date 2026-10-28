@@ -40,6 +40,7 @@ import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 200;
 const MAX_TENTATIVAS_NAVEGACAO = 3;
+const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
 // A Microsistec pode responder corretamente no navegador e, ainda assim,
 // atrasar ou interromper uma sequencia muito rapida de paginas no runner do
 // GitHub. Uma pausa curta reduz timeout/WAF sem serializar outros sites.
@@ -186,14 +187,17 @@ export function createMicrosistecCrawler(config: MicrosistecConfig): SiteCrawler
 
         let cards = await extractCards(page);
         if (cards.length === 0) {
-          // Uma pagina vazia pode ser o fim real da paginacao OU uma
-          // renderizacao lenta (visto na pratica em coruja.ts, onde
-          // reexecucoes sucessivas encontravam mais paginas reais do que a
-          // anterior por causa desse falso-vazio transitorio) - espera mais
-          // um pouco e tenta de novo uma unica vez antes de concluir.
-          await page.waitForTimeout(2_000);
-          await page.waitForSelector("article.box-construction-8", { timeout: 10_000 }).catch(() => {});
-          cards = await extractCards(page);
+          // Microsistec pode devolver HTML sem cards quando o WAF/CDN ainda
+          // esta processando a pagina. Nao podemos tratar a primeira resposta
+          // vazia como fim da paginacao: isso fazia o Bom Lugar parar em cerca
+          // de duas paginas e gravar uma coleta artificialmente incompleta.
+          for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_PAGINA_VAZIA && cards.length === 0; tentativa++) {
+            await page.waitForTimeout(2_000 * tentativa);
+            await navegarComRetry(page, url);
+            await page.waitForSelector("article.box-construction-8", { timeout: 15_000 }).catch(() => {});
+            cards = await extractCards(page);
+          }
+
           if (cards.length === 0) {
             if (pagina === 1) {
               throw new Error(
