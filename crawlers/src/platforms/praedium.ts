@@ -88,6 +88,23 @@ async function extractCards(page: Page): Promise<RawCard[]> {
   });
 }
 
+async function detectarBloqueio(page: Page): Promise<string | null> {
+  const titulo = typeof page.title === "function" ? await page.title().catch(() => "") : "";
+  const texto = typeof page.locator === "function"
+    ? await page.locator("body").innerText().catch(() => "")
+    : "";
+  const conteudo = `${titulo} ${texto}`.toLowerCase();
+  const bloqueado =
+    conteudo.includes("human verification") ||
+    conteudo.includes("vamos confirmar que você é humano") ||
+    conteudo.includes("vamos confirmar que voce e humano") ||
+    conteudo.includes("verificação de segurança") ||
+    conteudo.includes("verificacao de seguranca");
+  return bloqueado
+    ? `titulo="${titulo}" texto="${texto.replace(/\s+/g, " ").trim().slice(0, 180)}" url="${page.url()}"`
+    : null;
+}
+
 function parseMoeda(texto: string): number | null {
   const numeros = texto.replace(/[^\d,]/g, "").replace(",", ".");
   const valor = Number.parseFloat(numeros);
@@ -147,6 +164,10 @@ export function createPraediumCrawler(config: PraediumConfig): SiteCrawlerModule
             // terceiros. O evento commit basta para iniciar a leitura dos
             // cards e evita perder uma pagina valida por timeout de DOM.
             await page.goto(url, { waitUntil: "commit", timeout: TIMEOUT_NAVEGACAO_MS });
+            const bloqueio = await detectarBloqueio(page);
+            if (bloqueio) {
+              throw new Error(`Praedium bloqueou a coleta com tela de verificacao humana (${bloqueio})`);
+            }
             await page.waitForSelector("div.thumbnail_one", { timeout: 15_000 }).catch(() => {});
             cards = await extractCards(page);
             ultimoErroNavegacao = null;
@@ -155,7 +176,7 @@ export function createPraediumCrawler(config: PraediumConfig): SiteCrawlerModule
             cards = [];
           }
           if (cards.length > 0) break;
-          if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA) {
+          if (tentativa < MAX_TENTATIVAS_PAGINA_VAZIA && !String(ultimoErroNavegacao instanceof Error ? ultimoErroNavegacao.message : ultimoErroNavegacao).includes("tela de verificacao humana")) {
             await page.waitForTimeout(2_000 * tentativa);
           }
         }
