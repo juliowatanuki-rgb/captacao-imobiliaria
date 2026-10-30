@@ -1,15 +1,17 @@
 name: Coleta diaria de anuncios
 
+# Coleta executada localmente pelo Agendador do Windows. O workflow fica sem
+# eventos de agenda ou disparo manual para evitar execucoes concorrentes.
 on:
-  schedule:
-    - cron: "0 5 * * *" # 02:00 America/Sao_Paulo
-  workflow_dispatch: {}
+  push:
+    branches: ["__workflow_disabled__"]
 
 permissions:
   contents: read
 
 jobs:
   crawl:
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:

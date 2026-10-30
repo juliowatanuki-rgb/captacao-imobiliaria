@@ -21,7 +21,9 @@ if (-not (Test-Path -LiteralPath $chromePath)) {
   throw "Google Chrome nao encontrado em $chromePath"
 }
 $env:CHROME_EXECUTABLE_PATH = $chromePath
-$env:CHROME_HEADLESS = "false"
+if (-not $env:CHROME_HEADLESS) {
+  $env:CHROME_HEADLESS = "false"
+}
 
 $logDir = Join-Path $repoRoot "logs"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
