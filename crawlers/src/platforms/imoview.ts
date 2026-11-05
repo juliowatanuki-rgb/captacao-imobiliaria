@@ -21,6 +21,8 @@ import type { ScrapedListing } from "@captacao/shared";
 import type { SiteCrawlerModule } from "../siteRegistry.js";
 
 const MAX_PAGINAS_PADRAO = 250;
+const MAX_TENTATIVAS_NAVEGACAO = 2;
+const TIMEOUT_NAVEGACAO_MS = 30_000;
 
 interface RawCard {
   codigo: string | null;
@@ -121,9 +123,30 @@ export function createImoviewCrawler(config: ImoviewConfig): SiteCrawlerModule {
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
         const separador = config.urlListagem.includes("?") ? "&" : "?";
-        await page.goto(`${config.urlListagem}${separador}pagina=${pagina}`, {
-          waitUntil: "domcontentloaded",
-        });
+        const url = `${config.urlListagem}${separador}pagina=${pagina}`;
+        let ultimoErroNavegacao: unknown = null;
+        for (let tentativa = 1; tentativa <= MAX_TENTATIVAS_NAVEGACAO; tentativa++) {
+          try {
+            // Os cards sao hidratados por JavaScript e aguardados abaixo.
+            // Esperar apenas o commit evita falhar por scripts/recursos
+            // secundarios que atrasem o DOMContentLoaded; timeout transitorio
+            // recebe uma unica nova tentativa sem reiniciar toda a coleta.
+            await page.goto(url, {
+              waitUntil: "commit",
+              timeout: TIMEOUT_NAVEGACAO_MS,
+            });
+            ultimoErroNavegacao = null;
+            break;
+          } catch (erro) {
+            ultimoErroNavegacao = erro;
+            if (tentativa < MAX_TENTATIVAS_NAVEGACAO) {
+              await page.waitForTimeout(1_500);
+            }
+          }
+        }
+        if (ultimoErroNavegacao) {
+          throw ultimoErroNavegacao;
+        }
         paginasVisitadas += 1;
 
         // A listagem e renderizada via JS depois do carregamento inicial da pagina

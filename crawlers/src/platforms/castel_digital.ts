@@ -104,6 +104,25 @@ export interface CastelDigitalConfig {
   maxPaginas?: number;
 }
 
+async function navegarComRetry(page: Page, url: string): Promise<void> {
+  let ultimoErro: unknown;
+
+  for (let tentativa = 1; tentativa <= 2; tentativa++) {
+    try {
+      // O HTML e extraido assim que a resposta chega; esperar DOMContentLoaded
+      // pode expirar por scripts/recursos secundarios mesmo com a pagina boa.
+      await page.goto(url, { waitUntil: "commit", timeout: 30_000 });
+      return;
+    } catch (erro) {
+      ultimoErro = erro;
+      if (tentativa === 2) break;
+      await page.waitForTimeout(1_500);
+    }
+  }
+
+  throw ultimoErro;
+}
+
 export function createCastelDigitalCrawler(config: CastelDigitalConfig): SiteCrawlerModule {
   return {
     async scrape({ page }) {
@@ -114,7 +133,7 @@ export function createCastelDigitalCrawler(config: CastelDigitalConfig): SiteCra
 
       for (let pagina = 1; pagina <= maxPaginas; pagina++) {
         const url = pagina === 1 ? config.urlListagem : `${baseSemBarra}/pagina/${pagina}`;
-        await page.goto(url, { waitUntil: "domcontentloaded" });
+        await navegarComRetry(page, url);
         paginasVisitadas += 1;
 
         await page.waitForSelector("li[id^='im-']", { timeout: 15_000 }).catch(() => {});

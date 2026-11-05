@@ -1,3 +1,7 @@
+param(
+  [switch]$Scheduled
+)
+
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -21,7 +25,12 @@ if (-not (Test-Path -LiteralPath $chromePath)) {
   throw "Google Chrome nao encontrado em $chromePath"
 }
 $env:CHROME_EXECUTABLE_PATH = $chromePath
-if (-not $env:CHROME_HEADLESS) {
+if ($Scheduled) {
+  # A coleta invisivel estava recebendo respostas de erro em sites que abrem
+  # normalmente no Chrome. Manter o navegador visivel tambem nos horarios
+  # agendados permite usar o Chrome real instalado neste computador.
+  $env:CHROME_HEADLESS = "false"
+} elseif (-not $env:CHROME_HEADLESS) {
   $env:CHROME_HEADLESS = "false"
 }
 
@@ -29,7 +38,28 @@ $logDir = Join-Path $repoRoot "logs"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $logPath = Join-Path $logDir ("crawl-local-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
 
-& npm run crawl:all 2>&1 | Tee-Object -FilePath $logPath
-$exitCode = $LASTEXITCODE
-Write-Host "Log salvo em: $logPath"
-exit $exitCode
+try {
+  # Os coletores escrevem avisos em stderr e podem terminar com codigo != 0
+  # quando alguns sites falham. Com ErrorActionPreference=Stop, o PowerShell
+  # pode transformar esses eventos nativos em excecoes e interromper o Tee,
+  # perdendo o diagnostico site a site. Continue apenas durante o processo;
+  # o codigo de saida ainda e verificado e propagado abaixo.
+  $previousErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = "Continue"
+    $PSNativeCommandUseErrorActionPreference = $false
+    & npm.cmd run crawl:all 2>&1 | Tee-Object -FilePath $logPath
+    $exitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+  if ($null -eq $exitCode) { $exitCode = 1 }
+  Add-Content -LiteralPath $logPath -Value "`n[local] coleta terminou com codigo $exitCode em $(Get-Date -Format o)"
+  Write-Host "Log salvo em: $logPath"
+  exit $exitCode
+} catch {
+  $message = "[local] falha ao iniciar/executar coleta em $(Get-Date -Format o): $($_.Exception.Message)"
+  Add-Content -LiteralPath $logPath -Value $message
+  Write-Error "$message. Log: $logPath"
+  exit 1
+}

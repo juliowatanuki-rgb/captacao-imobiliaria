@@ -42,9 +42,11 @@ const MAX_PAGINAS_PADRAO = 200;
 const MAX_TENTATIVAS_NAVEGACAO = 3;
 const MAX_TENTATIVAS_PAGINA_VAZIA = 3;
 // A Microsistec pode responder corretamente no navegador e, ainda assim,
-// atrasar ou interromper uma sequencia muito rapida de paginas no runner do
-// GitHub. Uma pausa curta reduz timeout/WAF sem serializar outros sites.
-const PAUSA_ENTRE_PAGINAS_MS = 750;
+// atrasar ou interromper uma sequencia rapida de paginas. A pausa anterior
+// de 750 ms conseguia ler as primeiras paginas, mas a navegacao local passou
+// a falhar a partir da pagina 7. Usamos um intervalo moderado para reduzir a
+// taxa de requisicoes sem tornar a coleta excessivamente lenta.
+const PAUSA_ENTRE_PAGINAS_MS = 2_000;
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 

@@ -83,6 +83,25 @@ export interface KenloConfig {
   maxPaginas?: number;
 }
 
+async function navegarComRetry(page: Page, url: string): Promise<void> {
+  let ultimoErro: unknown;
+
+  for (let tentativa = 1; tentativa <= 2; tentativa++) {
+    try {
+      // As paginas Kenlo carregam cards depois; basta a resposta inicial
+      // chegar e o seletor abaixo confirma quando o catalogo esta pronto.
+      await page.goto(url, { waitUntil: "commit", timeout: 30_000 });
+      return;
+    } catch (erro) {
+      ultimoErro = erro;
+      if (tentativa === 2) break;
+      await page.waitForTimeout(1_500);
+    }
+  }
+
+  throw ultimoErro;
+}
+
 export function createKenloCrawler(config: KenloConfig): SiteCrawlerModule {
   return {
     async scrape({ page }) {
@@ -99,9 +118,7 @@ export function createKenloCrawler(config: KenloConfig): SiteCrawlerModule {
           await page.waitForTimeout(PAUSA_ENTRE_PAGINAS_MS);
         }
         const separador = config.urlListagem.includes("?") ? "&" : "?";
-        await page.goto(`${config.urlListagem}${separador}pagina=${pagina}`, {
-          waitUntil: "domcontentloaded",
-        });
+        await navegarComRetry(page, `${config.urlListagem}${separador}pagina=${pagina}`);
         paginasVisitadas += 1;
 
         await page.waitForSelector("a.card-with-buttons", { timeout: 15_000 }).catch(() => {});
