@@ -13,6 +13,7 @@ import { createNidoCrawler } from "./platforms/nido.js";
 import { createArboImoveisCrawler } from "./platforms/arbo_imoveis.js";
 import { createUsoSoftwaresCrawler } from "./platforms/uso_softwares.js";
 import { createMarketImovelCrawler } from "./platforms/market_imovel.js";
+import { createDamascoCrawler } from "./platforms/damasco.js";
 
 const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: number }) => SiteCrawlerModule> = {
   praedium: createPraediumCrawler,
@@ -28,6 +29,7 @@ const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: num
   arbo_imoveis: createArboImoveisCrawler,
   uso_softwares: createUsoSoftwaresCrawler,
   market_imovel: createMarketImovelCrawler,
+  damasco: createDamascoCrawler,
 };
 
 /**
@@ -38,7 +40,7 @@ const CRIADORES: Record<string, (config: { urlListagem: string; maxPaginas?: num
  * Uso: npm run validate:site -- <urlListagem> [maxPaginas] [plataforma]
  * plataforma (opcional, default "praedium"): praedium | imoview | kenlo |
  * coruja | castel_digital | guess_tecnologia | imobzi | imobeal | microsistec |
- * nido | market_imovel
+ * nido | market_imovel | damasco
  */
 async function main() {
   const urlListagem = process.argv[2];
