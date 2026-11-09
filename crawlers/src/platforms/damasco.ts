@@ -8,9 +8,12 @@ function numberFrom(text: string | undefined): number | null {
   if (!text) return null;
   const match = text.match(/[\d.,]+/);
   if (!match) return null;
-  const normalized = match[0].includes(",")
-    ? match[0].replace(/\./g, "").replace(",", ".")
-    : match[0];
+  const token = match[0];
+  const normalized = token.includes(",")
+    ? token.replace(/\./g, "").replace(",", ".")
+    : /^\d{1,3}(?:\.\d{3})+$/.test(token)
+      ? token.replace(/\./g, "")
+      : token;
   const value = Number.parseFloat(normalized);
   return Number.isFinite(value) ? value : null;
 }
@@ -23,15 +26,15 @@ export function createDamascoCrawler(config: { maxPaginas?: number } = {}): Site
       for (let pagina = 1; pagina <= (config.maxPaginas ?? 20); pagina++) {
         const url = `https://damascoimoveis.com.br/imoveis?cidade=Praia+Grande&finalidade=venda&page=${pagina}&route=%2Fimoveis`;
         await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
-        const cards = await page.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>(".property-card")).map((card) => {
-          const link = card.querySelector<HTMLAnchorElement>(".card-title a[href*='/imovel/']");
+        const cards = await page.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>(".property-card, article.cartao-imovel")).map((card) => {
+          const link = card.querySelector<HTMLAnchorElement>(".card-title a[href*='/imovel/'], a[href*='/imovel/']");
           return {
             href: link?.href ?? "",
-            code: card.querySelector(".card-code")?.textContent?.trim() ?? "",
-            title: link?.textContent?.replace(/\s+/g, " ").trim() ?? "",
-            price: card.querySelector(".card-price")?.textContent?.trim() ?? "",
-            location: card.querySelector(".card-location")?.textContent?.replace(/\s+/g, " ").trim() ?? "",
-            features: Array.from(card.querySelectorAll(".card-features .feature-item")).map((el) => el.textContent?.trim() ?? ""),
+            code: card.getAttribute("data-codigo") ?? card.querySelector(".card-code")?.textContent?.trim() ?? "",
+            title: card.querySelector(".card-title, .cartao-imovel__titulo")?.textContent?.replace(/\s+/g, " ").trim() ?? "",
+            price: card.querySelector(".card-price, .cartao-imovel__preco")?.textContent?.trim() ?? "",
+            location: card.querySelector(".card-location, .cartao-imovel__local")?.textContent?.replace(/\s+/g, " ").trim() ?? "",
+            features: Array.from(card.querySelectorAll(".card-features .feature-item, .cartao-imovel li")).map((el) => el.textContent?.trim() ?? ""),
           };
         })) as Card[];
         paginasVisitadas++;
@@ -51,7 +54,7 @@ export function createDamascoCrawler(config: { maxPaginas?: number } = {}): Site
             preco: numberFrom(card.price),
             areaUtil: numberFrom(feature(/m²|m2/i)),
             dormitorios: numberFrom(feature(/dorm/i)),
-            banheiros: numberFrom(feature(/banho/i)),
+            banheiros: numberFrom(feature(/banh/i)),
           });
         }
         if (cards.length < 12) break;

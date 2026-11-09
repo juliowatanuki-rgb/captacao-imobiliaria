@@ -10,8 +10,8 @@ describe("createDamascoCrawler", () => {
         .mockResolvedValueOnce([{
           href: "https://damascoimoveis.com.br/imovel/apartamento/venda/praia-grande/sp/boqueirao/AP55356",
           code: "AP55356", title: "Apartamento à venda, 1 dorm, Boqueirão, Praia Grande, SP",
-          price: "R$ 485.000,00", location: "Boqueirão - Praia Grande",
-          features: ["1 Dorms", "1 Banho(s)", "52.54m²"],
+          price: "R$ 485.000", location: "Boqueirão - Praia Grande",
+          features: ["1 dorm", "1 banheiro", "52,54 m²"],
         }])
         .mockResolvedValueOnce([]),
     } as unknown as Page;
