@@ -1,6 +1,7 @@
 import type pg from "pg";
 import type { ScrapedListing } from "@captacao/shared";
 import type { NormalizeUrlOptions } from "./urlNormalize.js";
+import { resolveIdentity } from "./identity.js";
 import { markAbsentListings, upsertListingsBatch } from "./upsertListing.js";
 
 export interface CrawlSiteParams {
@@ -9,6 +10,13 @@ export interface CrawlSiteParams {
   siteId: string;
   urlBase: string;
   urlOptions?: NormalizeUrlOptions;
+  /**
+   * Opcao operacional explicita, apenas para rebaseline manual: permite
+   * persistir uma grande mudanca de identidade se duas leituras completas
+   * consecutivas forem identicas e atingirem este minimo. O crawl diario nao
+   * configura esta opcao.
+   */
+  acceptIdentityChurnMinListings?: number;
   /**
    * Funcao que efetivamente navega e extrai os anuncios (Playwright etc).
    * Pode retornar `urlOptions` proprios do site (ex: carregados junto do
@@ -98,7 +106,7 @@ async function scrapeComRetry(
  * esta funcao captura qualquer excecao e a converte em um registro de log com status 'erro'.
  */
 export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResult> {
-  const { pool, crawlRunId, siteId, urlBase, urlOptions, scrape } = params;
+  const { pool, crawlRunId, siteId, urlBase, urlOptions, scrape, acceptIdentityChurnMinListings } = params;
   const inicioEm = new Date();
 
   const siteCrawlRunInsert = await pool.query<{ id: string }>(
@@ -128,10 +136,15 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
     // validacao de queda suspeita abaixo continua sendo obrigatoria e os
     // alertas de identidade continuam sendo rejeitados.
     let scrapeResult = await scrapeComRetry(scrape, !isInitialSeed);
+    let previousChurnSnapshot: string | null = null;
 
     for (let tentativaIdentidade = 1; tentativaIdentidade <= MAX_TENTATIVAS_IDENTIDADE; tentativaIdentidade += 1) {
       const { listings, paginasVisitadas } = scrapeResult;
       const effectiveUrlOptions = scrapeResult.urlOptions ?? urlOptions;
+      const identitySnapshot = listings
+        .map((listing) => resolveIdentity(listing, urlBase, effectiveUrlOptions).identityKey)
+        .sort()
+        .join("\n");
 
       // Protecao contra falha silenciosa de scraping (ex: anti-bot, timeout de
       // renderizacao, bloqueio): uma coleta que encontra 0 anuncios ou uma
@@ -168,21 +181,31 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
           // resposta instavel do CRM. Desfazemos tudo antes de tentar de novo.
           await client.query("ROLLBACK");
           transacaoAberta = false;
+          previousChurnSnapshot = identitySnapshot;
           await new Promise((resolve) => setTimeout(resolve, ESPERA_ENTRE_TENTATIVAS_MS));
           scrapeResult = await scrapeComRetry(scrape, !isInitialSeed);
           continue;
         }
 
         const status: CrawlSiteResult["status"] = churnDeIdentidade ? "alerta" : "sucesso";
+        const rebaselineManualAceito = Boolean(
+          churnDeIdentidade &&
+          acceptIdentityChurnMinListings !== undefined &&
+          listings.length >= acceptIdentityChurnMinListings &&
+          previousChurnSnapshot === identitySnapshot
+        );
         const mensagemErro = churnDeIdentidade
           ? `possivel churn de identidade persistente: ${anunciosNovos} novo(s) e ${marcadosAusentes} ausente(s) na mesma ` +
             `coleta (${((anunciosNovos + marcadosAusentes) / listings.length * 100).toFixed(1)}% do total encontrado) - ` +
-            "alteracoes bloqueadas apos 2 tentativas; dados anteriores preservados"
+            (rebaselineManualAceito
+              ? `rebaseline manual persistido: duas leituras identicas, ${listings.length} anuncios (minimo ${acceptIdentityChurnMinListings})`
+              : "alteracoes bloqueadas apos 2 tentativas; dados anteriores preservados")
           : null;
 
-        // Alerta persistente nao pode ser apenas cosmetico: desfaz a ultima
-        // transacao para impedir anuncios instaveis e ausencias falsas.
-        if (churnDeIdentidade) {
+        // Churn sempre bloqueia por padrao. Somente uma execucao manual que
+        // explicitamente exige minimo de resultados e duas identidades iguais
+        // pode persistir um rebaseline; o alerta continua registrado.
+        if (churnDeIdentidade && !rebaselineManualAceito) {
           await client.query("ROLLBACK");
         } else {
           await client.query("COMMIT");

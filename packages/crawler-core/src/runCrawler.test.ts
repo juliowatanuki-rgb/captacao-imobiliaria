@@ -409,6 +409,51 @@ describe("crawlSite - alerta de possivel churn de identidade", () => {
     expect(runSalvo.mensagem_erro).toContain("churn de identidade");
   });
 
+  it("persiste um rebaseline manual somente com minimo atingido e duas leituras identicas", async () => {
+    await seedFakePool(pool, "site_a", 100);
+    const mantidos = Array.from({ length: 70 }, (_, i) => scraped(`seed-${i}`));
+    const novos = Array.from({ length: 30 }, (_, i) => scraped(`migrado-${i}`));
+
+    const result = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-manual-rebaseline",
+      siteId: "site_a",
+      urlBase,
+      acceptIdentityChurnMinListings: 100,
+      scrape: async () => ({ listings: [...mantidos, ...novos], paginasVisitadas: 2 }),
+    });
+
+    expect(result.status).toBe("alerta");
+    expect(result.anunciosNovos).toBe(30);
+    expect(result.anunciosAusentes).toBe(30);
+    expect(result.mensagemErro).toContain("rebaseline manual persistido");
+    expect(pool.listings).toHaveLength(130);
+    expect(pool.listings.filter((r) => r.status === "ausente")).toHaveLength(30);
+  });
+
+  it("mantem o rollback manual se os dois snapshots de identidade diferirem", async () => {
+    await seedFakePool(pool, "site_a", 100);
+    const mantidos = Array.from({ length: 70 }, (_, i) => scraped(`seed-${i}`));
+    let leitura = 0;
+    const result = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-manual-unstable",
+      siteId: "site_a",
+      urlBase,
+      acceptIdentityChurnMinListings: 100,
+      scrape: async () => {
+        leitura++;
+        const novos = Array.from({ length: 30 }, (_, i) => scraped(`migrado-${leitura}-${i}`));
+        return { listings: [...mantidos, ...novos], paginasVisitadas: 2 };
+      },
+    });
+
+    expect(result.status).toBe("alerta");
+    expect(result.mensagemErro).toContain("alteracoes bloqueadas");
+    expect(pool.listings).toHaveLength(100);
+    expect(pool.listings.every((r) => r.status === "ativo")).toBe(true);
+  });
+
   it("aceita a segunda coleta quando a primeira apresentou churn e a segunda estabiliza", async () => {
     await seedFakePool(pool, "site_a", 100);
     const estaveis = Array.from({ length: 95 }, (_, i) => scraped(`seed-${i}`));

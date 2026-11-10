@@ -10,11 +10,18 @@ import {
 } from "@captacao/crawler-core";
 import { loadSiteModule } from "./siteRegistry.js";
 
-/** Executa um unico site, identificado por argv[2]. Uso: npm run crawl:site -- <site_id> */
+/** Executa um unico site; rebaseline exige uma flag manual e minimo de anuncios. */
 async function main() {
   const siteId = process.argv[2];
+  const rebaselineArg = process.argv.slice(3).find((arg) => arg.startsWith("--accept-identity-churn-min="));
+  const rebaselineMatch = rebaselineArg?.match(/^--accept-identity-churn-min=(\d+)$/);
+  const rebaselineMin = rebaselineMatch ? Number(rebaselineMatch[1]) : undefined;
   if (!siteId) {
-    console.error("Uso: npm run crawl:site -- <site_id>");
+    console.error("Uso: npm run crawl:site -- <site_id> [--accept-identity-churn-min=<quantidade>]");
+    process.exit(1);
+  }
+  if (rebaselineArg && (!rebaselineMatch || !Number.isSafeInteger(rebaselineMin) || (rebaselineMin ?? 0) < 1)) {
+    console.error("A opcao de rebaseline exige --accept-identity-churn-min=<inteiro maior que zero>");
     process.exit(1);
   }
 
@@ -79,6 +86,7 @@ async function main() {
             crawlRunId,
             siteId: site.id,
             urlBase: site.url_base,
+            acceptIdentityChurnMinListings: rebaselineMin,
             scrape: async () => {
               const module = await loadSiteModule(site.id);
               const page = await context.newPage();
