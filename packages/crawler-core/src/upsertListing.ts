@@ -450,7 +450,7 @@ export async function markAbsentListings(
   client: pg.PoolClient,
   siteId: string,
   seenListingIds: string[]
-): Promise<{ marcadosAusentes: number }> {
+): Promise<{ marcadosAusentes: number; novasAusencias: number }> {
   const stillActive = await client.query<{ id: string; coletas_ausente_consecutivas: number }>(
     `SELECT id, coletas_ausente_consecutivas FROM listings
      WHERE site_id = $1 AND status IN ('ativo', 'ausente') AND NOT (id = ANY($2::uuid[]))`,
@@ -458,7 +458,7 @@ export async function markAbsentListings(
   );
 
   if (stillActive.rows.length === 0) {
-    return { marcadosAusentes: 0 };
+    return { marcadosAusentes: 0, novasAusencias: 0 };
   }
 
   const ids: string[] = [];
@@ -491,5 +491,8 @@ export async function markAbsentListings(
     [ids, tiposEvento]
   );
 
-  return { marcadosAusentes: stillActive.rows.length };
+  return {
+    marcadosAusentes: stillActive.rows.length,
+    novasAusencias: stillActive.rows.filter((row) => row.coletas_ausente_consecutivas === 0).length,
+  };
 }

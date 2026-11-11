@@ -170,11 +170,11 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
         const anunciosAtualizados = batch.anunciosAtualizados;
         const anunciosExistentes = batch.anunciosAtualizados + batch.anunciosSemAlteracao;
 
-        const { marcadosAusentes } = isInitialSeed
-          ? { marcadosAusentes: 0 }
+        const { marcadosAusentes, novasAusencias } = isInitialSeed
+          ? { marcadosAusentes: 0, novasAusencias: 0 }
           : await markAbsentListings(client, siteId, batch.seenListingIds);
 
-        const churnDeIdentidade = indicaChurnDeIdentidade(listings.length, anunciosNovos, marcadosAusentes, isInitialSeed);
+        const churnDeIdentidade = indicaChurnDeIdentidade(listings.length, anunciosNovos, novasAusencias, isInitialSeed);
 
         if (churnDeIdentidade && tentativaIdentidade < MAX_TENTATIVAS_IDENTIDADE) {
           // A primeira leitura pode ter sido uma pagina incompleta ou uma
@@ -195,8 +195,8 @@ export async function crawlSite(params: CrawlSiteParams): Promise<CrawlSiteResul
           previousChurnSnapshot === identitySnapshot
         );
         const mensagemErro = churnDeIdentidade
-          ? `possivel churn de identidade persistente: ${anunciosNovos} novo(s) e ${marcadosAusentes} ausente(s) na mesma ` +
-            `coleta (${((anunciosNovos + marcadosAusentes) / listings.length * 100).toFixed(1)}% do total encontrado) - ` +
+          ? `possivel churn de identidade persistente: ${anunciosNovos} novo(s) e ${novasAusencias} nova(s) ausencia(s) na mesma ` +
+            `coleta (${((anunciosNovos + novasAusencias) / listings.length * 100).toFixed(1)}% do total encontrado) - ` +
             (rebaselineManualAceito
               ? `rebaseline manual persistido: duas leituras identicas, ${listings.length} anuncios (minimo ${acceptIdentityChurnMinListings})`
               : "alteracoes bloqueadas apos 2 tentativas; dados anteriores preservados")

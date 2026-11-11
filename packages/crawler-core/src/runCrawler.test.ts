@@ -431,6 +431,35 @@ describe("crawlSite - alerta de possivel churn de identidade", () => {
     expect(pool.listings.filter((r) => r.status === "ausente")).toHaveLength(30);
   });
 
+  it("nao repete alerta por ausencias ja registradas e confirma removidos na coleta seguinte", async () => {
+    await seedFakePool(pool, "site_a", 100);
+    const inventarioAtual = Array.from({ length: 80 }, (_, i) => scraped(`seed-${i}`));
+
+    const rebaseline = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-manual-rebaseline",
+      siteId: "site_a",
+      urlBase,
+      acceptIdentityChurnMinListings: 80,
+      scrape: async () => ({ listings: inventarioAtual, paginasVisitadas: 1 }),
+    });
+    expect(rebaseline.status).toBe("alerta");
+    expect(pool.listings.filter((r) => r.status === "ausente")).toHaveLength(20);
+
+    const coletaSeguinte = await crawlSite({
+      pool: pool as any,
+      crawlRunId: "crawl-normal-seguinte",
+      siteId: "site_a",
+      urlBase,
+      scrape: async () => ({ listings: inventarioAtual, paginasVisitadas: 1 }),
+    });
+
+    expect(coletaSeguinte.status).toBe("sucesso");
+    expect(coletaSeguinte.anunciosAusentes).toBe(20);
+    expect(pool.listings.filter((r) => r.status === "removido")).toHaveLength(20);
+    expect(pool.listings.filter((r) => r.status === "ausente")).toHaveLength(0);
+  });
+
   it("mantem o rollback manual se os dois snapshots de identidade diferirem", async () => {
     await seedFakePool(pool, "site_a", 100);
     const mantidos = Array.from({ length: 70 }, (_, i) => scraped(`seed-${i}`));
