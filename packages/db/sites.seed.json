@@ -335,9 +335,9 @@
     "urlBase": "https://gmrsolucoesimobiliarias.com.br",
     "urlListagem": "https://gmrsolucoesimobiliarias.com.br/imoveis",
     "plataforma": "Objetiva Software",
-    "ativo": true,
+    "ativo": false,
     "isAgregador": false,
-    "observacoes": "Esteira validada em 2026-07-30 (1a+2a coleta confirmadas contra o Neon, promovido para o workflow diario/crawl.yml). Plataforma real e Objetiva Software (Next.js). Sede em Votuporanga/SP - inventario de Praia Grande e pequeno, mesmo padrao ja aceito para spinola_consultoria_imobiliaria. Site expoe API JSON propria (GET /api/imoveis?cidade=5238), sem necessidade de scraping de HTML - motor chama a API direto via fetch() no contexto da pagina. Crawler em crawlers/src/sites/grupo_mr_solucoes_imobiliarias.ts. 1a coleta (2026-07-30): 4 encontrados, 4 novos. 2a coleta de confirmacao (2026-07-30): 4 encontrados, 0 novos, 0 ausentes - estavel."
+    "observacoes": "Coleta desativada em 2026-11-12: o site migrou de plataforma e a API antiga do coletor retorna HTTP 404; a busca publica atual nao oferece Praia Grande como cidade selecionavel. Anuncios e historico preservados. Reativar somente apos confirmar que o catalogo volta a expor imoveis de Praia Grande."
   },
   {
     "id": "malibu_imoveis",
